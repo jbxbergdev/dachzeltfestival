@@ -49,6 +49,7 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/raw/
 
   fonts:
     - family: RobotoRegular

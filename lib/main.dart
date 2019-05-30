@@ -11,6 +11,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:io';
+import 'dart:async';
+import 'package:flutter/foundation.dart';
+import 'view/map/map.dart';
+import 'model/geojson/geojson_parser.dart';
 
 void main() => runApp(MyApp());
 
@@ -36,30 +41,25 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   int _selectedIndex = 0;
-  static const TextStyle optionStyle =
-  TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+  static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
   List<Widget> _widgetOptions = <Widget>[
     Image.asset('assets/images/schedule_screenshot.png'),
-    OverflowBox(
-      minHeight: 0.0,
-      minWidth: 0.0,
-      maxHeight: double.infinity,
-      alignment: Alignment.topLeft,
-      child: Image.asset('assets/images/map_screenshot.png', fit: BoxFit.cover,),
-    ),
-    OverflowBox(
-        minWidth: 0.0,
-        minHeight: 0.0,
-        maxHeight: double.infinity,
-        alignment: Alignment.topLeft,
-        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+    EventMap(),
+//    OverflowBox(
+//        minWidth: 0.0,
+//        minHeight: 0.0,
+//        maxHeight: double.infinity,
+//        alignment: Alignment.topLeft,
+//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+//    ),
+    Center(
+      child: RaisedButton(onPressed: () {
+        GeoJsonParser.parse();
+      }),
     ),
   ];
 
-  static void onMapCreated(platformMapController) {
-
-  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -94,10 +94,14 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             icon: Icon(Icons.map),
             title: Text('Gelände'),
           ),
+//          BottomNavigationBarItem(
+//            icon: Icon(Icons.favorite_border),
+//            title: Text('Show Love'),
+//          ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.favorite_border),
-            title: Text('Show Love'),
-          ),
+            icon: Icon(Icons.ac_unit),
+            title: Text('TestStuff'),
+          )
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.amber[800],
