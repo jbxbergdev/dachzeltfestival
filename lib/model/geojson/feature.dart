@@ -7,63 +7,67 @@ class FeatureCollection {
   factory FeatureCollection.fromJson(Map<String, dynamic> json) {
     var featureList = json['features'] as List;
     List<Feature> features = featureList.map((it) => Feature.fromJson(it)).toList();
-    FeatureCollection featureCollection = FeatureCollection(features: features);
-    featureCollection.features.forEach((feature) => print(feature));
-    return featureCollection;
+    return FeatureCollection(features: features);
   }
 }
 
 
 class Feature {
-  Feature();
+  Properties properties;
+  Feature({this.properties});
   factory Feature.fromJson(Map<String, dynamic> json) {
     Map<String, dynamic> geometry = json['geometry'];
+    Properties properties = Properties.fromJson(json['properties']);
     String type = geometry['type'];
     switch (type) {
       case 'Point':
-        return Point.fromJson(geometry);
+        return Point.fromJson(geometry, properties);
       case 'LineString':
-        return LineString.fromJson(geometry);
+        return LineString.fromJson(geometry, properties);
       case 'Polygon':
-        return Polygon.fromJson(geometry);
+        return Polygon.fromJson(geometry, properties);
     }
     return null;
   }
 }
 
 class LineString extends Feature {
-  LineString({this.coordinates});
+  LineString({properties, this.coordinates});
   List<Coordinates> coordinates;
-  factory LineString.fromJson(Map<String, dynamic> json) {
+  factory LineString.fromJson(Map<String, dynamic> json, Properties properties) {
     var coordinatesList = json['coordinates'] as List;
     return LineString(
+      properties: properties,
       coordinates: coordinatesList.map((it) => Coordinates.fromJson(it)).toList()
     );
   }
 }
 
 class Polygon extends Feature {
-  Polygon({this.coordinates});
+  Polygon({properties, this.coordinates});
   List<List<Coordinates>> coordinates;
-  factory Polygon.fromJson(Map<String, dynamic> json) {
+  factory Polygon.fromJson(Map<String, dynamic> json, Properties properties) {
     var jsonListOfCoordinatesLists = json['coordinates'] as List;
     var listOfCoordinatesLists = jsonListOfCoordinatesLists.map((coordinatesList) =>
       (coordinatesList as List).map((jsonCoordinates) =>
           Coordinates.fromJson(jsonCoordinates)
       ).toList()
     ).toList();
-
     return Polygon(
+        properties: properties,
         coordinates: listOfCoordinatesLists
     );
   }
 }
 
 class Point extends Feature {
-  Point({this.coordinates});
+  Point({properties, this.coordinates});
   Coordinates coordinates;
-  factory Point.fromJson(Map<String, dynamic> json) {
-    return Point(coordinates: Coordinates.fromJson(json['coordinates']));
+  factory Point.fromJson(Map<String, dynamic> json, Properties properties) {
+    return Point(
+        properties: properties,
+        coordinates: Coordinates.fromJson(json['coordinates'],
+        ));
   }
 }
 
@@ -72,12 +76,23 @@ class Coordinates {
   double lng;
   double lat;
   factory Coordinates.fromJson(dynamic json) {
-    print(json);
     var coordinatesList = new List<num>.from(json);
     return Coordinates(lng: coordinatesList[0], lat: coordinatesList[1]);
   }
 }
 
 class Properties {
-
+  String name;
+  String description;
+  String stroke;
+  String fill;
+  Properties({this.name, this.description, this.stroke, this.fill});
+  factory Properties.fromJson(Map<String, dynamic> json) {
+    return Properties(
+      name: json['name'],
+      description: json['description'],
+      stroke: json['stroke'],
+      fill: json['fill'],
+    );
+  }
 }
