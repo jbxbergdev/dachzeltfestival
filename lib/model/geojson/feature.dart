@@ -11,7 +11,6 @@ class FeatureCollection {
   }
 }
 
-
 class Feature {
   Properties properties;
   Feature({this.properties});
@@ -32,7 +31,7 @@ class Feature {
 }
 
 class LineString extends Feature {
-  LineString({properties, this.coordinates});
+  LineString({properties, this.coordinates}): super(properties: properties);
   List<Coordinates> coordinates;
   factory LineString.fromJson(Map<String, dynamic> json, Properties properties) {
     var coordinatesList = json['coordinates'] as List;
@@ -44,7 +43,7 @@ class LineString extends Feature {
 }
 
 class Polygon extends Feature {
-  Polygon({properties, this.coordinates});
+  Polygon({properties, this.coordinates}): super(properties: properties);
   List<List<Coordinates>> coordinates;
   factory Polygon.fromJson(Map<String, dynamic> json, Properties properties) {
     var jsonListOfCoordinatesLists = json['coordinates'] as List;
@@ -61,7 +60,7 @@ class Polygon extends Feature {
 }
 
 class Point extends Feature {
-  Point({properties, this.coordinates});
+  Point({properties, this.coordinates}): super(properties: properties);
   Coordinates coordinates;
   factory Point.fromJson(Map<String, dynamic> json, Properties properties) {
     return Point(
