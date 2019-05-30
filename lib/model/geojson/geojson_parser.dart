@@ -7,14 +7,9 @@ import 'package:flutter/foundation.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as googlemaps;
 
 class GeoJsonParser {
-  static Future<FeatureCollection> parse() async {
-    String jsonStr = await rootBundle.loadString('assets/raw/lageplan.json');
-    FeatureCollection featureCollection = FeatureCollection.fromJson(json.decode(jsonStr));
-    return featureCollection;
-  }
 
-  static Future<Set<googlemaps.Polygon>> parseGooglePolygons() async {
-    FeatureCollection featureCollection = await parse();
+  static Future<Set<googlemaps.Polygon>> _parse(String jsonStr) async {
+    FeatureCollection featureCollection = FeatureCollection.fromJson(json.decode(jsonStr));
     Set<googlemaps.Polygon> googlePolygons = Set();
     int i = 0;
     featureCollection.features.forEach((feature) {
@@ -30,6 +25,11 @@ class GeoJsonParser {
       }
     });
     return googlePolygons;
+  }
+
+  static Future<Set<googlemaps.Polygon>> parseGooglePolygons() async {
+    String jsonStr = await rootBundle.loadString('assets/raw/lageplan.json');
+    return compute(_parse, jsonStr);
   }
 
   static Color hexToColor(String code) {

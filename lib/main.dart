@@ -55,7 +55,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 //    ),
     Center(
       child: RaisedButton(onPressed: () {
-        GeoJsonParser.parse();
+        GeoJsonParser.parseGooglePolygons();
       }),
     ),
   ];
