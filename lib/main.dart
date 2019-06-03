@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'view/map/map.dart';
 import 'model/geojson/geojson_parser.dart';
+import 'testui.dart';
 
 void main() => runApp(MyApp());
 
@@ -40,26 +41,26 @@ class MyStatefulWidget extends StatefulWidget {
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
+
+  final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
-  List<Widget> _widgetOptions = <Widget>[
-    Image.asset('assets/images/schedule_screenshot.png'),
-    EventMap(),
-//    OverflowBox(
-//        minWidth: 0.0,
-//        minHeight: 0.0,
-//        maxHeight: double.infinity,
-//        alignment: Alignment.topLeft,
-//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-//    ),
-    Center(
-      child: RaisedButton(onPressed: () {
-        GeoJsonParser.parseGooglePolygons();
-      }),
+  final List<Widget> pages = <Widget>[
+    Image.asset(
+      'assets/images/schedule_screenshot.png',
+      key: PageStorageKey('Schedule'),
+    ),
+    EventMap(key: PageStorageKey('Map')),
+    OverflowBox(
+      key: PageStorageKey('Donate'),
+      minWidth: 0.0,
+      minHeight: 0.0,
+      maxHeight: double.infinity,
+      alignment: Alignment.topLeft,
+      child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
     ),
   ];
-
 
   void _onItemTapped(int index) {
     setState(() {
@@ -81,8 +82,9 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         ),
         backgroundColor: Color(0xFFFFFFFF),
       ),
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
@@ -94,14 +96,10 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
             icon: Icon(Icons.map),
             title: Text('Gelände'),
           ),
-//          BottomNavigationBarItem(
-//            icon: Icon(Icons.favorite_border),
-//            title: Text('Show Love'),
-//          ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.ac_unit),
-            title: Text('TestStuff'),
-          )
+            icon: Icon(Icons.favorite_border),
+            title: Text('Show Love'),
+          ),
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.amber[800],

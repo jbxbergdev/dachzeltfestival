@@ -20,11 +20,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  google_maps_flutter:
-    git:
-      url: git@github.com:matthewlloyd/plugins.git # fork that supports polygons
-      ref: polygon
-      path: packages/google_maps_flutter
+  google_maps_flutter: ^0.5.15
 #  flutter_map: ^0.5.3+1
 
   # The following adds the Cupertino Icons font to your application.
