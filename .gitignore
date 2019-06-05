@@ -61,6 +61,12 @@
 **/ios/Flutter/flutter_assets/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
+**/ios/**/**.xcodeproj
+**/ios/**/**.xcconfig
+**/ios/**/**.pbxproj
+**/ios/**/**.xcworkspacedata
+**/ios/**/Podfile.lock
+**/ios/**/Podfile
 
 # Exceptions to above rules.
 !**/ios/**/default.mode1v3
