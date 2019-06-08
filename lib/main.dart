@@ -14,8 +14,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'view/map/map.dart';
-import 'model/geojson/geojson_parser.dart';
+import 'view/map/eventmap.dart';
 import 'testui.dart';
 
 void main() => runApp(MyApp());
