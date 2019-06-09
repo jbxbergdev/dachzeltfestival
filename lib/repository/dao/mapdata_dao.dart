@@ -13,8 +13,8 @@ class MapDataDaoImpl extends MapDataDao {
 
   @override
   Future<FeatureCollection> readFeatures() async {
-    String jsonStr = await rootBundle.loadString('assets/raw/lageplan.json');
-    return await compute(_parseFeaturesFromJson, jsonStr);
+    return rootBundle.loadString('assets/raw/lageplan.json')
+        .then((jsonStr) => compute(_parseFeaturesFromJson, jsonStr));
   }
 
   @override

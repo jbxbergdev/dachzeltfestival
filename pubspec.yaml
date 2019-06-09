@@ -20,8 +20,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  google_maps_flutter: ^0.5.15
+  rxdart: ^0.22.0
+  google_maps_flutter: ^0.5.16
   shared_preferences: ^0.5.3
+  rubber: ^0.3.2
+  webview_flutter: ^0.3.9+1
 
   inject:
     git:

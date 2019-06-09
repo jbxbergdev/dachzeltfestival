@@ -4,7 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
 import 'package:inject/inject.dart';
-import 'map_feature.dart';
+import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
+import 'package:rubber/rubber.dart';
+import 'package:rxdart/rxdart.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+import 'dart:convert';
 
 typedef Provider<T> = T Function();
 
@@ -30,7 +34,7 @@ class EventMap extends StatefulWidget {
   }
 }
 
-class _EventMapState extends State<EventMap> {
+class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin {
 
   GoogleMapController _googleMapController;
   CameraPosition _cameraPosition = CameraPosition(
@@ -39,27 +43,83 @@ class _EventMapState extends State<EventMap> {
   );
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
+  RubberAnimationController _controller;
+  ScrollController _scrollController = ScrollController();
+  BehaviorSubject<geojson.Properties> _propertiesSubject;
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
   @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<Set<MapFeature<Polygon>>>(
-      stream: _eventMapViewModel.observeMapFeatures()
-          .asyncMap((featureCollection) => _featureConverter.convertPolygons(featureCollection, _onPolygonTapped)),
-      builder: (buildContext, snapshot) {
-        return GoogleMap(
-          initialCameraPosition: _cameraPosition,
-          myLocationEnabled: true,
-          polygons: snapshot.data?.map((mapFeature) => mapFeature.geometry)?.toSet() ?? Set(),
-          onMapCreated: _onMapCreated,
-          onCameraMove: _onCameraMove,
-        );
-      });
+  void initState() {
+    super.initState();
+    _propertiesSubject = BehaviorSubject.seeded(null);
+    _controller = RubberAnimationController(
+        vsync: this,
+        halfBoundValue: AnimationControllerValue(percentage: 0.5),
+        lowerBoundValue: AnimationControllerValue(percentage: 0.0),
+        duration: Duration(milliseconds: 200),
+        initialValue: 0.0,
+    );
   }
 
-  void _onPolygonTapped(FeatureMetaData featureMetaData) {
-    print("##### polygon tapped: ${featureMetaData.name}");
+  @override
+  Widget build(BuildContext context) {
+
+    return RubberBottomSheet(
+      scrollController: _scrollController,
+      lowerLayer: StreamBuilder<Set<Polygon>>(
+          stream: _eventMapViewModel.observeMapFeatures()
+              .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped)),
+          builder: (buildContext, snapshot) {
+            return GoogleMap(
+              initialCameraPosition: _cameraPosition,
+              myLocationEnabled: true,
+              polygons: snapshot.data ?? Set(),
+              onMapCreated: _onMapCreated,
+              onCameraMove: _onCameraMove,
+              onTap: _onTap,
+            );
+          }),
+      header: SizedBox.expand(
+        child: Container(
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10)
+              )
+          ),
+          child: StreamBuilder<geojson.Properties>(
+            initialData: geojson.Properties(),
+            stream: _propertiesSubject.stream,
+            builder: (buildContext, snapshot) {
+              return Container(child: Text(snapshot.data?.name ?? ""));
+            },
+          ),
+        ),
+      ),
+      headerHeight: 60,
+      upperLayer: StreamBuilder<geojson.Properties>(
+        stream: _propertiesSubject.stream,
+        builder: (buildContext, snapshot) {
+//          String url = Uri.dataFromString(snapshot.data?.description ?? "<p>", mimeType: 'text/
+        HtmlEscape(HtmlEscapeMode(
+          escapeLtGt: false,
+          escapeQuot: true
+        ));
+        String url = Uri.dataFromString("<html><body><p>Bla bla bla<br>bla blaüüää</body></html>", mimeType: 'text/html').toString();
+          return WebView(
+            initialUrl: url,
+          );
+        },
+      ),
+      animationController: _controller,
+    );
+  }
+
+  void _onPolygonTapped(geojson.Properties properties) {
+    _propertiesSubject.add(properties);
+    _controller.animateTo(to: 0.5);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -69,5 +129,10 @@ class _EventMapState extends State<EventMap> {
   void _onCameraMove(CameraPosition cameraPosition) {
     _cameraPosition = cameraPosition;
   }
+
+  void _onTap(LatLng tapCoords) {
+    _controller.collapse();
+  }
+
 
 }

@@ -10,10 +10,10 @@
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'view/map/eventmap.dart';
 import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
+import 'testui.dart';
 
 void main() async {
   AppInjector appInjector = await AppInjector.create();
@@ -77,14 +77,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         key: PageStorageKey('Schedule'),
       ),
       _eventMapBuilder.build(PageStorageKey('Map')),
-      OverflowBox(
-        key: PageStorageKey('Donate'),
-        minWidth: 0.0,
-        minHeight: 0.0,
-        maxHeight: double.infinity,
-        alignment: Alignment.topLeft,
-        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-      ),
+      TestPage(key: PageStorageKey("TestPage"),),
+//      OverflowBox(
+//        key: PageStorageKey('Donate'),
+//        minWidth: 0.0,
+//        minHeight: 0.0,
+//        maxHeight: double.infinity,
+//        alignment: Alignment.topLeft,
+//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+//      ),
     ];
   }
 
