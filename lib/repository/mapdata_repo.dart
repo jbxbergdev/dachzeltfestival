@@ -1,6 +1,5 @@
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/dao/mapdata_dao.dart';
-import 'package:dachzeltfestival/model/map/map_position.dart';
 
 abstract class MapDataRepo {
   Stream<FeatureCollection> observeFeatures();
@@ -8,7 +7,9 @@ abstract class MapDataRepo {
 
 class MapDataRepoImpl extends MapDataRepo {
 
-  MapDataDao _mapDataDao = MapDataDaoImpl(); // TODO inject
+  MapDataDao _mapDataDao;
+
+  MapDataRepoImpl(this._mapDataDao);
 
   @override
   Stream<FeatureCollection> observeFeatures() async* {

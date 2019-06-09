@@ -10,56 +10,83 @@
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'dart:io';
-import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'view/map/eventmap.dart';
-import 'testui.dart';
+import 'di/app_injector.dart';
+import 'package:inject/inject.dart';
 
-void main() => runApp(MyApp());
+void main() async {
+  AppInjector appInjector = await AppInjector.create();
+  runApp(appInjector.app);
+}
 
-/// This Widget is the main application widget.
+@provide
 class MyApp extends StatelessWidget {
   static const String _title = 'Flutter Code Sample';
+
+  final MyStatefulWidgetBuilder _myStatefulWidgetBuilder;
+
+  MyApp(this._myStatefulWidgetBuilder);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: _title,
-      home: MyStatefulWidget(),
+      home: _myStatefulWidgetBuilder.build(),
     );
   }
 }
 
+@provide
+class MyStatefulWidgetBuilder {
+
+  final EventMapBuilder _eventMapBuilder;
+
+  MyStatefulWidgetBuilder(this._eventMapBuilder);
+
+  MyStatefulWidget build() => MyStatefulWidget(_eventMapBuilder);
+}
+
 class MyStatefulWidget extends StatefulWidget {
-  MyStatefulWidget({Key key}) : super(key: key);
+
+  final EventMapBuilder _eventMapBuilder;
+
+  MyStatefulWidget(this._eventMapBuilder);
 
   @override
-  _MyStatefulWidgetState createState() => _MyStatefulWidgetState();
+  _MyStatefulWidgetState createState() => _MyStatefulWidgetState(_eventMapBuilder);
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
+  EventMapBuilder _eventMapBuilder;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
-  final List<Widget> pages = <Widget>[
-    Image.asset(
-      'assets/images/schedule_screenshot.png',
-      key: PageStorageKey('Schedule'),
-    ),
-    EventMap(key: PageStorageKey('Map')),
-    OverflowBox(
-      key: PageStorageKey('Donate'),
-      minWidth: 0.0,
-      minHeight: 0.0,
-      maxHeight: double.infinity,
-      alignment: Alignment.topLeft,
-      child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-    ),
-  ];
+  _MyStatefulWidgetState(this._eventMapBuilder);
+
+  List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    _pages = <Widget>[
+      Image.asset(
+        'assets/images/schedule_screenshot.png',
+        key: PageStorageKey('Schedule'),
+      ),
+      _eventMapBuilder.build(PageStorageKey('Map')),
+      OverflowBox(
+        key: PageStorageKey('Donate'),
+        minWidth: 0.0,
+        minHeight: 0.0,
+        maxHeight: double.infinity,
+        alignment: Alignment.topLeft,
+        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+      ),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -83,7 +110,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
       ),
       body: IndexedStack(
         index: _selectedIndex,
-        children: pages,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[

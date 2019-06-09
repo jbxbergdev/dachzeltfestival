@@ -3,15 +3,27 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
+import 'package:inject/inject.dart';
 
+typedef Provider<T> = T Function();
+
+@provide
+class EventMapBuilder {
+  final Provider<EventMapViewModel> _vmProvider;
+  EventMapBuilder(this._vmProvider);
+
+  EventMap build(Key key) => EventMap(key, _vmProvider);
+}
 
 class EventMap extends StatefulWidget {
 
-  EventMap({Key key}): super(key: key);
+  final Provider<EventMapViewModel> _vmProvider;
+
+  EventMap(Key key, this._vmProvider): super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _EventMapState(EventMapViewModel()); // TODO inject EventMapViewModel
+    return _EventMapState(_vmProvider());
   }
 }
 
