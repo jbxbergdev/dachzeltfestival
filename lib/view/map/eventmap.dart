@@ -85,8 +85,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(10),
-                  topRight: Radius.circular(10)
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16)
               )
           ),
           child: StreamBuilder<geojson.Properties>(
@@ -103,11 +103,11 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
         stream: _propertiesSubject.stream,
         builder: (buildContext, snapshot) {
 //          String url = Uri.dataFromString(snapshot.data?.description ?? "<p>", mimeType: 'text/
-        HtmlEscape(HtmlEscapeMode(
-          escapeLtGt: false,
-          escapeQuot: true
-        ));
-        String url = Uri.dataFromString("<html><body><p>Bla bla bla<br>bla blaüüää</body></html>", mimeType: 'text/html').toString();
+        String url = Uri.dataFromString("<html><body><p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod "
+            "tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. "
+            "Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing "
+            "elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo "
+            "duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.</body></html>", mimeType: 'text/html').toString();
           return WebView(
             initialUrl: url,
           );

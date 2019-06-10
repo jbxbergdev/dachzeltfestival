@@ -77,15 +77,15 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         key: PageStorageKey('Schedule'),
       ),
       _eventMapBuilder.build(PageStorageKey('Map')),
-      TestPage(key: PageStorageKey("TestPage"),),
-//      OverflowBox(
-//        key: PageStorageKey('Donate'),
-//        minWidth: 0.0,
-//        minHeight: 0.0,
-//        maxHeight: double.infinity,
-//        alignment: Alignment.topLeft,
-//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-//      ),
+//      TestPage(key: PageStorageKey("TestPage"),),
+      OverflowBox(
+        key: PageStorageKey('Donate'),
+        minWidth: 0.0,
+        minHeight: 0.0,
+        maxHeight: double.infinity,
+        alignment: Alignment.topLeft,
+        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+      ),
     ];
   }
 
