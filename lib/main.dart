@@ -14,6 +14,7 @@ import 'view/map/eventmap.dart';
 import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
 import 'testui.dart';
+import 'view/schedule/schedule.dart';
 
 void main() async {
   AppInjector appInjector = await AppInjector.create();
@@ -41,30 +42,33 @@ class MyApp extends StatelessWidget {
 class MyStatefulWidgetBuilder {
 
   final EventMapBuilder _eventMapBuilder;
+  final ScheduleBuilder _scheduleBuilder;
 
-  MyStatefulWidgetBuilder(this._eventMapBuilder);
+  MyStatefulWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder);
 
-  MyStatefulWidget build() => MyStatefulWidget(_eventMapBuilder);
+  MyStatefulWidget build() => MyStatefulWidget(_eventMapBuilder, _scheduleBuilder);
 }
 
 class MyStatefulWidget extends StatefulWidget {
 
   final EventMapBuilder _eventMapBuilder;
+  final ScheduleBuilder _scheduleBuilder;
 
-  MyStatefulWidget(this._eventMapBuilder);
+  MyStatefulWidget(this._eventMapBuilder, this._scheduleBuilder);
 
   @override
-  _MyStatefulWidgetState createState() => _MyStatefulWidgetState(_eventMapBuilder);
+  _MyStatefulWidgetState createState() => _MyStatefulWidgetState(_eventMapBuilder, _scheduleBuilder);
 }
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   EventMapBuilder _eventMapBuilder;
+  ScheduleBuilder _scheduleBuilder;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
 
-  _MyStatefulWidgetState(this._eventMapBuilder);
+  _MyStatefulWidgetState(this._eventMapBuilder, this._scheduleBuilder);
 
   List<Widget> _pages;
 
@@ -72,10 +76,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   void initState() {
     super.initState();
     _pages = <Widget>[
-      Image.asset(
-        'assets/images/schedule_screenshot.png',
-        key: PageStorageKey('Schedule'),
-      ),
+      _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
 //      TestPage(key: PageStorageKey("TestPage"),),
       OverflowBox(
