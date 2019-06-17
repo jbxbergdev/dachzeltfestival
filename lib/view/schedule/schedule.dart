@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:inject/inject.dart';
 import 'schedule_viewmodel.dart';
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
+import 'package:intl/intl.dart';
 
 typedef Provider<T> = T Function();
 
@@ -28,10 +29,15 @@ class Schedule extends StatelessWidget {
       builder: (BuildContext context, AsyncSnapshot<List<ScheduleItem>> asyncSnapshot) {
         if (asyncSnapshot.hasData) {
           return ListView(
-            children: asyncSnapshot.data.map((scheduleItem) {
+            children: asyncSnapshot.data
+                .map((scheduleItem) {
+                  DateFormat weekdayTime = DateFormat.EEEE('de').add_Hm();
+                  DateFormat hourMinute = DateFormat.Hm('de');
+                  String speaker = scheduleItem.speaker;
+                  if (speaker.isNotEmpty) { speaker = speaker + ": ";}
               return ListTile(
-                title: Text(scheduleItem.start.toLocal().toString() + " - " + scheduleItem.finish.toLocal().toString()),
-                subtitle: Text(scheduleItem.title),
+                title: Text(speaker + scheduleItem.title),
+                subtitle: Text(weekdayTime.format(scheduleItem.start) + " - " + hourMinute.format(scheduleItem.finish) + ", " + scheduleItem.venue),
               );
             }).toList(),
           );
