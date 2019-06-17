@@ -15,6 +15,7 @@ import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
 import 'testui.dart';
 import 'view/schedule/schedule.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 void main() async {
   AppInjector appInjector = await AppInjector.create();
@@ -75,6 +76,7 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
   @override
   void initState() {
     super.initState();
+    initializeDateFormatting();
     _pages = <Widget>[
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),

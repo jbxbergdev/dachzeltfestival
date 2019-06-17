@@ -28,7 +28,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
                 documentSnapshot.data['venue']
             );
           }
-          ).toList()
+          ).toList()..sort((itemA, itemB) => itemA.start.compareTo(itemB.start))
     );
   }
 
