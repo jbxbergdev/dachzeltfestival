@@ -13,9 +13,10 @@ import 'package:flutter/material.dart';
 import 'view/map/eventmap.dart';
 import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
-import 'testui.dart';
 import 'view/schedule/schedule.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'i18n/translations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 void main() async {
   AppInjector appInjector = await AppInjector.create();
@@ -24,7 +25,6 @@ void main() async {
 
 @provide
 class MyApp extends StatelessWidget {
-  static const String _title = 'Flutter Code Sample';
 
   final MyStatefulWidgetBuilder _myStatefulWidgetBuilder;
 
@@ -33,8 +33,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: _title,
+      onGenerateTitle: (context) => Translations.of(context).get(AppString.appName),
       home: _myStatefulWidgetBuilder.build(),
+      supportedLocales: Translations.supportedLanguages.map((language)  => Locale(language)),
+      localizationsDelegates: [TranslationsDelegate(),
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate],
     );
   }
 }
@@ -63,8 +67,8 @@ class MyStatefulWidget extends StatefulWidget {
 
 class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
-  EventMapBuilder _eventMapBuilder;
-  ScheduleBuilder _scheduleBuilder;
+  final EventMapBuilder _eventMapBuilder;
+  final ScheduleBuilder _scheduleBuilder;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
@@ -100,11 +104,11 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
 
   @override
   Widget build(BuildContext context) {
-
+    Translations translations = Translations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Dachzeltfestival 2020',
+        title: Text(
+          translations.get(AppString.appName),
           style: TextStyle(
             fontFamily: 'RobotoLight',
             color: Color(0xFF000000)
@@ -117,18 +121,18 @@ class _MyStatefulWidgetState extends State<MyStatefulWidget> {
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: Icon(Icons.event),
-            title: Text('Programm'),
+            title: Text(translations.get(AppString.navItemSchedule)),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.map),
-            title: Text('Gelände'),
+            title: Text(translations.get(AppString.navItemMap)),
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.favorite_border),
-            title: Text('Show Love'),
+            title: Text(translations.get(AppString.navItemDonate)),
           ),
         ],
         currentIndex: _selectedIndex,

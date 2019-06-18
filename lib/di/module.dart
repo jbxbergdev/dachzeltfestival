@@ -5,6 +5,7 @@ import 'package:dachzeltfestival/view/map/eventmap_viewmodel.dart';
 import 'package:dachzeltfestival/repository/schedule_repo.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/view/schedule/schedule_viewmodel.dart';
+import 'package:dachzeltfestival/i18n/translations.dart';
 
 @module
 class AppModule {
