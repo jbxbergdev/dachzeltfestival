@@ -72,7 +72,10 @@ class _MainWidgetState extends State<MainWidget> {
         title: Text(
           translations.get(AppString.appName),
         ),
-        leading: Image.asset('assets/images/ic_logo.png'),
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0),
+          child: Image.asset('assets/images/ic_logo.png'),
+        ),
       ),
       body: IndexedStack(
         index: _selectedIndex,
