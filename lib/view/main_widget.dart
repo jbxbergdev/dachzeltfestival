@@ -72,6 +72,7 @@ class _MainWidgetState extends State<MainWidget> {
         title: Text(
           translations.get(AppString.appName),
         ),
+        leading: Image.asset('assets/images/ic_logo.png'),
       ),
       body: IndexedStack(
         index: _selectedIndex,
