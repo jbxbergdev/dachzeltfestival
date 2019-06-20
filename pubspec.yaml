@@ -64,16 +64,13 @@ flutter:
     - assets/raw/
 
   fonts:
-    - family: RobotoRegular
+    - family: Manrope
       fonts:
-        - asset: fonts/Roboto-Regular.ttf
-    - family: RobotoLight
-      fonts:
-        - asset: fonts/Roboto-Light.ttf
-    - family: RobotoThin
-      fonts:
-        - asset: fonts/Roboto-Thin.ttf
-
+        - asset: fonts/manrope-bold.ttf
+        - asset: fonts/manrope-light.ttf
+        - asset: fonts/manrope-medium.ttf
+        - asset: fonts/manrope-regular.ttf
+        - asset: fonts/manrope-thin.ttf
 
 
 
