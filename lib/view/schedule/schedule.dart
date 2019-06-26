@@ -30,21 +30,8 @@ class Schedule extends StatelessWidget {
       stream: _scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMap),
       builder: (BuildContext context, AsyncSnapshot<Map<DateTime, List<ScheduleItem>>> asyncSnapshot) {
         if (asyncSnapshot.hasData) {
-//          return ListView(
-//            children: asyncSnapshot.data
-//                .map((scheduleItem) {
-//                  DateFormat weekdayTime = DateFormat.EEEE('de').add_Hm();
-//                  DateFormat hourMinute = DateFormat.Hm('de');
-//                  String speaker = scheduleItem.speaker;
-//                  if (speaker.isNotEmpty) { speaker = speaker + ": ";}
-//              return ListTile(
-//                title: Text(speaker + scheduleItem.title),
-//                subtitle: Text(weekdayTime.format(scheduleItem.start) + " - " + hourMinute.format(scheduleItem.finish) + ", " + scheduleItem.venue),
-//              );
-//            }).toList(),
-//          );
           return CustomScrollView(
-            slivers: _buildListContent(asyncSnapshot.data),
+            slivers: _buildListContent(asyncSnapshot.data, context),
           );
         } else if (asyncSnapshot.error != null) {
           return Text(asyncSnapshot.error.toString());
@@ -55,17 +42,26 @@ class Schedule extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildListContent(Map<DateTime, List<ScheduleItem>> itemMap) {
+  List<Widget> _buildListContent(Map<DateTime, List<ScheduleItem>> itemMap, BuildContext context) {
     List<Widget> listContent = List();
 
     if (itemMap.isEmpty) {
       return listContent;
     }
 
-    DateFormat weekdayTime = DateFormat.EEEE('de').add_Hm();
-    DateFormat hourMinute = DateFormat.Hm('de');
+    String language = Localizations.localeOf(context).languageCode;
+    DateFormat hourMinute = DateFormat.Hm(language);
+    DateFormat weekday = DateFormat.EEEE(language);
+
+    int lastDay = -1;
 
     itemMap.keys.forEach((start) {
+      if (lastDay != start.day) {
+        listContent.add(SliverStickyHeader(
+          header: Text(weekday.format(start)),
+        ));
+      }
+      lastDay = start.day;
       listContent.add(SliverStickyHeader(
         overlapsContent: true,
         header: Text(hourMinute.format(start)),
