@@ -69,11 +69,31 @@ class _MainWidgetState extends State<MainWidget> {
     Translations translations = Translations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          translations.get(AppString.appName),
+        title: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontFamily: 'AdventPro',
+                fontSize: 24,
+                fontWeight: FontWeight.w500
+              ),
+              children: <TextSpan>[
+                TextSpan(
+                  text: "#dzf",
+                  style: TextStyle(
+                    color: Colors.black
+                  )
+                ),
+                TextSpan(
+                  text: "20",
+                  style: TextStyle(
+                    color: Theme.of(context).primaryColor
+                  )
+                )
+              ]
+            ),
         ),
         leading: Padding(
-          padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0),
+          padding: const EdgeInsets.only(left: 16.0, top: 8.0, bottom: 8.0),
           child: Image.asset('assets/images/ic_logo.png'),
         ),
       ),

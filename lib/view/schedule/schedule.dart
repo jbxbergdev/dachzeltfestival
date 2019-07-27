@@ -24,6 +24,24 @@ class Schedule extends StatelessWidget {
 
   Schedule(Key key, this._scheduleViewModel) : super(key: key);
 
+  final List<Color> venueColors = [
+    Colors.blue,
+    Colors.green,
+    Colors.pink,
+    Colors.orange,
+    Colors.red,
+    Colors.brown,
+    Colors.indigo,
+    Colors.lightGreen,
+    Colors.pinkAccent,
+    Colors.teal,
+    Colors.blueAccent,
+    Colors.cyan,
+    Colors.amberAccent
+  ];
+
+  final Map<String, Color> venueColorMap = Map();
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<DateTime, List<ScheduleItem>>>(
@@ -49,6 +67,7 @@ class Schedule extends StatelessWidget {
       return listContent;
     }
 
+    ThemeData theme = Theme.of(context);
     String language = Localizations.localeOf(context).languageCode;
     DateFormat hourMinute = DateFormat.Hm(language);
     DateFormat weekday = DateFormat.EEEE(language);
@@ -58,26 +77,121 @@ class Schedule extends StatelessWidget {
     itemMap.keys.forEach((start) {
       if (lastDay != start.day) {
         listContent.add(SliverStickyHeader(
-          header: Text(weekday.format(start)),
+          header: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+              child: Text(
+                weekday.format(start),
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontSize: 18.0,
+                ),),
+            ),
+          ),
         ));
       }
       lastDay = start.day;
       listContent.add(SliverStickyHeader(
         overlapsContent: true,
-        header: Text(hourMinute.format(start)),
-        sliver: SliverList(
-            delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  ScheduleItem scheduleItem = itemMap[start][index];
-                  String speaker = scheduleItem.speaker;
-                  if (speaker.isNotEmpty) { speaker = speaker + ": "; }
-                  return ListTile(
-                    title: Text("$speaker${scheduleItem.title}"),
-                    subtitle: Text(scheduleItem.venue),
-                  );
-                },
-              childCount: itemMap[start].length,
-            ),
+        header: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+              hourMinute.format(start),
+              style: TextStyle(
+                color: theme.primaryColor,
+                fontSize: 18.0,
+              ),),
+        ),
+        sliver: SliverPadding(
+          padding: EdgeInsets.only(
+            left: 56.0,
+            top: 1.0,
+          ),
+          sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    ScheduleItem scheduleItem = itemMap[start][index];
+                    String speaker = scheduleItem.speaker;
+                    if (speaker.isNotEmpty) { speaker = speaker + ": "; }
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(),
+                            child: Row(
+                              children: <Widget>[
+                                Flexible(
+                                  child: Text(
+                                    scheduleItem.title,
+                                    style: TextStyle(
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                          Visibility(
+                            visible: scheduleItem.speaker != null && scheduleItem.speaker.isNotEmpty,
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 4.0),
+                              child: Row(
+                                children: <Widget>[
+                                  Text(
+                                    scheduleItem.speaker ?? "",
+                                    style: TextStyle(
+                                      color: Colors.grey[600]
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: <Widget>[
+                                Row(
+                                  children: <Widget>[
+                                    Padding(
+                                      padding: const EdgeInsets.only(right: 8.0),
+                                      child: Container(
+                                        width: 12,
+                                        height: 12,
+                                        decoration: BoxDecoration(
+                                          color: venueColorMap[scheduleItem.venue],
+                                          shape: BoxShape.circle,
+                                        ),
+                                      ),
+                                    ),
+                                    Text(
+                                      scheduleItem.venue ?? "",
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  "bis ${hourMinute.format(scheduleItem.finish)}",
+                                  style: TextStyle(
+                                    fontSize: 12.0,
+                                    color: Colors.grey[500]
+                                  )
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                childCount: itemMap[start].length,
+              ),
+          ),
         ),
       ));
     });
@@ -85,14 +199,17 @@ class Schedule extends StatelessWidget {
   }
 
   Future<Map<DateTime, List<ScheduleItem>>> _buildScheduleMap(List<ScheduleItem> itemList) async {
+    Set<String> venues = Set();
     Map<DateTime, List<ScheduleItem>> scheduleMap = LinkedHashMap(); // maintains key insertion order
     itemList.forEach((scheduleItem) {
       if (scheduleMap[scheduleItem.start] == null) {
         scheduleMap[scheduleItem.start] = List();
       }
       scheduleMap[scheduleItem.start].add(scheduleItem);
+      venues.add(scheduleItem.venue);
     });
-
+    int i = 0;
+    venues.forEach((venue) => venueColorMap[venue] = venueColors[i++]);
     return scheduleMap;
   }
 
