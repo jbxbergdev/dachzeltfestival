@@ -24,24 +24,6 @@ class Schedule extends StatelessWidget {
 
   Schedule(Key key, this._scheduleViewModel) : super(key: key);
 
-  final List<Color> venueColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.pink,
-    Colors.orange,
-    Colors.red,
-    Colors.brown,
-    Colors.indigo,
-    Colors.lightGreen,
-    Colors.pinkAccent,
-    Colors.teal,
-    Colors.blueAccent,
-    Colors.cyan,
-    Colors.amberAccent
-  ];
-
-  final Map<String, Color> venueColorMap = Map();
-
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<DateTime, List<ScheduleItem>>>(
@@ -162,7 +144,7 @@ class Schedule extends StatelessWidget {
                                         width: 12,
                                         height: 12,
                                         decoration: BoxDecoration(
-                                          color: venueColorMap[scheduleItem.venue],
+                                          color: scheduleItem.color != null ? new Color(int.parse(scheduleItem.color.substring(1, 7), radix: 16) + 0xFF000000) : null,
                                           shape: BoxShape.circle,
                                         ),
                                       ),
@@ -208,8 +190,6 @@ class Schedule extends StatelessWidget {
       scheduleMap[scheduleItem.start].add(scheduleItem);
       venues.add(scheduleItem.venue);
     });
-    int i = 0;
-    venues.forEach((venue) => venueColorMap[venue] = venueColors[i++]);
     return scheduleMap;
   }
 

@@ -3,17 +3,19 @@ var BASE_URL = "https://firestore.googleapis.com/v1/"
 var PATH_DATABASE = "projects/dachzeltfestival/databases/(default)/"
 var PATH_SCHEDULE = PATH_DATABASE + "documents/schedule/"
 var SCHEDULE_URL = BASE_URL + PATH_SCHEDULE
+var PATH_VENUE = PATH_DATABASE + "documents/venue/"
+var VENUE_URL = BASE_URL + PATH_VENUE
 var TRANSACTION_URL = BASE_URL + PATH_DATABASE + "documents/:beginTransaction"
 var TRANSACTION_COMMIT_URL = BASE_URL + PATH_DATABASE + "documents:commit"
 
 /**
 * Writes the table rows into a Cloud Firestore collection
 **/
-function myOnEdit(e) {
+function publishToFirebase() {
 
-    const sheet = e.range.getSheet()
-    const range = sheet.getDataRange()
-    const sheetValues = range.getValues()
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet()
+    const scheduleValues = spreadsheet.getSheetByName("Schedule").getDataRange().getValues()
+    const venueValues = spreadsheet.getSheetByName("Venues").getDataRange().getValues()
 
     const token = ScriptApp.getOAuthToken()
 
@@ -21,23 +23,22 @@ function myOnEdit(e) {
     const transactionId = startTransaction(token)
 
     // Parse table rows to Firestore Update objects
-    const updates = parseTableToUpdateObjects(sheetValues)
+    const scheduleUpdates = parseScheduleToUpdateObjects(scheduleValues)
+    const venueUpdates = parseVenuesToUpdateObjects(venueValues)
 
     // Create Delete objects for each document currently in the Firestore collection. Do the necessary read within the transaction.
-    const deletes = createDeleteObjectsForCurrentCollection(token, transactionId)
+    const scheduleDeletes = createDeleteObjectsForCollection(SCHEDULE_URL, token, transactionId)
+    const venueDeletes = createDeleteObjectsForCollection(VENUE_URL, token, transactionId)
 
     // Execute delete+write operations, commit transaction
-    commit(token, deletes, updates, transactionId)
+    commit(token, scheduleDeletes
+      .concat(scheduleUpdates)
+      .concat(venueDeletes)
+      .concat(venueUpdates), transactionId)
 }
 
-function parseTableToUpdateObjects(sheetValues) {
-  const headers = {}
-  sheetValues[0].forEach(function(value, index) {
-      headers[index] = value
-  })
-
-  const items = []
-  sheetValues.slice(1, sheetValues.length).forEach(function(row, rowIndex) {
+function parseScheduleToUpdateObjects(sheetValues) {
+  return parseTableToUpdateObjects(sheetValues, 1, function(row, rowIndex, headers) {
     const entries = {}
     row.forEach(function(value, columnIndex) {
       const fieldName = headers[columnIndex]
@@ -51,14 +52,44 @@ function parseTableToUpdateObjects(sheetValues) {
 
       entries[fieldName] = valueDeclaration
     })
-    items[rowIndex] = {
+    return {
       update: {
         name: PATH_SCHEDULE + rowIndex,
         fields: entries
       }
     }
   })
-  return items
+}
+
+function parseVenuesToUpdateObjects(sheetValues) {
+  return parseTableToUpdateObjects(sheetValues, 0, function(row, rowIndex, headers) {
+    const entries = {}
+    var venueId = null
+    row.forEach(function(value, columnIndex) {
+      const fieldName = headers[columnIndex]
+      if (fieldName == 'venue_id') {
+        venueId = value
+      } else {
+        entries[fieldName] = { stringValue: value }
+      }
+    })
+    return {
+      update: {
+        name: PATH_VENUE + venueId,
+        fields: entries
+      }
+    }
+  })
+}
+
+function parseTableToUpdateObjects(sheetValues, headerRowIndex, rowMapper) {
+  const headers = {}
+  sheetValues[headerRowIndex].forEach(function(value, index) {
+      headers[index] = value
+  })
+  return sheetValues.slice(headerRowIndex + 1, sheetValues.length).map(function(row, rowIndex) {
+    return rowMapper(row, rowIndex, headers)
+  })
 }
 
 function startTransaction(token) {
@@ -76,8 +107,8 @@ function startTransaction(token) {
     return transactionId
 }
 
-function createDeleteObjectsForCurrentCollection(token, transactionId) {
-  const listResponse = UrlFetchApp.fetch(SCHEDULE_URL + '?transaction=' + encodeURIComponent(transactionId) + "&pageSize=1000", {
+function createDeleteObjectsForCollection(collectionUrl, token, transactionId) {
+  const listResponse = UrlFetchApp.fetch(collectionUrl + '?transaction=' + encodeURIComponent(transactionId) + "&pageSize=1000", {
     muteHttpExceptions: true,
     method: 'get',
     headers: {
@@ -86,15 +117,18 @@ function createDeleteObjectsForCurrentCollection(token, transactionId) {
   })
   Logger.log(listResponse)
   const documents = JSON.parse(listResponse.getContentText()).documents
-  const deletes = documents.map(function(document) {
-    return {
-      'delete': document.name
-    }
-  })
-  return deletes
+  if (documents != null && documents.length > 0) {
+    const deletes = documents.map(function(document) {
+      return {
+        'delete': document.name
+      }
+    })
+    return deletes
+  }
+  return []
 }
 
-function commit(token, deletes, updates, transactionId) {
+function commit(token, writes, transactionId) {
   const commitResponse = UrlFetchApp.fetch(TRANSACTION_COMMIT_URL, {
       muteHttpExceptions: true,
       method: 'post',
@@ -104,7 +138,7 @@ function commit(token, deletes, updates, transactionId) {
       },
       payload: JSON.stringify({
         transaction: transactionId,
-        writes: deletes.concat(updates)
+        writes: writes
       })
     })
     Logger.log(commitResponse)
