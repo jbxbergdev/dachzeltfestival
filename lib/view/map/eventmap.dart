@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:tuple/tuple.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
 import 'package:inject/inject.dart';
@@ -67,14 +69,13 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
     return RubberBottomSheet(
       scrollController: _scrollController,
-      lowerLayer: StreamBuilder<Set<Polygon>>(
-          stream: _eventMapViewModel.observeMapFeatures()
-              .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped)),
+      lowerLayer: StreamBuilder<Tuple2<Set<Polygon>, bool>>(
+          stream: _polygonsAndLocationPermission(),
           builder: (buildContext, snapshot) {
             return GoogleMap(
               initialCameraPosition: _cameraPosition,
-              myLocationEnabled: true,
-              polygons: snapshot.data ?? Set(),
+              myLocationEnabled: snapshot.data?.item2 ?? false,
+              polygons: snapshot.data?.item1 ?? Set(),
               onMapCreated: _onMapCreated,
               onCameraMove: _onCameraMove,
               onTap: _onTap,
@@ -134,5 +135,26 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     _controller.collapse();
   }
 
+  Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermission() {
+    Stream<Set<Polygon>> polygonStream = _eventMapViewModel.observeMapFeatures()
+        .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped));
+    return Observable(_checkLocationPermission().asStream())
+        .flatMap((permissionGranted) => polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
+  }
 
+
+  Future<bool> _checkLocationPermission() {
+    return PermissionHandler().checkPermissionStatus(PermissionGroup.location)
+        .then((permissionStatus) {
+      switch (permissionStatus) {
+        case PermissionStatus.granted:
+        case PermissionStatus.restricted:
+          return Future.value(true);
+        default:
+          return PermissionHandler().requestPermissions([PermissionGroup.location])
+              .then((statusMap) => statusMap[PermissionGroup.location] == PermissionStatus.granted
+              || statusMap[PermissionGroup.location] == PermissionStatus.restricted);
+      }
+    });
+  }
 }
