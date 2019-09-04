@@ -61,12 +61,6 @@
 **/ios/Flutter/flutter_assets/
 **/ios/ServiceDefinitions.json
 **/ios/Runner/GeneratedPluginRegistrant.*
-**/ios/**/**.xcodeproj
-**/ios/**/**.xcconfig
-**/ios/**/**.pbxproj
-**/ios/**/**.xcworkspacedata
-**/ios/**/Podfile.lock
-**/ios/**/Podfile
 
 # inject.dart-generated code
 **/*.inject.dart
