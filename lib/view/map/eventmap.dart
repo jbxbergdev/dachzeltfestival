@@ -45,9 +45,11 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   );
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
+  final PermissionHandler _permissionHandler = PermissionHandler();
   RubberAnimationController _controller;
   ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
+  Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermissionStream;
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
@@ -72,9 +74,10 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       lowerLayer: StreamBuilder<Tuple2<Set<Polygon>, bool>>(
           stream: _polygonsAndLocationPermission(),
           builder: (buildContext, snapshot) {
+            bool myLocationEnabled = snapshot.data?.item2 ?? false;
             return GoogleMap(
               initialCameraPosition: _cameraPosition,
-              myLocationEnabled: snapshot.data?.item2 ?? false,
+              myLocationEnabled: myLocationEnabled,
               polygons: snapshot.data?.item1 ?? Set(),
               onMapCreated: _onMapCreated,
               onCameraMove: _onCameraMove,
@@ -136,24 +139,29 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermission() {
-    Stream<Set<Polygon>> polygonStream = _eventMapViewModel.observeMapFeatures()
-        .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped));
-    return Observable(_checkLocationPermission().asStream())
-        .flatMap((permissionGranted) => polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
+    if (_polygonsAndLocationPermissionStream == null) {
+      Stream<Set<Polygon>> polygonStream = _eventMapViewModel
+          .observeMapFeatures()
+          .asyncMap((featureCollection) =>
+          _featureConverter.parseFeatureCollection(
+              featureCollection, _onPolygonTapped));
+      _polygonsAndLocationPermissionStream = Observable(_checkLocationPermission().asStream())
+          .flatMap((permissionGranted) =>
+          polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
+    }
+    return _polygonsAndLocationPermissionStream;
   }
 
-
   Future<bool> _checkLocationPermission() {
-    return PermissionHandler().checkPermissionStatus(PermissionGroup.location)
+    return _permissionHandler.checkPermissionStatus(PermissionGroup.locationWhenInUse)
         .then((permissionStatus) {
       switch (permissionStatus) {
         case PermissionStatus.granted:
-        case PermissionStatus.restricted:
           return Future.value(true);
         default:
-          return PermissionHandler().requestPermissions([PermissionGroup.location])
-              .then((statusMap) => statusMap[PermissionGroup.location] == PermissionStatus.granted
-              || statusMap[PermissionGroup.location] == PermissionStatus.restricted);
+          return _permissionHandler.requestPermissions([PermissionGroup.locationWhenInUse])
+              .then((statusMap) => Future.value(statusMap[PermissionGroup.locationWhenInUse] == PermissionStatus.granted
+              || statusMap[PermissionGroup.location] == PermissionStatus.restricted));
       }
     });
   }
