@@ -40,8 +40,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   GoogleMapController _googleMapController;
   CameraPosition _cameraPosition = CameraPosition(
-    target: LatLng(49.137756, 10.876035),
-    zoom: 16.0,
+    target: LatLng(51.506205, 13.770723),
+    zoom: 16.2,
   );
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
@@ -74,10 +74,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       lowerLayer: StreamBuilder<Tuple2<Set<Polygon>, bool>>(
           stream: _polygonsAndLocationPermission(),
           builder: (buildContext, snapshot) {
-            bool myLocationEnabled = snapshot.data?.item2 ?? false;
             return GoogleMap(
               initialCameraPosition: _cameraPosition,
-              myLocationEnabled: myLocationEnabled,
+              myLocationEnabled: snapshot.data?.item2 ?? false,
               polygons: snapshot.data?.item1 ?? Set(),
               onMapCreated: _onMapCreated,
               onCameraMove: _onCameraMove,
