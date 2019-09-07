@@ -22,7 +22,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   rxdart: ^0.22.1+1
-  google_maps_flutter: ^0.5.20+6
+  google_maps_flutter: ^0.5.21
   shared_preferences: 0.5.3+4
   rubber: ^0.3.2
   webview_flutter: ^0.3.13

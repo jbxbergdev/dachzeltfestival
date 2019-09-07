@@ -14,7 +14,7 @@ class FeatureConverter {
           return googlemaps.Polygon(
             polygonId: googlemaps.PolygonId((i++).toString()),
             strokeColor: _hexToColor(feature.properties?.stroke),
-            fillColor: _hexToColor(feature.properties?.fill).withOpacity(0.3),
+            fillColor: _hexToColor(feature.properties?.fill).withOpacity(0.5),
             strokeWidth: 2,
             points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
             consumeTapEvents: true,
