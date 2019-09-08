@@ -1,9 +1,11 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 @provide
 class MainWidgetBuilder {
@@ -39,6 +41,13 @@ class _MainWidgetState extends State<MainWidget> {
 
   List<Widget> _pages;
 
+  final String _testerWelcomeText = "Hallo Dachzeltnomade,\n\n"
+      "Vielen Dank, dass Du dir die Zeit nimmst, die App fürs Dachzeltfestival 2020 zu testen. Du siehst hier eine frühe Testversion. "
+      "Du kannst aber schon jetzt den Programmkalender und die Event-Karte benutzen. Es werden in den nächsten Monaten noch ein paar coole Features "
+      "dazu kommen. Hast du Feedback, Probleme oder Ideen für die App? Es würde mich freuen, von dir zu hören! Komm doch "
+      "einfach auf dem Offroad-Camp vorbei (ich bin der Typ mit dem alten dunkelgrauen Volvo aus Berlin ;-) ), oder schreib mir eine Mail (Link unten). \n\n"
+      "Viel Spaß und liebe Grüße,\nJohannes\n\n";
+
   @override
   void initState() {
     super.initState();
@@ -47,14 +56,38 @@ class _MainWidgetState extends State<MainWidget> {
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
 //      TestPage(key: PageStorageKey("TestPage"),),
-      OverflowBox(
-        key: PageStorageKey('Donate'),
-        minWidth: 0.0,
-        minHeight: 0.0,
-        maxHeight: double.infinity,
-        alignment: Alignment.topLeft,
-        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-      ),
+//      OverflowBox(
+//        key: PageStorageKey('Donate'),
+//        minWidth: 0.0,
+//        minHeight: 0.0,
+//        maxHeight: double.infinity,
+//        alignment: Alignment.topLeft,
+//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
+//      ),
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: RichText(
+          key: PageStorageKey('Donate'),
+          text: TextSpan(
+            children: <TextSpan>[
+              TextSpan(
+                style: TextStyle(
+                  color: Colors.black,
+                ),
+                text: _testerWelcomeText
+              ),
+              TextSpan(
+                text: "Email",
+                style: TextStyle(
+                  color: Colors.blue,
+                ),
+                recognizer: TapGestureRecognizer()
+                  ..onTap = () => launch("mailto:kontakt@johannes-bolz.de")
+              )
+            ]
+          ),
+        ),
+      )
     ];
   }
 

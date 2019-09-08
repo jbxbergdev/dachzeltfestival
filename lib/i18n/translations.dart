@@ -32,8 +32,8 @@ class Translations {
       en: "Map"
     },
     AppString.navItemDonate: {
-      de: "Show Love",
-      en: "Show Love"
+      de: "Danke",
+      en: "Danke"
     }
   };
 
