@@ -1,16 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tuple/tuple.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
 import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
 import 'package:rubber/rubber.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:webview_flutter/webview_flutter.dart';
-import 'dart:convert';
 
 typedef Provider<T> = T Function();
 
@@ -39,8 +40,9 @@ class EventMap extends StatefulWidget {
 class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin {
 
   GoogleMapController _googleMapController;
+  static const LatLng _initialCenter = LatLng(51.506205, 13.770723);
   CameraPosition _cameraPosition = CameraPosition(
-    target: LatLng(51.506205, 13.770723),
+    target: _initialCenter,
     zoom: 16.2,
   );
   final EventMapViewModel _eventMapViewModel;
@@ -71,18 +73,35 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
     return RubberBottomSheet(
       scrollController: _scrollController,
-      lowerLayer: StreamBuilder<Tuple2<Set<Polygon>, bool>>(
-          stream: _polygonsAndLocationPermission(),
-          builder: (buildContext, snapshot) {
-            return GoogleMap(
-              initialCameraPosition: _cameraPosition,
-              myLocationEnabled: snapshot.data?.item2 ?? false,
-              polygons: snapshot.data?.item1 ?? Set(),
-              onMapCreated: _onMapCreated,
-              onCameraMove: _onCameraMove,
-              onTap: _onTap,
-            );
-          }),
+      lowerLayer: Stack(
+        children: <Widget>[
+          StreamBuilder<Tuple2<Set<Polygon>, bool>>(
+              stream: _polygonsAndLocationPermission(),
+              builder: (buildContext, snapshot) {
+                return GoogleMap(
+                  initialCameraPosition: _cameraPosition,
+                  myLocationButtonEnabled: false,
+                  myLocationEnabled: snapshot.data?.item2 ?? false,
+                  polygons: snapshot.data?.item1 ?? Set(),
+                  onMapCreated: _onMapCreated,
+                  onCameraMove: _onCameraMove,
+                  onTap: _onTap,
+                );
+              }),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: FloatingActionButton(
+              onPressed: _startNavigationApp,
+              child: Icon(
+                Icons.navigation,
+                color: Theme.of(context).primaryColor,
+              ),
+              backgroundColor: Colors.grey[100],
+            ),
+          )
+        ],
+      ),
       header: SizedBox.expand(
         child: Container(
           decoration: BoxDecoration(
@@ -92,12 +111,20 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   topRight: Radius.circular(16)
               )
           ),
-          child: StreamBuilder<geojson.Properties>(
-            initialData: geojson.Properties(),
-            stream: _propertiesSubject.stream,
-            builder: (buildContext, snapshot) {
-              return Container(child: Text(snapshot.data?.name ?? ""));
-            },
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: StreamBuilder<geojson.Properties>(
+              initialData: geojson.Properties(),
+              stream: _propertiesSubject.stream,
+              builder: (buildContext, snapshot) {
+                return Container(
+                  child: Text(
+                    snapshot.data?.name ?? "",
+                    style: TextStyle(fontSize: 16),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -109,11 +136,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             return Container(
               constraints: BoxConstraints.expand(),
               color: Colors.white,
-              child: Text(
-                "Hier werden mal Informationen zum angeklickten Ort stehen.",
-                style: TextStyle(
-                  color: Colors.black,
-                  backgroundColor: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Hier werden mal Informationen zum angeklickten Ort stehen.",
+                  style: TextStyle(
+                    color: Colors.black,
+                    backgroundColor: Colors.white,
+                  ),
                 ),
               ),
             );
@@ -131,6 +161,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
+    _googleMapController.setMapStyle(_mapStyle);
   }
 
   void _onCameraMove(CameraPosition cameraPosition) {
@@ -139,6 +170,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onTap(LatLng tapCoords) {
     _controller.collapse();
+  }
+
+  void _startNavigationApp() {
+    if (Platform.isAndroid) {
+      launch("https://www.google.com/maps/dir/?api=1&destination=${_initialCenter.latitude},${_initialCenter.longitude}");
+    } else if (Platform.isIOS) {
+      launch("http://maps.apple.com/?daddr=${_initialCenter.latitude},${_initialCenter.longitude}");
+    }
   }
 
   Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermission() {
@@ -168,4 +207,102 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       }
     });
   }
+
+  static const String _mapStyle = """[
+    {
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#f3f5f6"
+        }
+        ]
+        },
+        {
+        "elementType": "labels",
+        "stylers": [
+        {
+        "visibility": "off"
+        }
+        ]
+        },
+        {
+        "featureType": "administrative.land_parcel",
+        "stylers": [
+        {
+        "visibility": "off"
+        }
+        ]
+        },
+        {
+        "featureType": "administrative.neighborhood",
+        "stylers": [
+        {
+        "visibility": "off"
+        }
+        ]
+        },
+        {
+        "featureType": "poi",
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#f3f5f6"
+        }
+        ]
+        },
+        {
+        "featureType": "poi",
+        "elementType": "labels.text.fill",
+        "stylers": [
+        {
+        "color": "#757575"
+        }
+        ]
+        },
+        {
+        "featureType": "poi.park",
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#e2e7e8"
+        }
+        ]
+        },
+        {
+        "featureType": "road",
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#ffffff"
+        }
+        ]
+        },
+        {
+        "featureType": "road.highway",
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#dadada"
+        }
+        ]
+        },
+        {
+        "featureType": "road.highway",
+        "elementType": "geometry.stroke",
+        "stylers": [
+        {
+        "color": "#bbbbbb"
+        }
+        ]
+        },
+        {
+        "featureType": "water",
+        "elementType": "geometry",
+        "stylers": [
+        {
+        "color": "#c9c9c9"
+        }
+        ]
+        }
+        ]""";
 }
