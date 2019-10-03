@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:dachzeltfestival/model/geojson/feature.dart';
+import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:rxdart/rxdart.dart';
@@ -13,6 +16,8 @@ import 'dart:convert';
 
 abstract class MapDataRepo {
   Stream<FeatureCollection> observeFeatures();
+  // ignore: close_sinks
+  BehaviorSubject<Locale> localeSubject;
 }
 
 class MapDataRepoImpl extends MapDataRepo {
@@ -30,23 +35,29 @@ class MapDataRepoImpl extends MapDataRepo {
   MapDataRepoImpl(this._firestore, this._firebaseStorage);
 
   @override
+  // ignore: close_sinks
+  final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
+
+  @override
   Stream<FeatureCollection> observeFeatures() {
-    return Observable.combineLatest2<FeatureCollection, List<DocumentSnapshot>, FeatureCollection>(
+    return Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
         // listen for FeatureCollection from local map
         _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
         // listen for venue data on Cloud Firestore
         _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents),
-          // if there is venue information from the Cloud Firestore collection, modify Features with it
-          (featureCollection, venueDocuments) {
-            return FeatureCollection(features: featureCollection.features.map((feature) {
-              DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) => document.documentID == feature.properties?.venueId, orElse: () => null);
-              if (venueDocument != null) {
-                feature.properties.name = venueDocument['name'];
-                feature.properties.fill = venueDocument['color'];
-                feature.properties.stroke = venueDocument['color'];
-              }
-              return feature;
-            }).toList());
+        localeSubject,
+        // if there is venue information from the Cloud Firestore collection, modify Features with it
+        (featureCollection, venueDocuments, locale) {
+          return FeatureCollection(features: featureCollection.features.map((feature) {
+            DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) => document.documentID == feature.properties?.venueId, orElse: () => null);
+            if (venueDocument != null) {
+              TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
+              feature.properties.name = translatableDocument['name'];
+              feature.properties.fill = translatableDocument['color'];
+              feature.properties.stroke = translatableDocument['color'];
+            }
+            return feature;
+          }).toList());
         });
   }
 

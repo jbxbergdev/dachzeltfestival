@@ -12,6 +12,7 @@ import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
 import 'package:rubber/rubber.dart';
 import 'package:rxdart/rxdart.dart';
+import 'map_settings.dart';
 
 typedef Provider<T> = T Function();
 
@@ -48,7 +49,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
   final PermissionHandler _permissionHandler = PermissionHandler();
-  RubberAnimationController _controller;
+  RubberAnimationController _bottomSheetController;
   ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
   Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermissionStream;
@@ -59,7 +60,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _propertiesSubject = BehaviorSubject.seeded(null);
-    _controller = RubberAnimationController(
+    _bottomSheetController = RubberAnimationController(
         vsync: this,
         halfBoundValue: AnimationControllerValue(percentage: 0.5),
         lowerBoundValue: AnimationControllerValue(percentage: 0.0),
@@ -70,7 +71,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-
+    _eventMapViewModel.localeSubject.value = Localizations.localeOf(context);
     return RubberBottomSheet(
       scrollController: _scrollController,
       lowerLayer: Stack(
@@ -103,6 +104,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
         ],
       ),
       header: SizedBox.expand(
+
         child: Container(
           decoration: BoxDecoration(
               color: Colors.white,
@@ -150,18 +152,18 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           },
         ),
       ),
-      animationController: _controller,
+      animationController: _bottomSheetController,
     );
   }
 
   void _onPolygonTapped(geojson.Properties properties) {
     _propertiesSubject.add(properties);
-    _controller.animateTo(to: 0.3);
+    _bottomSheetController.animateTo(to: 0.3);
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
-    _googleMapController.setMapStyle(_mapStyle);
+    _googleMapController.setMapStyle(mapStyle);
   }
 
   void _onCameraMove(CameraPosition cameraPosition) {
@@ -169,7 +171,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onTap(LatLng tapCoords) {
-    _controller.collapse();
+    _bottomSheetController.collapse();
   }
 
   void _startNavigationApp() {
@@ -184,12 +186,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     if (_polygonsAndLocationPermissionStream == null) {
       Stream<Set<Polygon>> polygonStream = _eventMapViewModel
           .observeMapFeatures()
-          .asyncMap((featureCollection) =>
-          _featureConverter.parseFeatureCollection(
-              featureCollection, _onPolygonTapped));
+          .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped));
       _polygonsAndLocationPermissionStream = Observable(_checkLocationPermission().asStream())
-          .flatMap((permissionGranted) =>
-          polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
+          .flatMap((permissionGranted) => polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
     }
     return _polygonsAndLocationPermissionStream;
   }
@@ -207,102 +206,4 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       }
     });
   }
-
-  static const String _mapStyle = """[
-    {
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#f3f5f6"
-        }
-        ]
-        },
-        {
-        "elementType": "labels",
-        "stylers": [
-        {
-        "visibility": "off"
-        }
-        ]
-        },
-        {
-        "featureType": "administrative.land_parcel",
-        "stylers": [
-        {
-        "visibility": "off"
-        }
-        ]
-        },
-        {
-        "featureType": "administrative.neighborhood",
-        "stylers": [
-        {
-        "visibility": "off"
-        }
-        ]
-        },
-        {
-        "featureType": "poi",
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#f3f5f6"
-        }
-        ]
-        },
-        {
-        "featureType": "poi",
-        "elementType": "labels.text.fill",
-        "stylers": [
-        {
-        "color": "#757575"
-        }
-        ]
-        },
-        {
-        "featureType": "poi.park",
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#e2e7e8"
-        }
-        ]
-        },
-        {
-        "featureType": "road",
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#ffffff"
-        }
-        ]
-        },
-        {
-        "featureType": "road.highway",
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#dadada"
-        }
-        ]
-        },
-        {
-        "featureType": "road.highway",
-        "elementType": "geometry.stroke",
-        "stylers": [
-        {
-        "color": "#bbbbbb"
-        }
-        ]
-        },
-        {
-        "featureType": "water",
-        "elementType": "geometry",
-        "stylers": [
-        {
-        "color": "#c9c9c9"
-        }
-        ]
-        }
-        ]""";
 }
