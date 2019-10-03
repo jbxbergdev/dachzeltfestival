@@ -8,7 +8,7 @@ import 'package:rxdart/rxdart.dart';
 @provide
 class EventMapViewModel {
 
-  MapDataRepo _mapDataRepo;
+  final MapDataRepo _mapDataRepo;
 
   EventMapViewModel(this._mapDataRepo);
 

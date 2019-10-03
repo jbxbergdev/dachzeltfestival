@@ -1,3 +1,5 @@
+import 'package:dachzeltfestival/repository/config_repo.dart';
+import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
@@ -15,17 +17,21 @@ class AppModule {
   @provide
   EventMapViewModel eventMapViewModel(MapDataRepo mapDataRepo) => EventMapViewModel(mapDataRepo);
 
-
-  @provide
-  Firestore firestore() => Firestore.instance;
-
-  @provide
-  FirebaseStorage firebaseStorage() => FirebaseStorage.instance;
-
   @provide
   ScheduleRepo scheduleRepo(Firestore firestore) => ScheduleRepoImpl(firestore);
 
   @provide
   ScheduleViewModel scheduleViewModel(ScheduleRepo scheduleRepo) => ScheduleViewModel(scheduleRepo);
 
+  @provide
+  ConfigRepo configRepo(Firestore firestore) => ConfigRepoImpl(firestore);
+
+  @provide
+  MainViewModel mainViewModel(ConfigRepo configRepo) => MainViewModel(configRepo);
+
+  @provide
+  Firestore firestore() => Firestore.instance;
+
+  @provide
+  FirebaseStorage firebaseStorage() => FirebaseStorage.instance;
 }
