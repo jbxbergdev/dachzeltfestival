@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -15,9 +16,10 @@ import 'dart:convert';
 
 
 abstract class MapDataRepo {
-  Stream<FeatureCollection> observeFeatures();
+  Observable<FeatureCollection> mapFeatures;
   // ignore: close_sinks
   BehaviorSubject<Locale> localeSubject;
+  Observable<MapConfig> mapConfig;
 }
 
 class MapDataRepoImpl extends MapDataRepo {
@@ -29,8 +31,11 @@ class MapDataRepoImpl extends MapDataRepo {
   static const String _FIRESTORE_COLLECTION_VENUE = "venue";
 
 
-  Firestore _firestore;
-  FirebaseStorage _firebaseStorage;
+  final Firestore _firestore;
+  final FirebaseStorage _firebaseStorage;
+
+  Stream<FeatureCollection> _mapFeatures;
+  Observable<MapConfig> _mapConfig;
 
   MapDataRepoImpl(this._firestore, this._firebaseStorage);
 
@@ -39,44 +44,68 @@ class MapDataRepoImpl extends MapDataRepo {
   final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
 
   @override
-  Stream<FeatureCollection> observeFeatures() {
-    return Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
+  Observable<FeatureCollection> get mapFeatures {
+    if (_mapFeatures == null) {
+      _mapFeatures = Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
         // listen for FeatureCollection from local map
-        _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
-        // listen for venue data on Cloud Firestore
-        _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents),
-        localeSubject,
-        // if there is venue information from the Cloud Firestore collection, modify Features with it
-        (featureCollection, venueDocuments, locale) {
-          return FeatureCollection(features: featureCollection.features.map((feature) {
-            DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) => document.documentID == feature.properties?.venueId, orElse: () => null);
-            if (venueDocument != null) {
-              TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
-              feature.properties.name = translatableDocument['name'];
-              feature.properties.fill = translatableDocument['color'];
-              feature.properties.stroke = translatableDocument['color'];
-            }
-            return feature;
-          }).toList());
-        });
+          _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
+          // listen for venue data on Cloud Firestore
+          _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), localeSubject,
+              (featureCollection, venueDocuments, locale) {
+            // if there is venue information from the Cloud Firestore collection, modify Features with it
+            return FeatureCollection(
+                features: featureCollection.features.map((feature) {
+                  DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) =>
+                  document.documentID == feature.properties?.venueId, orElse: () => null);
+                  if (venueDocument != null) {
+                    TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
+                    feature.properties.name = translatableDocument['name'];
+                    feature.properties.fill = translatableDocument['color'];
+                    feature.properties.stroke = translatableDocument['color'];
+                  }
+                  return feature;
+                }).toList());
+          });
+    }
+    return _mapFeatures;
+  }
+
+  @override
+  Observable<MapConfig> get mapConfig {
+    if (_mapConfig == null) {
+      // _mapConfig has multiple subscribers, so we use a BehaviorSubject
+      _mapConfig = BehaviorSubject();
+      Observable<MapConfig> sourceObservable = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
+          // parse map configuration
+          .map((snapshot) {
+            GeoPoint initialCenter = snapshot["initial_center"];
+            double initialZoom = (snapshot["initial_zoom"] as num).toDouble(); // Firestore SDK treats *.0 numbers as ints
+            String mapUrl = snapshot["map_url"];
+            int mapVersion = snapshot["map_version"];
+            GeoPoint navDestination = snapshot["nav_destination"];
+            return MapConfig(
+              initalMapCenter: Coordinates(lng: initialCenter.longitude, lat: initialCenter.latitude),
+              initialZoomLevel: initialZoom,
+              navDestination: Coordinates(lng: navDestination.longitude, lat: navDestination.latitude),
+              mapVersion: mapVersion,
+              mapUrl: mapUrl,
+            );
+          });
+      sourceObservable.listen((data) => (_mapConfig as BehaviorSubject<MapConfig>).add(data));
+    }
+    return _mapConfig;
   }
 
   Observable<File> _localMap() {
     // listen to map meta data in Cloud Firestore
-    Observable<void> downloadNewMap = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
-        // read metadata
-        .map((snapshot) {
-            int mapVersion = snapshot.data['map_version'] as int;
-            String mapUrl = snapshot.data['map_url'];
-            return Tuple2(mapVersion, mapUrl);
-          })
+    Observable<void> downloadNewMap = mapConfig
         // read version of local map, combine local version, remote version and remote map URL
-        .flatMap((versionAndUrl) => _readPersistedMapVersion().asStream().map((persistedVersion) => Tuple3(versionAndUrl.item1, persistedVersion, versionAndUrl.item2)))
+        .flatMap((mapConfig) => _readPersistedMapVersion().asStream().map((persistedVersion) => Tuple2(mapConfig, persistedVersion)))
         // filter for emissions where remote and local map versions are different
-        .where((remoteVersionPersistedVersionUrl) => remoteVersionPersistedVersionUrl.item1 != remoteVersionPersistedVersionUrl.item2)
+        .where((mapConfigPersistedVersion) => mapConfigPersistedVersion.item1.mapVersion != mapConfigPersistedVersion.item2)
         // get remote map StorageReference
-        .flatMap((remoteVersionPersistedVersionUrl) => _firebaseStorage.getReferenceFromUrl(remoteVersionPersistedVersionUrl.item3).asStream()
-          .map((storageReference) => Tuple2(storageReference, remoteVersionPersistedVersionUrl.item1)))
+        .flatMap((mapConfigPersistedVersion) => _firebaseStorage.getReferenceFromUrl(mapConfigPersistedVersion.item1.mapUrl).asStream()
+          .map((storageReference) => Tuple2(storageReference, mapConfigPersistedVersion.item1.mapVersion)))
         // download map and then persist new map version
         .flatMap((storageReferenceRemoteVersion) {
           return _localMapFile().then((file) => storageReferenceRemoteVersion.item1.writeToFile(file).future)

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -42,17 +43,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   GoogleMapController _googleMapController;
   static const LatLng _initialCenter = LatLng(51.506561, 13.769963);
-  CameraPosition _cameraPosition = CameraPosition(
-    target: _initialCenter,
-    zoom: 17.0,
-  );
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
   final PermissionHandler _permissionHandler = PermissionHandler();
   RubberAnimationController _bottomSheetController;
   ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
-  Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermissionStream;
+  Observable<MapData> _mapDataStream;
+  CameraPosition _cameraPosition;
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
@@ -76,18 +74,28 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       scrollController: _scrollController,
       lowerLayer: Stack(
         children: <Widget>[
-          StreamBuilder<Tuple2<Set<Polygon>, bool>>(
-              stream: _polygonsAndLocationPermission(),
+          StreamBuilder<MapData>(
+              stream: _mapData(),
               builder: (buildContext, snapshot) {
-                return GoogleMap(
-                  initialCameraPosition: _cameraPosition,
-                  myLocationButtonEnabled: false,
-                  myLocationEnabled: snapshot.data?.item2 ?? false,
-                  polygons: snapshot.data?.item1 ?? Set(),
-                  onMapCreated: _onMapCreated,
-                  onCameraMove: _onCameraMove,
-                  onTap: _onTap,
-                );
+                if (snapshot.hasData) {
+                  MapData mapData = snapshot.data;
+                  geojson.Coordinates initialMapCenter = mapData?.mapConfig?.initalMapCenter;
+                  if (initialMapCenter != null && _cameraPosition == null) {
+                    _cameraPosition = CameraPosition(target: LatLng(
+                        initialMapCenter.lat, initialMapCenter.lng),
+                        zoom: mapData.mapConfig.initialZoomLevel);
+                  }
+                  return GoogleMap(
+                    initialCameraPosition: _cameraPosition,
+                    myLocationButtonEnabled: false,
+                    myLocationEnabled: mapData?.locationPermissionGranted ?? false,
+                    polygons: mapData?.polygons ?? Set(),
+                    onMapCreated: _onMapCreated,
+                    onCameraMove: _onCameraMove,
+                    onTap: _onTap,
+                  );
+                }
+                return Text("");
               }),
           Positioned(
             bottom: 10,
@@ -174,23 +182,30 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     _bottomSheetController.collapse();
   }
 
-  void _startNavigationApp() {
-    if (Platform.isAndroid) {
-      launch("https://www.google.com/maps/dir/?api=1&destination=${_initialCenter.latitude},${_initialCenter.longitude}");
-    } else if (Platform.isIOS) {
-      launch("http://maps.apple.com/?daddr=${_initialCenter.latitude},${_initialCenter.longitude}");
+  void _startNavigationApp() async {
+    MapConfig mapConfig = await (_eventMapViewModel.mapConfig as BehaviorSubject<MapConfig>).first;
+    geojson.Coordinates navDestination = mapConfig?.navDestination;
+    if (navDestination != null) {
+      if (Platform.isAndroid) {
+        launch("https://www.google.com/maps/dir/?api=1&destination=${navDestination.lat},${navDestination.lng}");
+      } else if (Platform.isIOS) {
+        launch("http://maps.apple.com/?daddr=${navDestination.lat},${navDestination.lng}");
+      }
     }
   }
 
-  Stream<Tuple2<Set<Polygon>, bool>> _polygonsAndLocationPermission() {
-    if (_polygonsAndLocationPermissionStream == null) {
-      Stream<Set<Polygon>> polygonStream = _eventMapViewModel
-          .observeMapFeatures()
+  Observable<MapData> _mapData() {
+    if (_mapDataStream == null) {
+      Observable<Set<Polygon>> polygonStream = _eventMapViewModel
+          .mapFeatures
           .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped));
-      _polygonsAndLocationPermissionStream = Observable(_checkLocationPermission().asStream())
-          .flatMap((permissionGranted) => polygonStream.map((polygons) => Tuple2(polygons, permissionGranted)));
+      Observable<Tuple2<Set<Polygon>, MapConfig>> polygonAndMapConfigStream = Observable.combineLatest2(
+          polygonStream, _eventMapViewModel.mapConfig, (polygons, mapConfig) => Tuple2(polygons, mapConfig));
+
+      _mapDataStream = Observable(_checkLocationPermission().asStream())
+          .flatMap((permissionGranted) => polygonAndMapConfigStream.map((polygonsAndMapConfig) => MapData(polygonsAndMapConfig.item1, permissionGranted, polygonsAndMapConfig.item2)));
     }
-    return _polygonsAndLocationPermissionStream;
+    return _mapDataStream;
   }
 
   Future<bool> _checkLocationPermission() {
@@ -206,4 +221,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       }
     });
   }
+}
+
+class MapData {
+  final Set<Polygon> polygons;
+  final bool locationPermissionGranted;
+  final MapConfig mapConfig;
+
+  MapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
 }

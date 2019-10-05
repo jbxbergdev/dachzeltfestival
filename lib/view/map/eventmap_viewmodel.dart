@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
 import 'package:inject/inject.dart';
@@ -16,7 +17,11 @@ class EventMapViewModel {
     return _mapDataRepo.localeSubject;
   }
 
-  Stream<FeatureCollection> observeMapFeatures() {
-    return _mapDataRepo.observeFeatures();
+  Observable<FeatureCollection> get mapFeatures {
+    return _mapDataRepo.mapFeatures;
+  }
+
+  Observable<MapConfig> get mapConfig {
+    return _mapDataRepo.mapConfig;
   }
 }
