@@ -42,7 +42,6 @@ class EventMap extends StatefulWidget {
 class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin {
 
   GoogleMapController _googleMapController;
-  static const LatLng _initialCenter = LatLng(51.506561, 13.769963);
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
   final PermissionHandler _permissionHandler = PermissionHandler();

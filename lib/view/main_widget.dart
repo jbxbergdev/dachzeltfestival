@@ -1,14 +1,14 @@
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
+import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
-import 'package:dachzeltfestival/view/map/eventmap_viewmodel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 typedef Provider<T> = T Function();
 
@@ -17,45 +17,45 @@ class MainWidgetBuilder {
 
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
+  final CharityBuilder _charityBuilder;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder, this._vmProvider);
+  MainWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._vmProvider);
 
-  MainWidget build() => MainWidget(_eventMapBuilder, _scheduleBuilder, _vmProvider);
+  MainWidget build() => MainWidget(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _vmProvider);
 }
 
 class MainWidget extends StatefulWidget {
 
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
+  final CharityBuilder _charityBuilder;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidget(this._eventMapBuilder, this._scheduleBuilder, this._vmProvider);
+  MainWidget(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._vmProvider);
 
   @override
-  _MainWidgetState createState() => _MainWidgetState(_eventMapBuilder, _scheduleBuilder, _vmProvider());
+  _MainWidgetState createState() => _MainWidgetState(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _vmProvider());
 }
 
 class _MainWidgetState extends State<MainWidget> {
 
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
+  final CharityBuilder _charityBuilder;
   final MainViewModel _mainViewModel;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(
       fontSize: 30, fontWeight: FontWeight.bold);
 
-  _MainWidgetState(this._eventMapBuilder, this._scheduleBuilder,
-      this._mainViewModel);
+  _MainWidgetState(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._mainViewModel);
 
   List<Widget> _pages;
 
   final String _testerWelcomeText = "Hallo Dachzeltnomade,\n\n"
-      "Vielen Dank, dass Du dir die Zeit nimmst, die App fürs Dachzeltfestival 2020 zu testen. Du siehst hier eine frühe Testversion. "
-      "Du kannst aber schon jetzt den Programmkalender und die Event-Karte benutzen. Es werden in den nächsten Monaten noch ein paar coole Features "
-      "dazu kommen. Hast du Feedback, Probleme oder Ideen für die App? Es würde mich freuen, von dir zu hören! Komm doch "
-      "einfach auf dem Offroad-Camp vorbei (ich bin der Typ mit dem alten dunkelgrauen Volvo aus Berlin ;-) ), oder schreib mir eine Mail (Link unten). \n\n"
+      "Hier ist Johannes, der Entwickler dieser App. Vielen Dank, dass Du die App testest. Ich würde mich sehr über dein Feedback freuen. "
+      "Komm doch im Camp vorbei (ich bin der Typ mit dem alten dunkelgrauen Volvo aus Berlin ;-) ), oder schreib mir eine Mail (Link unten). \n\n"
       "Viel Spaß und liebe Grüße,\nJohannes\n\n";
 
   @override
@@ -65,19 +65,11 @@ class _MainWidgetState extends State<MainWidget> {
     _pages = <Widget>[
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
-//      TestPage(key: PageStorageKey("TestPage"),),
-//      OverflowBox(
-//        key: PageStorageKey('Donate'),
-//        minWidth: 0.0,
-//        minHeight: 0.0,
-//        maxHeight: double.infinity,
-//        alignment: Alignment.topLeft,
-//        child: Image.asset('assets/images/donate_screenshot.png', fit: BoxFit.cover,),
-//      ),
+      _charityBuilder.build(PageStorageKey('Charity')),
       Padding(
         padding: const EdgeInsets.all(8.0),
         child: RichText(
-          key: PageStorageKey('Donate'),
+          key: PageStorageKey('Feedback'),
           text: TextSpan(
               children: <TextSpan>[
                 TextSpan(
@@ -153,6 +145,7 @@ class _MainWidgetState extends State<MainWidget> {
               children: _pages,
             ) : Center(child: Text(snapshot.data.deprecationInfo, textAlign: TextAlign.center,)),
             bottomNavigationBar: versionSupported ? BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.event),
@@ -165,6 +158,10 @@ class _MainWidgetState extends State<MainWidget> {
                 BottomNavigationBarItem(
                   icon: Icon(Icons.favorite_border),
                   title: Text(translations.get(AppString.navItemDonate)),
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.settings),
+                  title: Text(translations.get(AppString.navItemAbout)),
                 ),
               ],
               currentIndex: _selectedIndex,

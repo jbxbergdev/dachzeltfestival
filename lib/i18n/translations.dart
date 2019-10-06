@@ -5,7 +5,9 @@ enum AppString {
   appName,
   navItemSchedule,
   navItemMap,
-  navItemDonate
+  navItemDonate,
+  navItemAbout,
+  scheduleUntil
 }
 
 class Translations {
@@ -32,8 +34,16 @@ class Translations {
       en: "Map"
     },
     AppString.navItemDonate: {
-      de: "Danke",
-      en: "Danke"
+      de: "Show Love",
+      en: "Show Love"
+    },
+    AppString.navItemAbout: {
+      de: "Über",
+      en: "About"
+    },
+    AppString.scheduleUntil: {
+      de: "bis",
+      en: "until"
     }
   };
 

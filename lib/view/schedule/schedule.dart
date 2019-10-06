@@ -1,3 +1,4 @@
+import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:flutter/material.dart';
 import 'package:inject/inject.dart';
 import 'schedule_viewmodel.dart';
@@ -50,6 +51,7 @@ class Schedule extends StatelessWidget {
       return listContent;
     }
 
+    Translations translations = Translations.of(context);
     ThemeData theme = Theme.of(context);
     String language = Localizations.localeOf(context).languageCode;
     DateFormat hourMinute = DateFormat.Hm(language);
@@ -159,7 +161,7 @@ class Schedule extends StatelessWidget {
                                   ],
                                 ),
                                 Text(
-                                  "bis ${hourMinute.format(scheduleItem.finish)}",
+                                  "${translations.get(AppString.scheduleUntil)} ${hourMinute.format(scheduleItem.finish)}",
                                   style: TextStyle(
                                     fontSize: 12.0,
                                     color: Colors.grey[500]
