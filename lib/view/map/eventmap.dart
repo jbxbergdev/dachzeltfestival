@@ -88,6 +88,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
                     myLocationEnabled: mapData?.locationPermissionGranted ?? false,
+                    mapType: MapType.hybrid,
                     polygons: mapData?.polygons ?? Set(),
                     onMapCreated: _onMapCreated,
                     onCameraMove: _onCameraMove,
