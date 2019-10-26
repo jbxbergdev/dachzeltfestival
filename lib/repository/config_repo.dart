@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
+import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:package_info/package_info.dart';
 import 'package:rxdart/rxdart.dart';
@@ -15,16 +16,20 @@ abstract class ConfigRepo {
 class ConfigRepoImpl extends ConfigRepo {
 
   final Firestore _firestore;
+  final Authenticator _authenticator;
 
-  ConfigRepoImpl(this._firestore);
+  ConfigRepoImpl(this._firestore, this._authenticator);
 
   @override
   Observable<AppConfig> get appConfig {
-    return Observable.combineLatest3(
+    Observable<AppConfig> appConfigFromFirestore = Observable.combineLatest3(
         _firestore.collection("configuration").document("app_config").snapshots(),
         PackageInfo.fromPlatform().asStream(),
         localeSubject,
         _mapConfig
+    );
+    return _authenticator.authenticated.flatMap(
+        (authenticated) => authenticated ? appConfigFromFirestore : Observable.just(null)
     );
   }
 

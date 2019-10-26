@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
+import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -33,11 +34,12 @@ class MapDataRepoImpl extends MapDataRepo {
 
   final Firestore _firestore;
   final FirebaseStorage _firebaseStorage;
+  final Authenticator _authenticator;
 
   Stream<FeatureCollection> _mapFeatures;
-  Observable<MapConfig> _mapConfig;
+  BehaviorSubject<MapConfig> _mapConfig;
 
-  MapDataRepoImpl(this._firestore, this._firebaseStorage);
+  MapDataRepoImpl(this._firestore, this._firebaseStorage, this._authenticator);
 
   @override
   // ignore: close_sinks
@@ -67,7 +69,8 @@ class MapDataRepoImpl extends MapDataRepo {
                 }).toList());
           });
     }
-    return _mapFeatures;
+    return _authenticator.authenticated.flatMap(
+            (authenticated) => authenticated ? _mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
   }
 
   @override
@@ -75,7 +78,7 @@ class MapDataRepoImpl extends MapDataRepo {
     if (_mapConfig == null) {
       // _mapConfig has multiple subscribers, so we use a BehaviorSubject
       _mapConfig = BehaviorSubject();
-      Observable<MapConfig> sourceObservable = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
+      Observable<MapConfig> mapConfigFromFirestore = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
           // parse map configuration
           .map((snapshot) {
             GeoPoint initialCenter = snapshot["initial_center"];
@@ -91,7 +94,9 @@ class MapDataRepoImpl extends MapDataRepo {
               mapUrl: mapUrl,
             );
           });
-      sourceObservable.listen((data) => (_mapConfig as BehaviorSubject<MapConfig>).add(data));
+      Observable<MapConfig> sourceObservable = _authenticator.authenticated.flatMap(
+              (authenticated) => authenticated ? mapConfigFromFirestore : Observable.just(null));
+      sourceObservable.listen((data) => _mapConfig.add(data));
     }
     return _mapConfig;
   }
@@ -125,6 +130,7 @@ class MapDataRepoImpl extends MapDataRepo {
   Future<FeatureCollection> _readFeatures(File mapFile) async {
     return compute(_parseMapFile, mapFile);
   }
+
 }
 
 Future<FeatureCollection> _parseMapFile(File file) async {

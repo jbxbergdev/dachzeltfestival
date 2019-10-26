@@ -2,12 +2,13 @@ import 'dart:ui';
 
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:rxdart/rxdart.dart';
 
 
 abstract class ScheduleRepo {
-  Stream<List<ScheduleItem>> observeSchedule();
+  Observable<List<ScheduleItem>> observeSchedule();
   // ignore: close_sinks
   BehaviorSubject localeSubject;
 }
@@ -18,19 +19,24 @@ class ScheduleRepoImpl extends ScheduleRepo {
   static const String _FIRESTORE_COLLECTION_VENUE = "venue";
 
   final Firestore _firestore;
+  final Authenticator _authenticator;
 
   @override
   final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
 
-  ScheduleRepoImpl(this._firestore);
+  ScheduleRepoImpl(this._firestore, this._authenticator);
 
   @override
-  Stream<List<ScheduleItem>> observeSchedule() {
-    return Observable.combineLatest3<QuerySnapshot, QuerySnapshot, Locale, List<ScheduleItem>>(
+  Observable<List<ScheduleItem>> observeSchedule() {
+    Observable<List<ScheduleItem>> scheduleFromFirestore = Observable.combineLatest3<QuerySnapshot, QuerySnapshot, Locale, List<ScheduleItem>>(
         _firestore.collection(_FIRESTORE_COLLECTION_SCHEDULE).snapshots(),
         _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots(),
         localeSubject.distinct(),
         _mapSchedule);
+
+    return _authenticator.authenticated.flatMap(
+            (authenticated) => authenticated ? scheduleFromFirestore : Observable.just(List<ScheduleItem>()));
+
   }
 
   List<ScheduleItem> _mapSchedule(QuerySnapshot scheduleQuerySnapshot, QuerySnapshot venueQuerySnapshot, Locale locale) {

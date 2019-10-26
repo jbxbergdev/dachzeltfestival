@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/model/configuration/charity_config.dart';
+import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -14,8 +15,9 @@ abstract class CharityRepo {
 class CharityRepoImpl extends CharityRepo {
   
   final Firestore _firestore;
+  final Authenticator _authenticator;
   
-  CharityRepoImpl(this._firestore);
+  CharityRepoImpl(this._firestore, this._authenticator);
   
   @override
   // ignore: close_sinks
@@ -23,10 +25,13 @@ class CharityRepoImpl extends CharityRepo {
   
   @override
   Observable<CharityConfig> get charityConfig {
-    return Observable.combineLatest2(
+    Observable<CharityConfig> charityConfigFromFirestore = Observable.combineLatest2(
       _firestore.collection("configuration").document("charity_config").snapshots(),
       localeSubject,
       _mapToCharityConfig
+    );
+    return _authenticator.authenticated.flatMap(
+        (authenticated) => authenticated ? charityConfigFromFirestore : Observable.just(null)
     );
   }
 
