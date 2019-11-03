@@ -50,17 +50,5 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Damit Du auf der Festivalkarte Deine Position sehen kannst.</string>
-	<key>NSContactsUsageDescription</key>
-	<string>TODO: Remove this.</string>
-	<key>NSCalendarsUsageDescription</key>
-	<string>TODO: Remove this.</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>TODO: Remove this.</string>
-	<key>NSMotionUsageDescription</key>
-	<string>TODO: Remove this.</string>
-	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>TODO: Remove this.</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>TODO: Remove this.</string>
 </dict>
 </plist>

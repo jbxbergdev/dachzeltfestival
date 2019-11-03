@@ -394,9 +394,11 @@ packages:
   permission_handler:
     dependency: "direct main"
     description:
-      name: permission_handler
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "."
+      ref: dachzeltfestival_permissions
+      resolved-ref: "3ca59d2a05148a75c99771e6ad450c3409e1fc67"
+      url: "git@github.com:jbxbergdev/flutter-permission-handler.git"
+    source: git
     version: "3.3.0"
   platform:
     dependency: transitive

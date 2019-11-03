@@ -11,7 +11,7 @@ description: A new Flutter application.
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.8+9
+version: 1.0.9+10
 
 environment:
   sdk: ">=2.2.2 <3.0.0"
@@ -31,7 +31,12 @@ dependencies:
   firebase_storage: ^3.0.6
   path_provider: ^1.4.0
   tuple: ^1.0.3
-  permission_handler: ^3.3.0
+  permission_handler:
+    git:
+#      url: git@github.com:BaseflowIT/flutter-permission-handler.git
+#      ref: master
+      url: git@github.com:jbxbergdev/flutter-permission-handler.git
+      ref: dachzeltfestival_permissions
   url_launcher: ^5.2.4
   package_info: ^0.4.0+9
   firebase_auth: ^0.14.0+5

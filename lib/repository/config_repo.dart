@@ -40,7 +40,6 @@ class ConfigRepoImpl extends ConfigRepo {
   AppConfig _mapConfig(DocumentSnapshot documentSnapshot, PackageInfo packageInfo, Locale locale) {
     int appVersion = int.parse(packageInfo.buildNumber);
     bool versionSupported = appVersion >= documentSnapshot["min_version"];
-    print('##### appVersion: $appVersion, minVersion: ${documentSnapshot["min_version"]}');
     String deprecationInfo = TranslatableDocument(documentSnapshot, locale)["deprecation_info"];
     return AppConfig(versionSupported, deprecationInfo);
   }

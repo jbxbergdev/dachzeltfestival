@@ -216,8 +216,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           return Future.value(true);
         default:
           return _permissionHandler.requestPermissions([PermissionGroup.locationWhenInUse])
-              .then((statusMap) => Future.value(statusMap[PermissionGroup.locationWhenInUse] == PermissionStatus.granted
-              || statusMap[PermissionGroup.location] == PermissionStatus.restricted));
+              .then((statusMap) => Future.value(statusMap[PermissionGroup.locationWhenInUse] == PermissionStatus.granted ));
       }
     });
   }
