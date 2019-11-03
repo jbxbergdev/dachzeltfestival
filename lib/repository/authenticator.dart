@@ -9,13 +9,14 @@ class AuthenticatorImpl extends Authenticator {
 
   final FirebaseAuth _firebaseAuth;
 
-  Observable<bool> _authenticationState;
+  // ignore: close_sinks
+  BehaviorSubject<bool> _authenticationState = BehaviorSubject.seeded(false);
 
   AuthenticatorImpl(this._firebaseAuth) {
-    _authenticationState = Observable(_firebaseAuth.currentUser().asStream())
+    Observable(_firebaseAuth.currentUser().asStream())
         .flatMap((user) => user != null ? Observable.just(user) : _firebaseAuth.signInAnonymously().asStream().map((authResult) => authResult.user))
         .flatMap((user) => user != null ? _firebaseAuth.onAuthStateChanged.map((user) => user != null) : Observable.just(false))
-        .asBroadcastStream();
+        .listen((authenticated) => _authenticationState.value = authenticated);
   }
 
   @override
