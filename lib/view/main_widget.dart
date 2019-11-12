@@ -4,6 +4,7 @@ import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
@@ -136,7 +137,19 @@ class _MainWidgetState extends State<MainWidget> {
               ]
           ),
         ),
-      )
+      ),
+      WebView(
+        key: PageStorageKey("WebView"),
+        initialUrl: _url,
+        javascriptMode: JavascriptMode.unrestricted,
+        navigationDelegate: (navigationRequest) {
+          if (navigationRequest.url == _url) {
+            return NavigationDecision.navigate;
+          }
+          launch(navigationRequest.url);
+          return NavigationDecision.prevent;
+        },
+      ),
     ];
   }
 
@@ -210,6 +223,10 @@ class _MainWidgetState extends State<MainWidget> {
                   icon: Icon(Icons.settings),
                   title: Text(translations.get(AppString.navItemAbout)),
                 ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.ac_unit),
+                  title: Text("WebView"),
+                ),
               ],
               currentIndex: _selectedIndex,
               onTap: _onItemTapped,
@@ -217,4 +234,32 @@ class _MainWidgetState extends State<MainWidget> {
           );
         });
   }
+
+  final String _url = Uri.dataFromString(_html, mimeType: "text/html").toString();
+
+
+  static const String _html = '''<html>
+  <head><meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" /></head>
+  <div id="flockler_container"></div>
+<script type="text/javascript">
+  var _flockler = _flockler || [];
+  _flockler.push({
+    count: 12,
+    refresh: 10000,
+    refreshType: 'auto',
+    infiniteScroll: 1,
+    site: *hidden*,
+    style: 'wall_v1',
+    showLikes: 1,
+    showComments: 1,
+    showRetweets: 1,
+  });
+  (function(d){var f = d.createElement('script');f.async=1;f.src='https://embed-cdn.flockler.com/embed-v2.js';s=d.getElementsByTagName('script')[0];s.parentNode.insertBefore(f,s);})(document);
+</script>
+<style>
+  .flockler-wall-item__media + .flockler-wall-item__body,
+  .flockler-wall-item__media + .flockler-wall-item__body + .flockler-wall-item__showmore {
+    display: none !important;
+  }
+</style></html>''';
 }
