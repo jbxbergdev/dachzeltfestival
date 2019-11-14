@@ -4,8 +4,6 @@ import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
@@ -44,12 +42,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   GoogleMapController _googleMapController;
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
-  final PermissionHandler _permissionHandler = PermissionHandler();
   RubberAnimationController _bottomSheetController;
   ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
-  Observable<MapData> _mapDataStream;
+  Observable<GoogleMapData> _mapDataStream;
   CameraPosition _cameraPosition;
+  CompositeSubscription _compositeSubscription = CompositeSubscription();
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
@@ -73,12 +71,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       scrollController: _scrollController,
       lowerLayer: Stack(
         children: <Widget>[
-          StreamBuilder<MapData>(
+          StreamBuilder<GoogleMapData>(
               stream: _mapData(),
               builder: (buildContext, snapshot) {
-                if (snapshot.hasData) {
-                  MapData mapData = snapshot.data;
-                  geojson.Coordinates initialMapCenter = mapData?.mapConfig?.initalMapCenter;
+                if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
+                  GoogleMapData mapData = snapshot.data;
+                  geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
                   if (initialMapCenter != null && _cameraPosition == null) {
                     _cameraPosition = CameraPosition(target: LatLng(
                         initialMapCenter.lat, initialMapCenter.lng),
@@ -87,7 +85,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   return GoogleMap(
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
-                    myLocationEnabled: mapData?.locationPermissionGranted ?? false,
+                    myLocationEnabled: mapData.locationPermissionGranted,
                     mapType: MapType.hybrid,
                     polygons: mapData?.polygons ?? Set(),
                     onMapCreated: _onMapCreated,
@@ -95,7 +93,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                     onTap: _onTap,
                   );
                 }
-                return Text("");
+                return Container();
               }),
           Positioned(
             bottom: 10,
@@ -183,7 +181,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _startNavigationApp() async {
-    MapConfig mapConfig = await (_eventMapViewModel.mapConfig as BehaviorSubject<MapConfig>).first;
+    MapConfig mapConfig = (await _mapData().first).mapConfig;
     geojson.Coordinates navDestination = mapConfig?.navDestination;
     if (navDestination != null) {
       if (Platform.isAndroid) {
@@ -194,38 +192,29 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     }
   }
 
-  Observable<MapData> _mapData() {
+  BehaviorSubject<GoogleMapData> _mapData() {
     if (_mapDataStream == null) {
-      Observable<Set<Polygon>> polygonStream = _eventMapViewModel
-          .mapFeatures
-          .asyncMap((featureCollection) => _featureConverter.parseFeatureCollection(featureCollection, _onPolygonTapped));
-      Observable<Tuple2<Set<Polygon>, MapConfig>> polygonAndMapConfigStream = Observable.combineLatest2(
-          polygonStream, _eventMapViewModel.mapConfig, (polygons, mapConfig) => Tuple2(polygons, mapConfig));
+      _mapDataStream = BehaviorSubject.seeded(null);
 
-      _mapDataStream = Observable(_checkLocationPermission().asStream())
-          .flatMap((permissionGranted) => polygonAndMapConfigStream.map((polygonsAndMapConfig) => MapData(polygonsAndMapConfig.item1, permissionGranted, polygonsAndMapConfig.item2)));
+    Observable<GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
+        .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream().map((googlePolygons) => GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
+
+    _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<GoogleMapData>).value = mapData));
     }
     return _mapDataStream;
   }
 
-  Future<bool> _checkLocationPermission() {
-    return _permissionHandler.checkPermissionStatus(PermissionGroup.locationWhenInUse)
-        .then((permissionStatus) {
-      switch (permissionStatus) {
-        case PermissionStatus.granted:
-          return Future.value(true);
-        default:
-          return _permissionHandler.requestPermissions([PermissionGroup.locationWhenInUse])
-              .then((statusMap) => Future.value(statusMap[PermissionGroup.locationWhenInUse] == PermissionStatus.granted ));
-      }
-    });
+  @override
+  void deactivate() {
+    _compositeSubscription.clear();
+    super.deactivate();
   }
 }
 
-class MapData {
+class GoogleMapData {
   final Set<Polygon> polygons;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
 
-  MapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
+  GoogleMapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
 }

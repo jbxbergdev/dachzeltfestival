@@ -143,6 +143,9 @@ class _MainWidgetState extends State<MainWidget> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      if (_selectedIndex == 1) {
+        _mainViewModel.requestLocationPermission();
+      }
     });
   }
 

@@ -17,10 +17,10 @@ import 'dart:convert';
 
 
 abstract class MapDataRepo {
-  Observable<FeatureCollection> mapFeatures;
+  Observable<FeatureCollection> mapFeatures();
   // ignore: close_sinks
   BehaviorSubject<Locale> localeSubject;
-  Observable<MapConfig> mapConfig;
+  Observable<MapConfig> mapConfig();
 }
 
 class MapDataRepoImpl extends MapDataRepo {
@@ -36,7 +36,6 @@ class MapDataRepoImpl extends MapDataRepo {
   final FirebaseStorage _firebaseStorage;
   final Authenticator _authenticator;
 
-  Stream<FeatureCollection> _mapFeatures;
   BehaviorSubject<MapConfig> _mapConfig;
 
   MapDataRepoImpl(this._firestore, this._firebaseStorage, this._authenticator);
@@ -46,37 +45,35 @@ class MapDataRepoImpl extends MapDataRepo {
   final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
 
   @override
-  Observable<FeatureCollection> get mapFeatures {
-    if (_mapFeatures == null) {
-      _mapFeatures = Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
-        // listen for FeatureCollection from local map
-          _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
-          // listen for venue data on Cloud Firestore
-          _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), localeSubject,
-              (featureCollection, venueDocuments, locale) {
-            // if there is venue information from the Cloud Firestore collection, modify Features with it
-            return FeatureCollection(
-                features: featureCollection.features.map((feature) {
-                  DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) =>
-                  document.documentID == feature.properties?.venueId, orElse: () => null);
-                  if (venueDocument != null) {
-                    TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
-                    feature.properties.name = translatableDocument['name'];
-                    feature.properties.fill = translatableDocument['color'];
-                    feature.properties.stroke = translatableDocument['color'];
-                  }
-                  return feature;
-                }).toList());
-          });
-    }
+  Observable<FeatureCollection> mapFeatures() {
+    Observable<FeatureCollection> mapFeatures = Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
+      // listen for FeatureCollection from local map
+        _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
+        // listen for venue data on Cloud Firestore
+        _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), localeSubject,
+            (featureCollection, venueDocuments, locale) {
+          // if there is venue information from the Cloud Firestore collection, modify Features with it
+          return FeatureCollection(
+              features: featureCollection.features.map((feature) {
+                DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) =>
+                document.documentID == feature.properties?.venueId, orElse: () => null);
+                if (venueDocument != null) {
+                  TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
+                  feature.properties.name = translatableDocument['name'];
+                  feature.properties.fill = translatableDocument['color'];
+                  feature.properties.stroke = translatableDocument['color'];
+                }
+                return feature;
+              }).toList());
+        });
     return _authenticator.authenticated.flatMap(
-            (authenticated) => authenticated ? _mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
+            (authenticated) => authenticated ? mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
   }
 
   @override
-  Observable<MapConfig> get mapConfig {
+  Observable<MapConfig> mapConfig() {
     if (_mapConfig == null) {
-      // _mapConfig has multiple subscribers, so we use a BehaviorSubject
+      // _mapConfig has multiple subscribers, so we use a BehaviorSubject to reduce Firestore reads
       _mapConfig = BehaviorSubject();
       Observable<MapConfig> mapConfigFromFirestore = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
           // parse map configuration
@@ -98,12 +95,13 @@ class MapDataRepoImpl extends MapDataRepo {
               (authenticated) => authenticated ? mapConfigFromFirestore : Observable.just(null));
       sourceObservable.listen((data) => _mapConfig.add(data));
     }
-    return _mapConfig;
+    return _mapConfig.where((mapConfig) => mapConfig != null);
   }
 
   Observable<File> _localMap() {
     // listen to map meta data in Cloud Firestore
-    Observable<void> downloadNewMap = mapConfig
+    Observable<void> downloadNewMap = mapConfig()
+        .where((config) => config != null)
         // read version of local map, combine local version, remote version and remote map URL
         .flatMap((mapConfig) => _readPersistedMapVersion().asStream().map((persistedVersion) => Tuple2(mapConfig, persistedVersion)))
         // filter for emissions where remote and local map versions are different

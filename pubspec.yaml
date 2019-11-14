@@ -21,34 +21,28 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  rxdart: ^0.22.4
-  google_maps_flutter: ^0.5.21+8
-  shared_preferences: 0.5.4
+  rxdart: ^0.22.6
+  google_maps_flutter: ^0.5.21+11
+  shared_preferences: 0.5.4+5
   rubber: ^0.4.0
-  firebase_core: ^0.4.0+9
-  cloud_firestore: ^0.12.9+5
+  firebase_core: ^0.4.1+5
+  cloud_firestore: ^0.12.10
   flutter_sticky_header: ^0.4.0
-  firebase_storage: ^3.0.6
-  path_provider: ^1.4.0
+  firebase_storage: ^3.0.8
+  path_provider: ^1.4.2
   tuple: ^1.0.3
   permission_handler:
     git:
-#      url: git@github.com:BaseflowIT/flutter-permission-handler.git
-#      ref: master
       url: git@github.com:jbxbergdev/flutter-permission-handler.git
       ref: dachzeltfestival_permissions
-  url_launcher: ^5.2.4
-  package_info: ^0.4.0+9
-  firebase_auth: ^0.14.0+5
+  url_launcher: ^5.2.5
+  package_info: ^0.4.0+10
+  firebase_auth: ^0.14.0+9
 
   inject:
     git:
       url: git@github.com:google/inject.dart.git
       path: package/inject
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^0.1.2
 
 dev_dependencies:
   flutter_test:
