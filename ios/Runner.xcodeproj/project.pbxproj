@@ -20,6 +20,7 @@
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
 		97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */; };
 		9C207857234A864E00EBB3C4 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 9C207859234A864E00EBB3C4 /* InfoPlist.strings */; };
+		9C3240AF2381B41D00D93AAE /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9C3240AE2381B41D00D93AAE /* Secrets.plist */; };
 		9C558E08232052AF008B295C /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 9C558E07232052AF008B295C /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
@@ -62,6 +63,7 @@
 		9C20785B234A876F00EBB3C4 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Main.strings; sourceTree = "<group>"; };
 		9C20785C234A876F00EBB3C4 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		9C20785D234A876F00EBB3C4 /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		9C3240AE2381B41D00D93AAE /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
 		9C558E07232052AF008B295C /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../../Downloads/GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -143,6 +145,7 @@
 				74858FAE1ED2DC5600515810 /* AppDelegate.swift */,
 				74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */,
 				9C207859234A864E00EBB3C4 /* InfoPlist.strings */,
+				9C3240AE2381B41D00D93AAE /* Secrets.plist */,
 			);
 			path = Runner;
 			sourceTree = "<group>";
@@ -221,6 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9C3240AF2381B41D00D93AAE /* Secrets.plist in Resources */,
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				9C207857234A864E00EBB3C4 /* InfoPlist.strings in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,

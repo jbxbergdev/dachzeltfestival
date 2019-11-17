@@ -203,11 +203,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   BoringSSL-GRPC: db8764df3204ccea016e1c8dd15d9a9ad63ff318
-  cloud_firestore: c9493dd01ad88934d926e18cc5a92a0129bf2c32
+  cloud_firestore: 187530401afa261d255791ea75580591e345fa7b
   Firebase: dedc9e48ea3f3649ad5f6b982f8a0c73508a14b5
-  firebase_auth: 1e3b7bdd37b9fbd4ef75ba1d985b00be09e02d3d
-  firebase_core: ae55ea92448ec8675d325da4db22cf3b4d58a54d
-  firebase_storage: 52b0c06e27af628b627be28d32b4b540f6b67cf7
+  firebase_auth: d99b993c1405096e66c58211b1cd956c23eed1c5
+  firebase_core: 77196106dc5f61b425f58b2f8f050347db10e4e0
+  firebase_storage: d83bfc0e0e849b2f871a34c474466bf5014ff304
   FirebaseAnalytics: 3fb375bc9d13779add4039716f868d233a473fad
   FirebaseAuth: a06ad63e9bf4c86165b54cceb1c14d4f4c38d419
   FirebaseAuthInterop: 0ffa57668be100582bb7643d4fcb7615496c41fc
@@ -216,7 +216,7 @@ SPEC CHECKSUMS:
   FirebaseInstanceID: 662b8108a09fe9ed01aafdedba100fde8536b0f6
   FirebaseStorage: 618dd8fd886b30adf6e5d1915b1f5c18cb5c3944
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  google_maps_flutter: 78a52114c898b42ea647919679a4c58b70abe876
+  google_maps_flutter: d0dd62f5a7d39bae61057eb9f52dd778d99c7c6c
   GoogleAppMeasurement: 183bd916af7f80deb67c01888368f1108d641832
   GoogleMaps: f79af95cb24d869457b1f961c93d3ce8b2f3b848
   GoogleUtilities: d2b0e277a95962e09bb27f5cd42f5f0b6a506c7d
