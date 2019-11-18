@@ -1,5 +1,6 @@
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
+import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -53,10 +54,6 @@ class _MainWidgetState extends State<MainWidget> {
 
   List<Widget> _pages;
 
-  final String _testerWelcomeText = "Hallo Dachzeltnomade,\n\n"
-      "Hier ist Johannes, der Entwickler dieser App. Vielen Dank, dass Du diese Betaversion testest. Ich würde mich sehr über dein Feedback freuen. "
-      "Komm doch im Camp vorbei (ich bin der Typ mit dem alten dunkelgrauen Volvo aus Berlin ;-) ), oder schreib mich an: \n\n";
-
   @override
   void initState() {
     super.initState();
@@ -65,78 +62,7 @@ class _MainWidgetState extends State<MainWidget> {
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
       _charityBuilder.build(PageStorageKey('Charity')),
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: RichText(
-          key: PageStorageKey('Feedback'),
-          text: TextSpan(
-              children: <TextSpan>[
-                TextSpan(
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    text: _testerWelcomeText
-                ),
-                TextSpan(
-                    text: "WhatsApp",
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () => launch("https://wa.me/491621838910")
-                ),
-                TextSpan(
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    text: "\n\n"
-                ),
-                TextSpan(
-                    text: "Instagram",
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () => launch("https://www.instagram.com/jbxplores/")
-                ),
-                TextSpan(
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    text: "\n\n"
-                ),
-                TextSpan(
-                    text: "Facebook",
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () => launch("http://m.me/johnnyyenagain")
-                ),
-                TextSpan(
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    text: "\n\n"
-                ),
-                TextSpan(
-                    text: "Email",
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                    recognizer: TapGestureRecognizer()
-                      ..onTap = () => launch("mailto:kontakt@johannes-bolz.de")
-                ),
-                TextSpan(
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                    text: "\n\nViel Spaß und liebe Grüße,\nJohannes"
-                ),
-              ]
-          ),
-        ),
-      )
+      Legal()
     ];
   }
 
