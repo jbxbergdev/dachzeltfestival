@@ -19,11 +19,12 @@ class MainWidgetBuilder {
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
   final CharityBuilder _charityBuilder;
+  final LegalBuilder _legalBuilder;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._vmProvider);
+  MainWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._vmProvider);
 
-  MainWidget build() => MainWidget(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _vmProvider);
+  MainWidget build() => MainWidget(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _legalBuilder, _vmProvider);
 }
 
 class MainWidget extends StatefulWidget {
@@ -31,12 +32,13 @@ class MainWidget extends StatefulWidget {
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
   final CharityBuilder _charityBuilder;
+  final LegalBuilder _legalBuilder;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidget(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._vmProvider);
+  MainWidget(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._vmProvider);
 
   @override
-  _MainWidgetState createState() => _MainWidgetState(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _vmProvider());
+  _MainWidgetState createState() => _MainWidgetState(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _legalBuilder, _vmProvider());
 }
 
 class _MainWidgetState extends State<MainWidget> {
@@ -44,13 +46,14 @@ class _MainWidgetState extends State<MainWidget> {
   final EventMapBuilder _eventMapBuilder;
   final ScheduleBuilder _scheduleBuilder;
   final CharityBuilder _charityBuilder;
+  final LegalBuilder _legalBuilder;
   final MainViewModel _mainViewModel;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(
       fontSize: 30, fontWeight: FontWeight.bold);
 
-  _MainWidgetState(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._mainViewModel);
+  _MainWidgetState(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._mainViewModel);
 
   List<Widget> _pages;
 
@@ -62,7 +65,7 @@ class _MainWidgetState extends State<MainWidget> {
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
       _charityBuilder.build(PageStorageKey('Charity')),
-      Legal()
+      _legalBuilder.build(PageStorageKey('Legal')),
     ];
   }
 
@@ -136,8 +139,8 @@ class _MainWidgetState extends State<MainWidget> {
                   title: Text(translations[AppString.navItemDonate]),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.settings),
-                  title: Text(translations[AppString.navItemAbout]),
+                  icon: Icon(Icons.info_outline),
+                  title: Text(translations[AppString.navItemInfo]),
                 ),
               ],
               currentIndex: _selectedIndex,

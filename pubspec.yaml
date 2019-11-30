@@ -68,7 +68,7 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/raw/
+    - assets/text/
 
   fonts:
     - family: AdventPro

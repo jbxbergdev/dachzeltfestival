@@ -1,8 +1,10 @@
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/charity_repo.dart';
 import 'package:dachzeltfestival/repository/config_repo.dart';
+import 'package:dachzeltfestival/repository/legal_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
+import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -43,6 +45,13 @@ class AppModule {
 
   @provide
   CharityViewModel charityViewModel(CharityRepo charityRepo) => CharityViewModel(charityRepo);
+
+  @provide
+  @singleton
+  LegalRepo legalRepo() => LegalRepoImpl();
+
+  @provide
+  LegalViewModel legalViewModel(LegalRepo legalRepo) => LegalViewModel(legalRepo);
 
   @provide
   @singleton
