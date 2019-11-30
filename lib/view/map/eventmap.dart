@@ -82,6 +82,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                         initialMapCenter.lat, initialMapCenter.lng),
                         zoom: mapData.mapConfig.initialZoomLevel);
                   }
+                  print('##### rebuild map');
                   return GoogleMap(
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
@@ -168,6 +169,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    print('##### onMaoCreated');
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
   }

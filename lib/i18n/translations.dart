@@ -47,7 +47,7 @@ class Translations {
     }
   };
 
-  String get(AppString appString) => _stringMap[appString][_locale.languageCode];
+  dynamic operator[](AppString appString) => _stringMap[appString][_locale.languageCode];
 
   static Translations of(BuildContext context) => Localizations.of<Translations>(context, Translations);
 }

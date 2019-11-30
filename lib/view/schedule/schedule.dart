@@ -161,7 +161,7 @@ class Schedule extends StatelessWidget {
                                   ],
                                 ),
                                 Text(
-                                  "${translations.get(AppString.scheduleUntil)} ${hourMinute.format(scheduleItem.finish)}",
+                                  "${translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
                                   style: TextStyle(
                                     fontSize: 12.0,
                                     color: Colors.grey[500]

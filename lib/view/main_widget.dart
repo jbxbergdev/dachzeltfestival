@@ -125,19 +125,19 @@ class _MainWidgetState extends State<MainWidget> {
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.event),
-                  title: Text(translations.get(AppString.navItemSchedule)),
+                  title: Text(translations[AppString.navItemSchedule]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.map),
-                  title: Text(translations.get(AppString.navItemMap)),
+                  title: Text(translations[AppString.navItemMap]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.favorite_border),
-                  title: Text(translations.get(AppString.navItemDonate)),
+                  title: Text(translations[AppString.navItemDonate]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.settings),
-                  title: Text(translations.get(AppString.navItemAbout)),
+                  title: Text(translations[AppString.navItemAbout]),
                 ),
               ],
               currentIndex: _selectedIndex,

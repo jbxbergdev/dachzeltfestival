@@ -32,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      onGenerateTitle: (context) => Translations.of(context).get(AppString.appName),
+      onGenerateTitle: (context) => Translations.of(context)[AppString.appName],
       home: _myStatefulWidgetBuilder.build(),
       supportedLocales: Translations.supportedLanguages.map((language)  => Locale(language)),
       localizationsDelegates: [TranslationsDelegate(),
