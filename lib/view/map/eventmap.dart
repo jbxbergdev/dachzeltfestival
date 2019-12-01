@@ -45,7 +45,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   RubberAnimationController _bottomSheetController;
   ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
-  Observable<GoogleMapData> _mapDataStream;
+  Observable<_GoogleMapData> _mapDataStream;
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
 
@@ -71,18 +71,17 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       scrollController: _scrollController,
       lowerLayer: Stack(
         children: <Widget>[
-          StreamBuilder<GoogleMapData>(
+          StreamBuilder<_GoogleMapData>(
               stream: _mapData(),
               builder: (buildContext, snapshot) {
                 if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
-                  GoogleMapData mapData = snapshot.data;
+                  _GoogleMapData mapData = snapshot.data;
                   geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
                   if (initialMapCenter != null && _cameraPosition == null) {
                     _cameraPosition = CameraPosition(target: LatLng(
                         initialMapCenter.lat, initialMapCenter.lng),
                         zoom: mapData.mapConfig.initialZoomLevel);
                   }
-                  print('##### rebuild map');
                   return GoogleMap(
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
@@ -169,7 +168,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    print('##### onMaoCreated');
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
   }
@@ -194,14 +192,15 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     }
   }
 
-  BehaviorSubject<GoogleMapData> _mapData() {
+  BehaviorSubject<_GoogleMapData> _mapData() {
     if (_mapDataStream == null) {
       _mapDataStream = BehaviorSubject.seeded(null);
 
-    Observable<GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
-        .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream().map((googlePolygons) => GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
+    Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
+        .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream()
+        .map((googlePolygons) => _GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
 
-    _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<GoogleMapData>).value = mapData));
+    _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
     return _mapDataStream;
   }
@@ -213,10 +212,10 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 }
 
-class GoogleMapData {
+class _GoogleMapData {
   final Set<Polygon> polygons;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
 
-  GoogleMapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
+  _GoogleMapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
 }
