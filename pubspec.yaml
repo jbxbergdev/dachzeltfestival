@@ -39,6 +39,7 @@ dependencies:
   package_info: ^0.4.0+10
   firebase_auth: ^0.14.0+9
   flutter_markdown: ^0.3.0
+  auto_size_text: ^2.1.0
 
   inject:
     git:

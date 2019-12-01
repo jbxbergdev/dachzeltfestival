@@ -1,6 +1,8 @@
 import 'dart:io';
 
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
+import 'package:dachzeltfestival/util/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -49,6 +51,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
 
+  static const double _headerHeightPx = 80;
+
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
   @override
@@ -57,7 +61,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     _propertiesSubject = BehaviorSubject.seeded(null);
     _bottomSheetController = RubberAnimationController(
         vsync: this,
-        halfBoundValue: AnimationControllerValue(percentage: 0.5),
+        upperBoundValue: AnimationControllerValue(pixel: _headerHeightPx),
+//        halfBoundValue: AnimationControllerValue(percentage: 0.5),
         lowerBoundValue: AnimationControllerValue(percentage: 0.0),
         duration: Duration(milliseconds: 200),
         initialValue: 0.0,
@@ -109,53 +114,78 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           )
         ],
       ),
-      header: SizedBox.expand(
-
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16)
-              )
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: StreamBuilder<geojson.Properties>(
+      header: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 4.0),
+        child: SizedBox.expand(
+          child: StreamBuilder<geojson.Properties>(
               initialData: geojson.Properties(),
               stream: _propertiesSubject.stream,
               builder: (buildContext, snapshot) {
                 return Container(
-                  child: Text(
-                    snapshot.data?.name ?? "",
-                    style: TextStyle(fontSize: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16)
+                      ),
+                    ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: hexToColor(snapshot?.data?.fill).withOpacity(0.2),
+                      borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16)
+                      ),
+                    ),
+                    child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: AutoSizeText(
+                            snapshot?.data?.name ?? "",
+                            style: TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.w300
+                            ),
+                            minFontSize: 16,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        )
+                    ),
                   ),
                 );
-              },
-            ),
+              }
           ),
         ),
       ),
-      headerHeight: 60,
-      upperLayer: Container(
-        child: StreamBuilder<geojson.Properties>(
-          stream: _propertiesSubject.stream,
-          builder: (buildContext, snapshot) {
-            return Container(
-              constraints: BoxConstraints.expand(),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Hier werden mal Informationen zum angeklickten Ort stehen.",
-                  style: TextStyle(
-                    color: Colors.black,
-                    backgroundColor: Colors.white,
+      headerHeight: _headerHeightPx,
+      upperLayer: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: Container(
+          child: StreamBuilder<geojson.Properties>(
+            stream: _propertiesSubject.stream,
+            builder: (buildContext, snapshot) {
+              return Container(
+                constraints: BoxConstraints.expand(),
+                color: Colors.white,
+                child: snapshot?.data?.description != null ?
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    snapshot.data.description,
+                    style: TextStyle(
+                      color: Colors.black,
+                      backgroundColor: Colors.white,
+                    ),
                   ),
-                ),
-              ),
-            );
-          },
+                )
+                : Container(),
+              );
+            },
+          ),
         ),
       ),
       animationController: _bottomSheetController,
@@ -164,7 +194,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onPolygonTapped(geojson.Properties properties) {
     _propertiesSubject.add(properties);
-    _bottomSheetController.animateTo(to: 0.3);
+//    _bottomSheetController.animateTo(to: 0.3);
+  _bottomSheetController.expand();
   }
 
   void _onMapCreated(GoogleMapController controller) {
