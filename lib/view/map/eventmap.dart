@@ -42,8 +42,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   GoogleMapController _googleMapController;
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
-  RubberAnimationController _bottomSheetController;
-  ScrollController _scrollController = ScrollController();
+//  RubberAnimationController _bottomSheetController;
+//  ScrollController _scrollController = ScrollController();
   BehaviorSubject<geojson.Properties> _propertiesSubject;
   Observable<_GoogleMapData> _mapDataStream;
   CameraPosition _cameraPosition;
@@ -55,116 +55,201 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   void initState() {
     super.initState();
     _propertiesSubject = BehaviorSubject.seeded(null);
-    _bottomSheetController = RubberAnimationController(
-        vsync: this,
-        halfBoundValue: AnimationControllerValue(percentage: 0.5),
-        lowerBoundValue: AnimationControllerValue(percentage: 0.0),
-        duration: Duration(milliseconds: 200),
-        initialValue: 0.0,
-    );
+//    _bottomSheetController = RubberAnimationController(
+//        vsync: this,
+//        halfBoundValue: AnimationControllerValue(percentage: 0.5),
+//        lowerBoundValue: AnimationControllerValue(percentage: 0.0),
+//        duration: Duration(milliseconds: 200),
+//        initialValue: 0.0,
+//    );
   }
 
   @override
   Widget build(BuildContext context) {
     _eventMapViewModel.localeSubject.value = Localizations.localeOf(context);
-    return RubberBottomSheet(
-      scrollController: _scrollController,
-      lowerLayer: Stack(
-        children: <Widget>[
-          StreamBuilder<_GoogleMapData>(
-              stream: _mapData(),
-              builder: (buildContext, snapshot) {
-                if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
-                  _GoogleMapData mapData = snapshot.data;
-                  geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
-                  if (initialMapCenter != null && _cameraPosition == null) {
-                    _cameraPosition = CameraPosition(target: LatLng(
-                        initialMapCenter.lat, initialMapCenter.lng),
-                        zoom: mapData.mapConfig.initialZoomLevel);
-                  }
-                  return GoogleMap(
-                    initialCameraPosition: _cameraPosition,
-                    myLocationButtonEnabled: false,
-                    myLocationEnabled: mapData.locationPermissionGranted,
-                    mapType: MapType.hybrid,
-                    polygons: mapData?.polygons ?? Set(),
-                    onMapCreated: _onMapCreated,
-                    onCameraMove: _onCameraMove,
-                    onTap: _onTap,
-                  );
+    return Stack(
+      children: <Widget>[
+        StreamBuilder<_GoogleMapData>(
+            stream: _mapData(),
+            builder: (buildContext, snapshot) {
+              if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
+                _GoogleMapData mapData = snapshot.data;
+                geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
+                if (initialMapCenter != null && _cameraPosition == null) {
+                  _cameraPosition = CameraPosition(target: LatLng(
+                      initialMapCenter.lat, initialMapCenter.lng),
+                      zoom: mapData.mapConfig.initialZoomLevel);
                 }
-                return Container();
-              }),
-          Positioned(
-            bottom: 10,
-            right: 10,
-            child: FloatingActionButton(
-              onPressed: _startNavigationApp,
-              child: Icon(
-                Icons.navigation,
-                color: Theme.of(context).primaryColor,
-              ),
-              backgroundColor: Colors.grey[100],
-            ),
-          )
-        ],
-      ),
-      header: SizedBox.expand(
-
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  topRight: Radius.circular(16)
-              )
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: StreamBuilder<geojson.Properties>(
-              initialData: geojson.Properties(),
-              stream: _propertiesSubject.stream,
-              builder: (buildContext, snapshot) {
-                return Container(
-                  child: Text(
-                    snapshot.data?.name ?? "",
-                    style: TextStyle(fontSize: 16),
-                  ),
+                return GoogleMap(
+                  initialCameraPosition: _cameraPosition,
+                  myLocationButtonEnabled: false,
+                  myLocationEnabled: mapData.locationPermissionGranted,
+                  mapType: MapType.hybrid,
+                  polygons: mapData?.polygons ?? Set(),
+                  onMapCreated: _onMapCreated,
+                  onCameraMove: _onCameraMove,
+                  onTap: _onTap,
                 );
-              },
+              }
+              return Container();
+            }),
+        Positioned(
+          bottom: 10,
+          right: 10,
+          child: FloatingActionButton(
+            onPressed: _startNavigationApp,
+            child: Icon(
+              Icons.navigation,
+              color: Theme.of(context).primaryColor,
             ),
+            backgroundColor: Colors.grey[100],
           ),
         ),
-      ),
-      headerHeight: 60,
-      upperLayer: Container(
-        child: StreamBuilder<geojson.Properties>(
+        StreamBuilder<geojson.Properties>(
           stream: _propertiesSubject.stream,
           builder: (buildContext, snapshot) {
-            return Container(
-              constraints: BoxConstraints.expand(),
-              color: Colors.white,
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  "Hier werden mal Informationen zum angeklickten Ort stehen.",
-                  style: TextStyle(
-                    color: Colors.black,
-                    backgroundColor: Colors.white,
-                  ),
-                ),
+            if (!snapshot.hasData) {
+              return Container();
+            }
+            bool hasDescription = snapshot.data.description != null;
+            return SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: DraggableScrollableSheet(
+                initialChildSize: hasDescription ? 0.6 : 1.0,
+                minChildSize: 0.0,
+                builder: (context, scrollController) {
+                  return SingleChildScrollView(
+                    controller: scrollController,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16.0),
+                          topRight: Radius.circular(16.0),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(16.0),
+                        child: Text(
+                          snapshot.data.name ?? "",
+                          style: TextStyle(
+                            fontSize: 32
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             );
           },
-        ),
-      ),
-      animationController: _bottomSheetController,
+        )
+      ],
     );
   }
 
+//  @override
+//  Widget build(BuildContext context) {
+//    _eventMapViewModel.localeSubject.value = Localizations.localeOf(context);
+//    return RubberBottomSheet(
+//      scrollController: _scrollController,
+//      lowerLayer: Stack(
+//        children: <Widget>[
+//          StreamBuilder<_GoogleMapData>(
+//              stream: _mapData(),
+//              builder: (buildContext, snapshot) {
+//                if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
+//                  _GoogleMapData mapData = snapshot.data;
+//                  geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
+//                  if (initialMapCenter != null && _cameraPosition == null) {
+//                    _cameraPosition = CameraPosition(target: LatLng(
+//                        initialMapCenter.lat, initialMapCenter.lng),
+//                        zoom: mapData.mapConfig.initialZoomLevel);
+//                  }
+//                  return GoogleMap(
+//                    initialCameraPosition: _cameraPosition,
+//                    myLocationButtonEnabled: false,
+//                    myLocationEnabled: mapData.locationPermissionGranted,
+//                    mapType: MapType.hybrid,
+//                    polygons: mapData?.polygons ?? Set(),
+//                    onMapCreated: _onMapCreated,
+//                    onCameraMove: _onCameraMove,
+//                    onTap: _onTap,
+//                  );
+//                }
+//                return Container();
+//              }),
+//          Positioned(
+//            bottom: 10,
+//            right: 10,
+//            child: FloatingActionButton(
+//              onPressed: _startNavigationApp,
+//              child: Icon(
+//                Icons.navigation,
+//                color: Theme.of(context).primaryColor,
+//              ),
+//              backgroundColor: Colors.grey[100],
+//            ),
+//          )
+//        ],
+//      ),
+//      header: SizedBox.expand(
+//
+//        child: Container(
+//          decoration: BoxDecoration(
+//              color: Colors.white,
+//              borderRadius: BorderRadius.only(
+//                  topLeft: Radius.circular(16),
+//                  topRight: Radius.circular(16)
+//              )
+//          ),
+//          child: Padding(
+//            padding: const EdgeInsets.all(8.0),
+//            child: StreamBuilder<geojson.Properties>(
+//              initialData: geojson.Properties(),
+//              stream: _propertiesSubject.stream,
+//              builder: (buildContext, snapshot) {
+//                return Container(
+//                  child: Text(
+//                    snapshot.data?.name ?? "",
+//                    style: TextStyle(fontSize: 16),
+//                  ),
+//                );
+//              },
+//            ),
+//          ),
+//        ),
+//      ),
+//      headerHeight: 60,
+//      upperLayer: Container(
+//        child: StreamBuilder<geojson.Properties>(
+//          stream: _propertiesSubject.stream,
+//          builder: (buildContext, snapshot) {
+//            return Container(
+//              constraints: BoxConstraints.expand(),
+//              color: Colors.white,
+//              child: Padding(
+//                padding: const EdgeInsets.all(8.0),
+//                child: Text(
+//                  "Hier werden mal Informationen zum angeklickten Ort stehen.",
+//                  style: TextStyle(
+//                    color: Colors.black,
+//                    backgroundColor: Colors.white,
+//                  ),
+//                ),
+//              ),
+//            );
+//          },
+//        ),
+//      ),
+//      animationController: _bottomSheetController,
+//    );
+//  }
+
   void _onPolygonTapped(geojson.Properties properties) {
     _propertiesSubject.add(properties);
-    _bottomSheetController.animateTo(to: 0.3);
+//    _bottomSheetController.animateTo(to: 0.3);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -177,7 +262,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onTap(LatLng tapCoords) {
-    _bottomSheetController.collapse();
+//    _bottomSheetController.collapse();
   }
 
   void _startNavigationApp() async {
