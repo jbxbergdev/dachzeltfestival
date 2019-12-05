@@ -11,7 +11,5 @@ class LegalViewModel {
 
   LegalViewModel(this._legalRepo);
 
-  BehaviorSubject<Locale> get localeSubject => _legalRepo.localeSubject;
-
   Observable<String> legalMarkdown() => _legalRepo.legalMarkdown();
 }

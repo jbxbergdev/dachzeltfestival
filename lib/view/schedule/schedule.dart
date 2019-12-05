@@ -27,7 +27,6 @@ class Schedule extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _scheduleViewModel.localeSubject.value = Localizations.localeOf(context);
     return StreamBuilder<Map<DateTime, List<ScheduleItem>>>(
       stream: _scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMap),
       builder: (BuildContext context, AsyncSnapshot<Map<DateTime, List<ScheduleItem>>> asyncSnapshot) {

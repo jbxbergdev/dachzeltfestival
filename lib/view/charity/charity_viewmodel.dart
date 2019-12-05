@@ -11,7 +11,5 @@ class CharityViewModel {
 
   CharityViewModel(this._charityRepo);
 
-  BehaviorSubject<Locale> get localeSubject => _charityRepo.localeSubject;
-
   Observable<CharityConfig> get charityConfig => _charityRepo.charityConfig;
 }

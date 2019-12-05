@@ -2,9 +2,7 @@ import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
@@ -61,21 +59,13 @@ class _MainWidgetState extends State<MainWidget> {
   void initState() {
     super.initState();
     initializeDateFormatting();
+    _initNotificationHandling();
     _pages = <Widget>[
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
       _charityBuilder.build(PageStorageKey('Charity')),
       _legalBuilder.build(PageStorageKey('Legal')),
     ];
-  }
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      if (_selectedIndex == 1) {
-        _mainViewModel.requestLocationPermission();
-      }
-    });
   }
 
   @override
@@ -148,5 +138,18 @@ class _MainWidgetState extends State<MainWidget> {
             ) : null,
           );
         });
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      if (_selectedIndex == 1) {
+        _mainViewModel.requestLocationPermission();
+      }
+    });
+  }
+
+  void _initNotificationHandling() {
+    _mainViewModel.notifications.listen((notification) => print('##### $notification'));
   }
 }

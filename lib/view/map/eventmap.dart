@@ -71,7 +71,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    _eventMapViewModel.localeSubject.value = Localizations.localeOf(context);
+    print('##### EventMapState.build()');
     return RubberBottomSheet(
       scrollController: _scrollController,
       lowerLayer: Stack(
@@ -79,6 +79,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           StreamBuilder<_GoogleMapData>(
               stream: _mapData(),
               builder: (buildContext, snapshot) {
+                print('##### map StreamBuilder triggered, snapshot: $snapshot, data: ${snapshot?.data}');
                 if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
                   _GoogleMapData mapData = snapshot.data;
                   geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
@@ -87,6 +88,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                         initialMapCenter.lat, initialMapCenter.lng),
                         zoom: mapData.mapConfig.initialZoomLevel);
                   }
+                  print('##### build GoogleMap, initialCameraPosition: $_cameraPosition, mapData: ${mapData}, myLocationEnabled: ${mapData?.locationPermissionGranted}, polygons: ${mapData.polygons}');
                   return GoogleMap(
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
@@ -199,6 +201,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    print('##### _onMapCreated, controller: $controller');
+    controller.getVisibleRegion().then((visibleRegion) => print('##### visibleRegion: $visibleRegion'));
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
   }

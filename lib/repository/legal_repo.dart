@@ -1,11 +1,10 @@
 import 'dart:ui';
 
+import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class LegalRepo {
-  // ignore: close_sinks
-  BehaviorSubject<Locale> localeSubject;
   Observable<String> legalMarkdown();
 }
 
@@ -13,12 +12,13 @@ class LegalRepoImpl extends LegalRepo {
 
   static const String translatableFilePath = "assets/text/legalmarkdown";
 
-  @override
-  BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
+  final LocaleState _localeState;
+
+  LegalRepoImpl(this._localeState);
 
   @override
   Observable<String> legalMarkdown() {
-    return localeSubject.where((locale) => locale != null)
+    return _localeState.localeSubject.where((locale) => locale != null)
         .flatMap((locale) => _loadLocalizedAssetFile(locale).asStream());
   }
 

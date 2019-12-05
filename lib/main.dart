@@ -31,6 +31,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return MaterialApp(
       onGenerateTitle: (context) => Translations.of(context)[AppString.appName],
       home: _myStatefulWidgetBuilder.build(),

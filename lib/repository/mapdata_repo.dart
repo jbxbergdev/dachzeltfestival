@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
@@ -18,8 +19,6 @@ import 'dart:convert';
 
 abstract class MapDataRepo {
   Observable<FeatureCollection> mapFeatures();
-  // ignore: close_sinks
-  BehaviorSubject<Locale> localeSubject;
   Observable<MapConfig> mapConfig();
 }
 
@@ -35,14 +34,11 @@ class MapDataRepoImpl extends MapDataRepo {
   final Firestore _firestore;
   final FirebaseStorage _firebaseStorage;
   final Authenticator _authenticator;
+  final LocaleState _localeState;
 
   BehaviorSubject<MapConfig> _mapConfig;
 
-  MapDataRepoImpl(this._firestore, this._firebaseStorage, this._authenticator);
-
-  @override
-  // ignore: close_sinks
-  final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
+  MapDataRepoImpl(this._firestore, this._firebaseStorage, this._authenticator, this._localeState);
 
   @override
   Observable<FeatureCollection> mapFeatures() {
@@ -50,7 +46,7 @@ class MapDataRepoImpl extends MapDataRepo {
       // listen for FeatureCollection from local map
         _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
         // listen for venue data on Cloud Firestore
-        _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), localeSubject,
+        _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), _localeState.localeSubject,
             (featureCollection, venueDocuments, locale) {
           // if there is venue information from the Cloud Firestore collection, modify Features with it
           return FeatureCollection(

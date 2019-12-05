@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
@@ -14,10 +12,6 @@ class EventMapViewModel {
   final PermissionRepo _permissionRepo;
 
   EventMapViewModel(this._mapDataRepo, this._permissionRepo);
-
-  BehaviorSubject<Locale> get localeSubject {
-    return _mapDataRepo.localeSubject;
-  }
 
   Observable<MapData> mapData() {
     return Observable.combineLatest3(_mapDataRepo.mapFeatures(), _mapDataRepo.mapConfig(), _permissionRepo.locationPermissionState,

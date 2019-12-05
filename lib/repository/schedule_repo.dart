@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
@@ -9,8 +10,6 @@ import 'package:rxdart/rxdart.dart';
 
 abstract class ScheduleRepo {
   Observable<List<ScheduleItem>> observeSchedule();
-  // ignore: close_sinks
-  BehaviorSubject localeSubject;
 }
 
 class ScheduleRepoImpl extends ScheduleRepo {
@@ -20,18 +19,16 @@ class ScheduleRepoImpl extends ScheduleRepo {
 
   final Firestore _firestore;
   final Authenticator _authenticator;
+  final LocaleState _localeState;
 
-  @override
-  final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
-
-  ScheduleRepoImpl(this._firestore, this._authenticator);
+  ScheduleRepoImpl(this._firestore, this._authenticator, this._localeState);
 
   @override
   Observable<List<ScheduleItem>> observeSchedule() {
     Observable<List<ScheduleItem>> scheduleFromFirestore = Observable.combineLatest3<QuerySnapshot, QuerySnapshot, Locale, List<ScheduleItem>>(
         _firestore.collection(_FIRESTORE_COLLECTION_SCHEDULE).snapshots(),
         _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots(),
-        localeSubject.distinct(),
+        _localeState.localeSubject.distinct(),
         _mapSchedule);
 
     return _authenticator.authenticated.flatMap(

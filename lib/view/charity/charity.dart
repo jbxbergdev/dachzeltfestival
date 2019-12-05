@@ -24,7 +24,6 @@ class Charity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _charityViewModel.localeSubject.value = Localizations.localeOf(context);
     return StreamBuilder<CharityConfig>(
       stream: _charityViewModel.charityConfig,
       builder: (buildContext, snapshot) {

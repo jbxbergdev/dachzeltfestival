@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
@@ -17,8 +18,9 @@ class ConfigRepoImpl extends ConfigRepo {
 
   final Firestore _firestore;
   final Authenticator _authenticator;
+  final LocaleState _localeState;
 
-  ConfigRepoImpl(this._firestore, this._authenticator);
+  ConfigRepoImpl(this._firestore, this._authenticator, this._localeState);
 
   @override
   Observable<AppConfig> get appConfig {
@@ -35,7 +37,7 @@ class ConfigRepoImpl extends ConfigRepo {
 
   @override
   // ignore: close_sinks
-  final BehaviorSubject<Locale> localeSubject = BehaviorSubject.seeded(null);
+  BehaviorSubject<Locale> get localeSubject => _localeState.localeSubject;
 
   AppConfig _mapConfig(DocumentSnapshot documentSnapshot, PackageInfo packageInfo, Locale locale) {
     int appVersion = int.parse(packageInfo.buildNumber);
