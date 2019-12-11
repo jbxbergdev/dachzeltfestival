@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/charity_repo.dart';
 import 'package:dachzeltfestival/repository/config_repo.dart';
+import 'package:dachzeltfestival/repository/firebase_message_parser.dart';
 import 'package:dachzeltfestival/repository/legal_repo.dart';
 import 'package:dachzeltfestival/repository/notification_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
@@ -63,7 +66,8 @@ class AppModule {
 
   @provide
   @singleton
-  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, LocaleState localeState) => NotificationRepoImpl(firebaseMessaging, localeState);
+  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
+      NotificationRepoImpl(firebaseMessaging, firebaseMessageParser, localeState);
 
   @provide
   @singleton
@@ -71,6 +75,16 @@ class AppModule {
 
   @provide
   FirebaseMessaging firebaseMessaging() => FirebaseMessaging();
+
+  @provide
+  FirebaseMessageParser firebaseMessageParser() {
+    if (Platform.isIOS) {
+      return IosFirebaseMessageParser();
+    } else if (Platform.isAndroid) {
+      return AndroidFirebaseMessageParser();
+    }
+    return null;
+  }
 
   @provide
   Firestore firestore() => Firestore.instance;

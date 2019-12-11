@@ -4,6 +4,7 @@ import 'dart:ui';
 
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:dachzeltfestival/repository/firebase_message_parser.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:dachzeltfestival/model/notification/notification.dart' as notification;
@@ -17,8 +18,9 @@ class NotificationRepoImpl extends NotificationRepo {
 
   final FirebaseMessaging _firebaseMessaging;
   final LocaleState _localeState;
+  final FirebaseMessageParser _firebaseMessageParser;
 
-  NotificationRepoImpl(this._firebaseMessaging, this._localeState);
+  NotificationRepoImpl(this._firebaseMessaging, this._firebaseMessageParser, this._localeState);
 
   /// This must only have one subscription!
   @override
@@ -28,19 +30,19 @@ class NotificationRepoImpl extends NotificationRepo {
     BehaviorSubject<notification.Notification> notificationSubject = BehaviorSubject.seeded(null);
     _firebaseMessaging.configure(
       onLaunch: (Map<String, dynamic> message) async {
-        notificationSubject.add(_parseNotification(message));
+        notificationSubject.add(_firebaseMessageParser.parse(message));
       },
       onMessage: (Map<String, dynamic> message) async {
-        notificationSubject.add(_parseNotification(message));
+        notificationSubject.add(_firebaseMessageParser.parse(message));
       },
       onResume: (Map<String, dynamic> message) async {
-        notificationSubject.add(_parseNotification(message));
+        notificationSubject.add(_firebaseMessageParser.parse(message));
       },
     );
 
     // Set up language-based topic subscription
     List<String> supportedLanguages = Translations.supportedLanguages;
-    _localeState.localeSubject.listen((locale) {
+    _localeState.localeSubject.where((locale) => locale != null).listen((locale) {
       // on a new locale, first unsubscribe from current language topic (i.e. unsubscribe from all topics)
       supportedLanguages.forEach((langCode) => _firebaseMessaging.unsubscribeFromTopic(langCode));
 
@@ -54,11 +56,5 @@ class NotificationRepoImpl extends NotificationRepo {
     return notificationSubject.where((notification) => notification != null);
   }
 
-  notification.Notification _parseNotification(Map<String, dynamic> fcMessage) {
-    return notification.Notification(
-      fcMessage['notification']['title'],
-      fcMessage['notification']['body'],
-    );
-  }
-
 }
+

@@ -2,6 +2,7 @@ import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
+import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
@@ -59,7 +60,6 @@ class _MainWidgetState extends State<MainWidget> {
   void initState() {
     super.initState();
     initializeDateFormatting();
-    _initNotificationHandling();
     _pages = <Widget>[
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
@@ -70,6 +70,7 @@ class _MainWidgetState extends State<MainWidget> {
 
   @override
   Widget build(BuildContext context) {
+    _initNotificationHandling(context);
     Translations translations = Translations.of(context);
     _mainViewModel.localeSubject.value = Localizations.localeOf(context);
     return StreamBuilder<AppConfig>(
@@ -149,7 +150,7 @@ class _MainWidgetState extends State<MainWidget> {
     });
   }
 
-  void _initNotificationHandling() {
-    _mainViewModel.notifications.listen((notification) => print('##### $notification'));
+  void _initNotificationHandling(BuildContext context) {
+    _mainViewModel.notifications.listen((notification) => showNotificationDialog(notification, context));
   }
 }
