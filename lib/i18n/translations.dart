@@ -62,6 +62,10 @@ class Translations {
   static Translations of(BuildContext context) => Localizations.of<Translations>(context, Translations);
 }
 
+extension Bla on BuildContext {
+  Translations get translations => Translations.of(this);
+}
+
 class TranslationsDelegate extends LocalizationsDelegate<Translations> {
 
   @override

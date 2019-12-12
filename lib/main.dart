@@ -33,7 +33,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     print('##### App rebuild ');
     return MaterialApp(
-      onGenerateTitle: (context) => Translations.of(context)[AppString.appName],
+      onGenerateTitle: (context) => context.translations[AppString.appName],
       home: _myStatefulWidgetBuilder.build(),
       supportedLocales: Translations.supportedLanguages.map((language)  => Locale(language)),
       localizationsDelegates: [TranslationsDelegate(),

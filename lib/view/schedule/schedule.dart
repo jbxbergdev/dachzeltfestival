@@ -50,7 +50,6 @@ class Schedule extends StatelessWidget {
       return listContent;
     }
 
-    Translations translations = Translations.of(context);
     ThemeData theme = Theme.of(context);
     String language = Localizations.localeOf(context).languageCode;
     DateFormat hourMinute = DateFormat.Hm(language);
@@ -160,7 +159,7 @@ class Schedule extends StatelessWidget {
                                   ],
                                 ),
                                 Text(
-                                  "${translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
+                                  "${context.translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
                                   style: TextStyle(
                                     fontSize: 12.0,
                                     color: Colors.grey[500]

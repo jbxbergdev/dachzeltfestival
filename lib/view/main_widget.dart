@@ -72,7 +72,6 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   Widget build(BuildContext context) {
     _initNotificationHandling(context);
-    Translations translations = Translations.of(context);
     _mainViewModel.localeSubject.value = Localizations.localeOf(context);
     return StreamBuilder<AppConfig>(
         stream: _mainViewModel.appConfig,
@@ -122,19 +121,19 @@ class _MainWidgetState extends State<MainWidget> {
               items: <BottomNavigationBarItem>[
                 BottomNavigationBarItem(
                   icon: Icon(Icons.event),
-                  title: Text(translations[AppString.navItemSchedule]),
+                  title: Text(context.translations[AppString.navItemSchedule]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.map),
-                  title: Text(translations[AppString.navItemMap]),
+                  title: Text(context.translations[AppString.navItemMap]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.favorite_border),
-                  title: Text(translations[AppString.navItemDonate]),
+                  title: Text(context.translations[AppString.navItemDonate]),
                 ),
                 BottomNavigationBarItem(
                   icon: Icon(Icons.info_outline),
-                  title: Text(translations[AppString.navItemInfo]),
+                  title: Text(context.translations[AppString.navItemInfo]),
                 ),
               ],
               currentIndex: _selectedIndex,

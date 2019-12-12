@@ -5,7 +5,6 @@ import 'package:flutter/widgets.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void showNotificationDialog(notification.Notification notification, BuildContext context)  {
-  Translations translations = Translations.of(context);
   showDialog(
     context: context,
     barrierDismissible: false,
@@ -16,14 +15,14 @@ void showNotificationDialog(notification.Notification notification, BuildContext
         actions: <Widget>[
           notification.url != null ?
           FlatButton(
-              child: Text(translations[AppString.notificationDialogOpenLink]),
+              child: Text(context.translations[AppString.notificationDialogOpenLink]),
               onPressed: () {
                 launch(notification.url);
                 Navigator.of(context).pop();
                 },
             ) : Container(),
           FlatButton(
-            child: Text(translations[AppString.ok]),
+            child: Text(context.translations[AppString.ok]),
             onPressed: () => Navigator.of(context).pop(),
           )
         ],
