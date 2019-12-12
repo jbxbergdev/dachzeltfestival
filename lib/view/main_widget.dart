@@ -4,6 +4,7 @@ import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
@@ -81,10 +82,12 @@ class _MainWidgetState extends State<MainWidget> {
             appBar: AppBar(
               title: RichText(
                 text: TextSpan(
-                    style: TextStyle(
-                        fontFamily: 'AdventPro',
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500
+                    style: GoogleFonts.adventPro(
+                        textStyle: TextStyle(
+                            fontFamily: 'AdventPro',
+                          fontSize: 24,
+                          fontWeight: FontWeight.w500
+                      ),
                     ),
                     children: <TextSpan>[
                       TextSpan(
