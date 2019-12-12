@@ -62,7 +62,7 @@ class Translations {
   static Translations of(BuildContext context) => Localizations.of<Translations>(context, Translations);
 }
 
-extension Bla on BuildContext {
+extension ContextTranslations on BuildContext {
   Translations get translations => Translations.of(this);
 }
 
