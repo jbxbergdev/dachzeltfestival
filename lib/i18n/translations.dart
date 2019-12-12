@@ -8,7 +8,7 @@ enum AppString {
   navItemDonate,
   navItemInfo,
   scheduleUntil,
-  ok,
+  dismiss,
   notificationDialogOpenLink,
 }
 
@@ -47,13 +47,13 @@ class Translations {
       de: "bis",
       en: "until"
     },
-    AppString.ok: {
-      de: "OK",
-      en: "OK,"
+    AppString.dismiss: {
+      de: "SCHLIESSEN",
+      en: "DISMISS,"
     },
     AppString.notificationDialogOpenLink: {
-      de: "Link öffnen",
-      en: "Open link"
+      de: "LINK ÖFFNEN",
+      en: "OPEN LINK"
     }
   };
 
