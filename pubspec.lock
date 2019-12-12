@@ -14,7 +14,14 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.34.3"
+    version: "0.37.1+1"
+  archive:
+    dependency: transitive
+    description:
+      name: archive
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.11"
   args:
     dependency: transitive
     description:
@@ -28,7 +35,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.0"
+    version: "2.4.0"
   auto_size_text:
     dependency: "direct main"
     description:
@@ -49,42 +56,42 @@ packages:
       name: build
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.0"
+    version: "1.2.2"
   build_config:
     dependency: transitive
     description:
       name: build_config
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.2"
+    version: "0.4.1+1"
   build_daemon:
     dependency: transitive
     description:
       name: build_daemon
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.3"
+    version: "2.1.0"
   build_resolvers:
     dependency: transitive
     description:
       name: build_resolvers
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.3"
+    version: "1.2.1"
   build_runner:
     dependency: "direct dev"
     description:
       name: build_runner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.3"
+    version: "1.7.2"
   build_runner_core:
     dependency: transitive
     description:
       name: build_runner_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.0.1"
+    version: "4.2.1"
   built_collection:
     dependency: transitive
     description:
@@ -161,7 +168,7 @@ packages:
       name: dart_style
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.2.3"
+    version: "1.2.10"
   firebase_auth:
     dependency: "direct main"
     description:
@@ -232,7 +239,7 @@ packages:
       name: front_end
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.9+1"
+    version: "0.1.21+1"
   glob:
     dependency: transitive
     description:
@@ -260,7 +267,7 @@ packages:
       name: html
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.14.0+2"
+    version: "0.14.0+3"
   http:
     dependency: transitive
     description:
@@ -282,13 +289,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.3"
+  image:
+    dependency: transitive
+    description:
+      name: image
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.4"
   inject:
     dependency: "direct main"
     description:
       path: "package/inject"
       ref: HEAD
-      resolved-ref: "4ffd3d339d8b776b2bec8d95ae6d3d168856e76c"
-      url: "git@github.com:google/inject.dart.git"
+      resolved-ref: "40f54cc75368329bb184e0693c4170c0ccc8eb08"
+      url: "git@github.com:jbxbergdev/inject.dart.git"
     source: git
     version: "1.0.0-alpha"
   inject_generator:
@@ -296,8 +310,8 @@ packages:
     description:
       path: "package/inject_generator"
       ref: HEAD
-      resolved-ref: "4ffd3d339d8b776b2bec8d95ae6d3d168856e76c"
-      url: "git@github.com:google/inject.dart.git"
+      resolved-ref: a823e20200050c3fd1143e484b435609b09ad8c8
+      url: "git@github.com:jbxbergdev/inject.dart.git"
     source: git
     version: "1.0.0-alpha"
   intl:
@@ -306,7 +320,7 @@ packages:
       name: intl
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.15.8"
+    version: "0.16.0"
   io:
     dependency: transitive
     description:
@@ -334,7 +348,7 @@ packages:
       name: kernel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.9+1"
+    version: "0.3.21+1"
   logging:
     dependency: transitive
     description:
@@ -355,14 +369,14 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.5"
+    version: "0.12.6"
   meta:
     dependency: transitive
     description:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.1.7"
+    version: "1.1.8"
   mime:
     dependency: transitive
     description:
@@ -421,6 +435,13 @@ packages:
       url: "git@github.com:jbxbergdev/flutter-permission-handler.git"
     source: git
     version: "3.3.0"
+  petitparser:
+    dependency: transitive
+    description:
+      name: petitparser
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.4.0"
   platform:
     dependency: transitive
     description:
@@ -428,13 +449,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.2.1"
-  plugin:
-    dependency: transitive
-    description:
-      name: plugin
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.2.0+3"
   pool:
     dependency: transitive
     description:
@@ -551,7 +565,7 @@ packages:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.2.5"
+    version: "0.2.11"
   timing:
     dependency: transitive
     description:
@@ -608,6 +622,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.15"
+  xml:
+    dependency: transitive
+    description:
+      name: xml
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.5.0"
   yaml:
     dependency: transitive
     description:
@@ -616,5 +637,5 @@ packages:
     source: hosted
     version: "2.1.16"
 sdks:
-  dart: ">=2.5.0 <3.0.0"
+  dart: ">=2.6.0-dev.8.0 <3.0.0"
   flutter: ">=1.9.1+hotfix.5 <2.0.0"
