@@ -22,7 +22,7 @@ class MainViewModel {
 
   Observable<AppConfig> get appConfig => _configRepo.appConfig;
 
-  Observable<notification.Notification> get notifications => _notificationRepo.notifications();
+  Observable<notification.Notification> get notifications => _notificationRepo.newNotifications();
 
   void requestLocationPermission() {
     _permissionRepo.requestLocationPermission();

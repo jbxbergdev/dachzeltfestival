@@ -2,6 +2,7 @@ import 'dart:core';
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:dachzeltfestival/repository/firebase_message_parser.dart';
@@ -11,32 +12,35 @@ import 'package:dachzeltfestival/model/notification/notification.dart' as notifi
 
 abstract class NotificationRepo {
   /// Must only have one subscription at a time!
-  Observable<notification.Notification> notifications();
+  Observable<notification.Notification> newNotifications();
+
+  Observable<List<notification.Notification>> allNotifications();
 }
 
 class NotificationRepoImpl extends NotificationRepo {
 
   final FirebaseMessaging _firebaseMessaging;
+  final Firestore _firestore;
   final LocaleState _localeState;
   final FirebaseMessageParser _firebaseMessageParser;
 
-  NotificationRepoImpl(this._firebaseMessaging, this._firebaseMessageParser, this._localeState);
+  NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState);
 
   /// This must only have one subscription!
   @override
-  Observable<notification.Notification> notifications() {
+  Observable<notification.Notification> newNotifications() {
     _firebaseMessaging.requestNotificationPermissions();
     // ignore: close_sinks
-    BehaviorSubject<notification.Notification> notificationSubject = BehaviorSubject.seeded(null);
+    BehaviorSubject<String> fcmMessageSubject = BehaviorSubject.seeded(null);
     _firebaseMessaging.configure(
       onLaunch: (Map<String, dynamic> message) async {
-        notificationSubject.add(_firebaseMessageParser.parse(message));
+        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onMessage: (Map<String, dynamic> message) async {
-        notificationSubject.add(_firebaseMessageParser.parse(message));
+        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onResume: (Map<String, dynamic> message) async {
-        notificationSubject.add(_firebaseMessageParser.parse(message));
+        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
     );
 
@@ -53,8 +57,19 @@ class NotificationRepoImpl extends NotificationRepo {
         _firebaseMessaging.subscribeToTopic(supportedLanguages[0]);
       }
     });
-    return notificationSubject.where((notification) => notification != null);
+    return fcmMessageSubject.where((documentId) => documentId != null)
+        .flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
+        .map((documentSnapshot) => documentSnapshot.asNotification));
   }
 
+  @override
+  Observable<List<notification.Notification>> allNotifications() {
+    return Observable(_firestore.collection('notifications').snapshots()
+        .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification)));
+  }
+}
+
+extension _NotificationParser on DocumentSnapshot {
+  notification.Notification get asNotification => notification.Notification(this['title'], this['message'], this['url']);
 }
 
