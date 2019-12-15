@@ -3,7 +3,6 @@ import 'package:dachzeltfestival/model/notification/notification.dart' as notifi
 import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void showNotificationDialog(notification.Notification notification, BuildContext context)  {

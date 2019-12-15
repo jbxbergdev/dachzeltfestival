@@ -1,4 +1,5 @@
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
+import 'package:dachzeltfestival/testui.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
@@ -65,7 +66,8 @@ class _MainWidgetState extends State<MainWidget> {
       _scheduleBuilder.build(PageStorageKey('Schedule')),
       _eventMapBuilder.build(PageStorageKey('Map')),
       _charityBuilder.build(PageStorageKey('Charity')),
-      _legalBuilder.build(PageStorageKey('Legal')),
+      /*_legalBuilder.build(PageStorageKey('Legal')),*/
+      TestUi(),
     ];
   }
 
