@@ -5,10 +5,6 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-// exports.helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
-
 exports.notification = functions.firestore
     .document('notifications/{documentId}')
     .onCreate((snapshot, context) => {
@@ -26,8 +22,6 @@ exports.notification = functions.firestore
             },
             data: {
                 documentId: documentId,
-                title: title,
-                body: message
             }
         };
         console.log(document)

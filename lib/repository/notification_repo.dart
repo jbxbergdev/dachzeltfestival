@@ -1,6 +1,4 @@
 import 'dart:core';
-import 'dart:io';
-import 'dart:ui';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
