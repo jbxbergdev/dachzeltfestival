@@ -1,3 +1,4 @@
+import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/testui.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
@@ -17,44 +18,35 @@ typedef Provider<T> = T Function();
 @provide
 class MainWidgetBuilder {
 
-  final EventMapBuilder _eventMapBuilder;
-  final ScheduleBuilder _scheduleBuilder;
-  final CharityBuilder _charityBuilder;
-  final LegalBuilder _legalBuilder;
+  final MainLevelBuilders _builders;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidgetBuilder(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._vmProvider);
+  MainWidgetBuilder(this._builders, this._vmProvider);
 
-  MainWidget build() => MainWidget(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _legalBuilder, _vmProvider);
+  MainWidget build() => MainWidget(_builders, _vmProvider);
 }
 
 class MainWidget extends StatefulWidget {
 
-  final EventMapBuilder _eventMapBuilder;
-  final ScheduleBuilder _scheduleBuilder;
-  final CharityBuilder _charityBuilder;
-  final LegalBuilder _legalBuilder;
+  final MainLevelBuilders _builders;
   final Provider<MainViewModel> _vmProvider;
 
-  MainWidget(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._vmProvider);
+  MainWidget(this._builders, this._vmProvider);
 
   @override
-  _MainWidgetState createState() => _MainWidgetState(_eventMapBuilder, _scheduleBuilder, _charityBuilder, _legalBuilder, _vmProvider());
+  _MainWidgetState createState() => _MainWidgetState(_builders, _vmProvider());
 }
 
 class _MainWidgetState extends State<MainWidget> {
 
-  final EventMapBuilder _eventMapBuilder;
-  final ScheduleBuilder _scheduleBuilder;
-  final CharityBuilder _charityBuilder;
-  final LegalBuilder _legalBuilder;
+  final MainLevelBuilders _builders;
   final MainViewModel _mainViewModel;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(
       fontSize: 30, fontWeight: FontWeight.bold);
 
-  _MainWidgetState(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._mainViewModel);
+  _MainWidgetState(this._builders, this._mainViewModel);
 
   List<Widget> _pages;
 
@@ -63,11 +55,11 @@ class _MainWidgetState extends State<MainWidget> {
     super.initState();
     initializeDateFormatting();
     _pages = <Widget>[
-      _scheduleBuilder.build(PageStorageKey('Schedule')),
-      _eventMapBuilder.build(PageStorageKey('Map')),
-      _charityBuilder.build(PageStorageKey('Charity')),
+      _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
+      _builders.eventMapBuilder.build(PageStorageKey('Map')),
+      _builders.charityBuilder.build(PageStorageKey('Charity')),
       /*_legalBuilder.build(PageStorageKey('Legal')),*/
-      TestUi(),
+      _builders.infoBuilder.build((PageStorageKey('Info'))),
     ];
   }
 

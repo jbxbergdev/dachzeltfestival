@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/charity_repo.dart';
@@ -11,6 +12,8 @@ import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
 import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
+import 'package:dachzeltfestival/view/map/eventmap.dart';
+import 'package:dachzeltfestival/view/notification/notification_list_viewmodel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -68,6 +71,9 @@ class AppModule {
   @singleton
   NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, Firestore firestore, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
       NotificationRepoImpl(firebaseMessaging, firestore, firebaseMessageParser, localeState);
+
+  @provide
+  NotificationListViewModel notificationListViewModel(NotificationRepo notificationRepo) => NotificationListViewModel(notificationRepo);
 
   @provide
   @singleton

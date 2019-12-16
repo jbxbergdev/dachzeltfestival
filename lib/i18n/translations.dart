@@ -10,6 +10,7 @@ enum AppString {
   scheduleUntil,
   dismiss,
   notificationDialogOpenLink,
+  notificationListTitle,
 }
 
 class Translations {
@@ -54,6 +55,10 @@ class Translations {
     AppString.notificationDialogOpenLink: {
       de: "LINK ÖFFNEN",
       en: "OPEN LINK"
+    },
+    AppString.notificationListTitle: {
+      de: "News",
+      en: "News"
     }
   };
 

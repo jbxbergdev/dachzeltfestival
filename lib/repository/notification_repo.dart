@@ -62,8 +62,8 @@ class NotificationRepoImpl extends NotificationRepo {
 
   @override
   Observable<List<notification.Notification>> allNotifications() {
-    return Observable(_firestore.collection('notifications').snapshots()
-        .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification)));
+    return Observable(_firestore.collection('notifications').snapshots())
+        .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification).toList()).doOnError((error) => print(error));
   }
 }
 
