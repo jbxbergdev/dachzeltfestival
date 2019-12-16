@@ -5,7 +5,9 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-exports.notification = functions.firestore
+exports.notification = functions
+    .region('europe-west1')
+    .firestore
     .document('notifications/{documentId}')
     .onCreate((snapshot, context) => {
         const document = snapshot.data();
