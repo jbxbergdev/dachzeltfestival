@@ -35,28 +35,63 @@ class NotificationList extends StatelessWidget {
         stream: _viewModel.notifications(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            return ListView.builder(
-              itemCount: snapshot.data.length,
-              itemBuilder: (context, index) {
-                notification.Notification item = snapshot.data[index];
-                return Card(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      ListTile(
-                        title: Text(item.title),
-                        subtitle: Text(item.message),
+            return Container(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              child: ListView.builder(
+                itemCount: snapshot.data.length,
+                itemBuilder: (context, index) {
+                  notification.Notification item = snapshot.data[index];
+                  double paddingAbove = index == 0 ? 12.0 : 4.0;
+                  double paddingBelow = index == snapshot.data.length - 1 ? 12.0 : 4.0;
+                  return Padding(
+                    padding: EdgeInsets.only(left: 8.0, top: paddingAbove, right: 8.0, bottom: paddingBelow),
+                    child: Card(
+                      elevation: 4.0,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: <Widget>[
+                          Padding(
+                            padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0),
+                            child: Column(
+                              children: <Widget>[
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 12.0),
+                                  child: Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      item.title,
+                                      style: TextStyle(
+                                        fontSize: 24.0,
+                                        fontWeight: FontWeight.w300,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text(
+                                      item.message,
+                                      style: TextStyle(
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w300,
+                                      )
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                         item.url != null ? ButtonBar(
+                            children: <Widget>[FlatButton(
+                              child: Text(context.translations[AppString.notificationDialogOpenLink]),
+                              onPressed: () => launch(item.url),
+                            )],
+                          ) : Container(),
+                        ],
                       ),
-                     item.url != null ? ButtonBar(
-                        children: <Widget>[FlatButton(
-                          child: Text(context.translations[AppString.notificationDialogOpenLink]),
-                          onPressed: () => launch(item.url),
-                        )],
-                      ) : Container(),
-                    ],
-                  ),
-                );
-              },
+                    ),
+                  );
+                },
+              ),
             );
           }
           return Container();

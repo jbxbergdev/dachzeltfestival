@@ -71,6 +71,11 @@ extension ContextTranslations on BuildContext {
   Translations get translations => Translations.of(this);
 }
 
+extension LocaleExt on Locale {
+  String get supportedOrDefaultLangCode =>
+      Translations.supportedLanguages.contains(this.languageCode) ? this.languageCode : Translations.supportedLanguages[0];
+}
+
 class TranslationsDelegate extends LocalizationsDelegate<Translations> {
 
   @override
