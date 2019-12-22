@@ -21,28 +21,23 @@ class NotificationRepoImpl extends NotificationRepo {
   final Firestore _firestore;
   final LocaleState _localeState;
   final FirebaseMessageParser _firebaseMessageParser;
+  final PublishSubject<String> _fcmMessageSubject = PublishSubject();
+  Observable<String> _newNotificationIds;
 
-  NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState);
-
-  /// This must only have one subscription!
-  @override
-  Observable<notification.Notification> newNotifications() {
+  NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState) {
+    _newNotificationIds = _fcmMessageSubject.where((messageId) => messageId != null).distinct();
     _firebaseMessaging.requestNotificationPermissions();
-    // ignore: close_sinks
-    BehaviorSubject<String> fcmMessageSubject = BehaviorSubject.seeded(null);
     _firebaseMessaging.configure(
       onLaunch: (Map<String, dynamic> message) async {
-        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
+        _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onMessage: (Map<String, dynamic> message) async {
-        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
+        _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onResume: (Map<String, dynamic> message) async {
-        fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
+        _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
     );
-
-    // Set up language-based topic subscription
     List<String> supportedLanguages = Translations.supportedLanguages;
     _localeState.localeSubject.where((locale) => locale != null).listen((locale) {
       // on a new locale, first unsubscribe from current language topic (i.e. unsubscribe from all topics)
@@ -55,8 +50,14 @@ class NotificationRepoImpl extends NotificationRepo {
         _firebaseMessaging.subscribeToTopic(supportedLanguages[0]);
       }
     });
-    return fcmMessageSubject.where((documentId) => documentId != null)
-        .flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
+  }
+
+  /// This must only have one subscription!
+  @override
+  Observable<notification.Notification> newNotifications() {
+    print('##### newNotifications()');
+    // Set up language-based topic subscription
+    return _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
         .map((documentSnapshot) => documentSnapshot.asNotification));
   }
 
@@ -72,6 +73,7 @@ class NotificationRepoImpl extends NotificationRepo {
 }
 
 extension _NotificationParser on DocumentSnapshot {
-  notification.Notification get asNotification => notification.Notification(this['title'], this['message'], this['url']);
+  notification.Notification get asNotification =>
+      notification.Notification(this['title'], this['message'], this['url'], (this['timestamp'] as Timestamp).toDate());
 }
 

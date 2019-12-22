@@ -11,8 +11,20 @@ void showNotificationDialog(notification.Notification notification, BuildContext
     barrierDismissible: false,
     builder: (buildContext) {
       return AlertDialog(
-        title: Text(notification.title),
-        content: Text(notification.message),
+        title: Text(
+          notification.title,
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        content: Text(
+          notification.message,
+            style: TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w300,
+            )
+        ),
         actions: <Widget>[
           FlatButton(
             child: Text(context.translations[AppString.dismiss]),

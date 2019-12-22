@@ -7,6 +7,7 @@ import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rxdart/rxdart.dart';
 import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
 import 'schedule/schedule.dart';
@@ -49,6 +50,8 @@ class _MainWidgetState extends State<MainWidget> {
   _MainWidgetState(this._builders, this._mainViewModel);
 
   List<Widget> _pages;
+
+  final CompositeSubscription _compositeSubscription = CompositeSubscription();
 
   @override
   void initState() {
@@ -126,8 +129,8 @@ class _MainWidgetState extends State<MainWidget> {
                   title: Text(context.translations[AppString.navItemDonate]),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.info_outline),
-                  title: Text(context.translations[AppString.navItemInfo]),
+                  icon: Icon(Icons.arrow_forward),
+                  title: Text(context.translations[AppString.navItemMore]),
                 ),
               ],
               currentIndex: _selectedIndex,
@@ -147,6 +150,12 @@ class _MainWidgetState extends State<MainWidget> {
   }
 
   void _initNotificationHandling(BuildContext context) {
-    _mainViewModel.notifications.listen((notification) => showNotificationDialog(notification, context));
+    _compositeSubscription.add(_mainViewModel.notifications.listen((notification) => showNotificationDialog(notification, context)));
+  }
+
+  @override
+  void dispose() {
+    _compositeSubscription.dispose();
+    super.dispose();
   }
 }

@@ -1,5 +1,5 @@
 import 'package:dachzeltfestival/view/charity/charity.dart';
-import 'package:dachzeltfestival/view/info/info.dart';
+import 'package:dachzeltfestival/view/info/more.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/map/eventmap.dart';
 import 'package:dachzeltfestival/view/schedule/schedule.dart';
@@ -12,7 +12,7 @@ class MainLevelBuilders {
   final ScheduleBuilder _scheduleBuilder;
   final CharityBuilder _charityBuilder;
   final LegalBuilder _legalBuilder;
-  final InfoBuilder _infoBuilder;
+  final MoreBuilder _infoBuilder;
 
   MainLevelBuilders(this._eventMapBuilder, this._scheduleBuilder, this._charityBuilder, this._legalBuilder, this._infoBuilder);
 
@@ -24,5 +24,5 @@ class MainLevelBuilders {
 
   LegalBuilder get legalBuilder => _legalBuilder;
 
-  InfoBuilder get infoBuilder => _infoBuilder;
+  MoreBuilder get infoBuilder => _infoBuilder;
 }

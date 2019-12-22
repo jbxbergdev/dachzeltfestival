@@ -6,11 +6,16 @@ enum AppString {
   navItemSchedule,
   navItemMap,
   navItemDonate,
-  navItemInfo,
+  navItemMore,
   scheduleUntil,
   dismiss,
   notificationDialogOpenLink,
   notificationListTitle,
+  eventInfo,
+  legal,
+  feedback,
+  today,
+  yesterday,
 }
 
 class Translations {
@@ -40,9 +45,9 @@ class Translations {
       de: "Show Love",
       en: "Show Love"
     },
-    AppString.navItemInfo: {
-      de: "Info",
-      en: "Info"
+    AppString.navItemMore: {
+      de: "Mehr",
+      en: "More"
     },
     AppString.scheduleUntil: {
       de: "bis",
@@ -50,7 +55,7 @@ class Translations {
     },
     AppString.dismiss: {
       de: "SCHLIESSEN",
-      en: "DISMISS,"
+      en: "DISMISS"
     },
     AppString.notificationDialogOpenLink: {
       de: "LINK ÖFFNEN",
@@ -59,6 +64,26 @@ class Translations {
     AppString.notificationListTitle: {
       de: "News",
       en: "News"
+    },
+    AppString.eventInfo: {
+      de: "Event Infos",
+      en: "Event Information"
+    },
+    AppString.legal: {
+      de: "Über die App, Impressum",
+      en: "About, Legal"
+    },
+    AppString.feedback: {
+      de: "Feedback",
+      en: "Feedback"
+    },
+    AppString.today: {
+      de: "heute",
+      en: "today"
+    },
+    AppString.yesterday: {
+      de: "gestern",
+      en: "yesterday"
     }
   };
 
