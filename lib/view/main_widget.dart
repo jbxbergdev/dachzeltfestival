@@ -1,19 +1,13 @@
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
-import 'package:dachzeltfestival/testui.dart';
-import 'package:dachzeltfestival/view/charity/charity.dart';
-import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rxdart/rxdart.dart';
-import 'map/eventmap.dart';
 import 'package:inject/inject.dart';
-import 'schedule/schedule.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
-import 'package:dachzeltfestival/model/notification/notification.dart' as notification;
 
 typedef Provider<T> = T Function();
 
@@ -63,7 +57,6 @@ class _MainWidgetState extends State<MainWidget> {
       _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
       _builders.eventMapBuilder.build(PageStorageKey('Map')),
       _builders.charityBuilder.build(PageStorageKey('Charity')),
-      /*_legalBuilder.build(PageStorageKey('Legal')),*/
       _builders.infoBuilder.build((PageStorageKey('Info'))),
     ];
   }

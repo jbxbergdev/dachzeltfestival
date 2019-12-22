@@ -71,7 +71,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    print('##### EventMapState.build()');
     return RubberBottomSheet(
       scrollController: _scrollController,
       lowerLayer: Stack(
@@ -79,7 +78,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           StreamBuilder<_GoogleMapData>(
               stream: _mapData(),
               builder: (buildContext, snapshot) {
-                print('##### map StreamBuilder triggered, snapshot: $snapshot, data: ${snapshot?.data}');
                 if (snapshot.data?.mapConfig != null && snapshot.data.locationPermissionGranted != null) { // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
                   _GoogleMapData mapData = snapshot.data;
                   geojson.Coordinates initialMapCenter = mapData.mapConfig.initalMapCenter;
@@ -88,7 +86,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                         initialMapCenter.lat, initialMapCenter.lng),
                         zoom: mapData.mapConfig.initialZoomLevel);
                   }
-                  print('##### build GoogleMap, initialCameraPosition: $_cameraPosition, mapData: ${mapData}, myLocationEnabled: ${mapData?.locationPermissionGranted}, polygons: ${mapData.polygons}');
                   return GoogleMap(
                     initialCameraPosition: _cameraPosition,
                     myLocationButtonEnabled: false,
@@ -201,8 +198,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    print('##### _onMapCreated, controller: $controller');
-    controller.getVisibleRegion().then((visibleRegion) => print('##### visibleRegion: $visibleRegion'));
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
   }
@@ -231,19 +226,19 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     if (_mapDataStream == null) {
       _mapDataStream = BehaviorSubject.seeded(null);
 
-    Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
-        .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream()
-        .map((googlePolygons) => _GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
+      Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
+          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream()
+          .map((googlePolygons) => _GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
 
-    _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
+      _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
     return _mapDataStream;
   }
 
   @override
-  void deactivate() {
+  void dispose() {
     _compositeSubscription.clear();
-    super.deactivate();
+    super.dispose();
   }
 }
 

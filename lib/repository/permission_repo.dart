@@ -27,8 +27,8 @@ class PermissionRepoImpl extends PermissionRepo {
           return _permissionHandler.requestPermissions([PermissionGroup.locationWhenInUse])
               .then((statusMap) => Future.value(statusMap[PermissionGroup.locationWhenInUse] == PermissionStatus.granted ));
       }
-    }).then((permissionGranted) => {
-      _locationPermission.value = permissionGranted
+    }).then((permissionGranted) {
+      _locationPermission.value = permissionGranted;
     });
   }
 
