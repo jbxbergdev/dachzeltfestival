@@ -1,3 +1,4 @@
+import 'package:dachzeltfestival/view/feedback/feedback.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/notification/notification_list.dart';
 import 'package:flutter/cupertino.dart';
@@ -12,18 +13,20 @@ class MoreBuilder {
 
   final NotificationListBuilder _notificationListBuilder;
   final LegalBuilder _legalBuilder;
+  final FeedbackBuilder _feedbackBuilder;
 
-  MoreBuilder(this._notificationListBuilder, this._legalBuilder);
+  MoreBuilder(this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder);
 
-  More build(Key key) => More(key, _notificationListBuilder, this._legalBuilder);
+  More build(Key key) => More(key, _notificationListBuilder, this._legalBuilder, this._feedbackBuilder);
 }
 
 class More extends StatelessWidget {
 
   final NotificationListBuilder _notificationListBuilder;
   final LegalBuilder _legalBuilder;
+  final FeedbackBuilder _feedbackBuilder;
 
-  More(Key key, this._notificationListBuilder, this._legalBuilder): super(key: key);
+  More(Key key, this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +79,7 @@ class More extends StatelessWidget {
                         () => Text("TODO"));
               case 2:
                 return _buildListItem(context, Icons.send, AppString.feedback,
-                        () => Text("TODO"));
+                        () => _feedbackBuilder.build(PageStorageKey('Feedback')));
               case 3:
                 return _buildListItem(context, Icons.subject, AppString.legal,
                         () => _legalBuilder.build(PageStorageKey('Legal')));

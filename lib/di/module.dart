@@ -10,6 +10,7 @@ import 'package:dachzeltfestival/repository/legal_repo.dart';
 import 'package:dachzeltfestival/repository/notification_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
+import 'package:dachzeltfestival/view/feedback/feedbacl_viewmodel.dart';
 import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:dachzeltfestival/view/map/eventmap.dart';
@@ -58,10 +59,13 @@ class AppModule {
 
   @provide
   @singleton
-  LegalRepo legalRepo(LocaleState localeState) => LegalRepoImpl(localeState);
+  TextRepo legalRepo(LocaleState localeState) => TextRepoImpl(localeState);
 
   @provide
-  LegalViewModel legalViewModel(LegalRepo legalRepo) => LegalViewModel(legalRepo);
+  LegalViewModel legalViewModel(TextRepo textRepo) => LegalViewModel(textRepo);
+
+  @provide
+  FeedbackViewModel feedbackViewModel(TextRepo textRepo) => FeedbackViewModel(textRepo);
 
   @provide
   @singleton

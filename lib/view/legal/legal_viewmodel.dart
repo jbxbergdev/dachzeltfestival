@@ -7,7 +7,7 @@ import 'package:rxdart/rxdart.dart';
 @provide
 class LegalViewModel {
 
-  final LegalRepo _legalRepo;
+  final TextRepo _legalRepo;
 
   LegalViewModel(this._legalRepo);
 
