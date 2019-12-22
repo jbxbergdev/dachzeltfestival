@@ -1,5 +1,5 @@
 import 'package:dachzeltfestival/view/charity/charity.dart';
-import 'package:dachzeltfestival/view/info/more.dart';
+import 'package:dachzeltfestival/view/more/more.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/map/eventmap.dart';
 import 'package:dachzeltfestival/view/schedule/schedule.dart';

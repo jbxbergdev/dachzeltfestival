@@ -1,10 +1,9 @@
 
 import 'package:dachzeltfestival/view/feedback/feedbacl_viewmodel.dart';
+import 'package:dachzeltfestival/view/markdown_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:inject/inject.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 typedef Provider<T> = T Function();
 
@@ -24,21 +23,5 @@ class Legal extends StatelessWidget {
   Legal(this._feedbackViewModel);
 
   @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(8.0),
-      child: StreamBuilder(
-        stream: _feedbackViewModel.markdown,
-        builder: (buildContext, asyncSnapshot) {
-          if (asyncSnapshot.hasData) {
-            return Markdown(
-              data: asyncSnapshot.data,
-              onTapLink: (url) => launch(url),
-            );
-          }
-          return Container();
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => MarkdownView(_feedbackViewModel.markdown);
 }

@@ -87,7 +87,7 @@ class _MainWidgetState extends State<MainWidget> {
                             )
                         ),
                         TextSpan(
-                            text: "speciaal",
+                            text: "silvester",
                             style: TextStyle(
                                 color: Theme
                                     .of(context)

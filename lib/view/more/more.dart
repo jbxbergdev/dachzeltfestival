@@ -1,4 +1,5 @@
 import 'package:dachzeltfestival/view/feedback/feedback.dart';
+import 'package:dachzeltfestival/view/info/event_info.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/notification/notification_list.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,10 +15,11 @@ class MoreBuilder {
   final NotificationListBuilder _notificationListBuilder;
   final LegalBuilder _legalBuilder;
   final FeedbackBuilder _feedbackBuilder;
+  final EventInfoBuilder _eventInfoBuilder;
 
-  MoreBuilder(this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder);
+  MoreBuilder(this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
 
-  More build(Key key) => More(key, _notificationListBuilder, this._legalBuilder, this._feedbackBuilder);
+  More build(Key key) => More(key, _notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
 }
 
 class More extends StatelessWidget {
@@ -25,8 +27,9 @@ class More extends StatelessWidget {
   final NotificationListBuilder _notificationListBuilder;
   final LegalBuilder _legalBuilder;
   final FeedbackBuilder _feedbackBuilder;
+  final EventInfoBuilder _eventInfoBuilder;
 
-  More(Key key, this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder): super(key: key);
+  More(Key key, this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +79,7 @@ class More extends StatelessWidget {
                 );
               case 1:
                 return _buildListItem(context, Icons.info_outline, AppString.eventInfo,
-                        () => Text("TODO"));
+                        () => _eventInfoBuilder.build(PageStorageKey('EventInfo')));
               case 2:
                 return _buildListItem(context, Icons.send, AppString.feedback,
                         () => _feedbackBuilder.build(PageStorageKey('Feedback')));
