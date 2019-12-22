@@ -36,64 +36,35 @@ class More extends StatelessWidget {
     ThemeData theme = Theme.of(context);
     return Container(
       color: theme.colorScheme.background,
-      child: Stack(
-        children: <Widget>[
-           Container(
-             child: Align(
-               alignment: Alignment.bottomCenter,
-               child: Padding(
-                 padding: const EdgeInsets.all(16.0),
-                 child: Column(
-                   mainAxisAlignment: MainAxisAlignment.end,
-                   children: <Widget>[
-                     Text(
-                       "Powered by",
-                       style: TextStyle(
-                         color: theme.colorScheme.onPrimary.withOpacity(0.6),
-                       ),
-                     ),
-                     Text(
-                       "Johannes Bolz Softwareentwicklung",
-                       style: TextStyle(
-                         color: theme.colorScheme.primary,
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
-             ),
-           ),
-          ListView.separated(
-          itemCount: 5,
-          separatorBuilder: (context, index) => Container(
-            color: theme.colorScheme.background,
-            child: Divider(color: theme.colorScheme.onPrimary,),
-          ),
-          itemBuilder: (context, index) {
-            switch (index) {
-              case 0:
-                return Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: _buildListItem(context, Icons.notifications_none, AppString.notificationListTitle,
-                          () => _notificationListBuilder.build(PageStorageKey('NotificationList'))),
-                );
-              case 1:
-                return _buildListItem(context, Icons.info_outline, AppString.eventInfo,
-                        () => _eventInfoBuilder.build(PageStorageKey('EventInfo')));
-              case 2:
-                return _buildListItem(context, Icons.send, AppString.feedback,
-                        () => _feedbackBuilder.build(PageStorageKey('Feedback')));
-              case 3:
-                return _buildListItem(context, Icons.subject, AppString.legal,
-                        () => _legalBuilder.build(PageStorageKey('Legal')));
-              case 4:
-                return Container();
-              default:
-                return Container();
-            }
-          },
+      child: ListView.separated(
+        itemCount: 5,
+        separatorBuilder: (context, index) => Container(
+          color: theme.colorScheme.background,
+          child: Divider(color: theme.colorScheme.onPrimary,),
         ),
-      ]
+        itemBuilder: (context, index) {
+          switch (index) {
+            case 0:
+              return Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: _buildListItem(context, Icons.notifications_none, AppString.notificationListTitle,
+                        () => _notificationListBuilder.build(PageStorageKey('NotificationList'))),
+              );
+            case 1:
+              return _buildListItem(context, Icons.info_outline, AppString.eventInfo,
+                      () => _eventInfoBuilder.build(PageStorageKey('EventInfo')));
+            case 2:
+              return _buildListItem(context, Icons.send, AppString.feedback,
+                      () => _feedbackBuilder.build(PageStorageKey('Feedback')));
+            case 3:
+              return _buildListItem(context, Icons.subject, AppString.legal,
+                      () => _legalBuilder.build(PageStorageKey('Legal')));
+            case 4:
+              return Container();
+            default:
+              return Container();
+          }
+        },
       ),
     );
   }
