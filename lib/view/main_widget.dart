@@ -129,7 +129,7 @@ class _MainWidgetState extends State<MainWidget> {
                 ],
                 currentIndex: _selectedIndex,
                 onTap: _onItemTapped,
-              ) : Container(),
+              ) : null,
           );
         });
   }
