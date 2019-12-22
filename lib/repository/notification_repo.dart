@@ -55,7 +55,6 @@ class NotificationRepoImpl extends NotificationRepo {
   /// This must only have one subscription!
   @override
   Observable<notification.Notification> newNotifications() {
-    print('##### newNotifications()');
     // Set up language-based topic subscription
     return _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
         .map((documentSnapshot) => documentSnapshot.asNotification));
