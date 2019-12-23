@@ -29,12 +29,15 @@ class NotificationRepoImpl extends NotificationRepo {
     _firebaseMessaging.requestNotificationPermissions();
     _firebaseMessaging.configure(
       onLaunch: (Map<String, dynamic> message) async {
+        print('##### onLaunch');
         _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onMessage: (Map<String, dynamic> message) async {
+        print('##### onMessage');
         _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
       onResume: (Map<String, dynamic> message) async {
+        print('##### onResume');
         _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
     );
