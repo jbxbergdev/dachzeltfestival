@@ -1,6 +1,7 @@
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
+import 'package:dachzeltfestival/view/map/marker_generator.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -54,7 +55,21 @@ class _MainWidgetState extends State<MainWidget> {
     initializeDateFormatting();
     _initNotificationHandling(context);
     _pages = <Widget>[
-      _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
+      /*_builders.scheduleBuilder.build(PageStorageKey('Schedule')),*/
+      Container(
+        color: Colors.amberAccent,
+        child: Center(
+          child: Container(
+            child: SizedBox(
+              width: 100.0,
+              height: 100.0,
+              child: CustomPaint(
+                painter: TestPainter(),
+              ),
+            ),
+          ),
+        ),
+      ),
       _builders.eventMapBuilder.build(PageStorageKey('Map')),
       _builders.charityBuilder.build(PageStorageKey('Charity')),
       _builders.infoBuilder.build((PageStorageKey('Info'))),
