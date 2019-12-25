@@ -1,21 +1,31 @@
+import 'dart:collection';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:dachzeltfestival/model/geojson/point_category.dart';
+import 'package:dachzeltfestival/view/map/icon_map.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:inject/inject.dart';
+import 'package:rxdart/rxdart.dart';
 
-class MarkerGenerator {
+@provide
+class MarkerIconGenerator {
 
-  final _rectSize = 100.0;
-  final _circleStrokeWidth = 10.0;
+  final BehaviorSubject<Map<PointCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
+
+  final _rectSize = 72.0;
+  double _circleStrokeWidth;
   double _circleOffset;
   double _outlineCircleWidth;
   double _fillCircleWidth;
   double _iconSize;
   double _iconOffset;
 
-  MarkerGenerator() {
+  MarkerIconGenerator() {
+    _circleStrokeWidth = _rectSize / 10.0;
     _circleOffset = _rectSize / 2;
     _outlineCircleWidth = _circleOffset - (_circleStrokeWidth / 2);
     _fillCircleWidth = _rectSize / 2;
@@ -24,9 +34,19 @@ class MarkerGenerator {
     var rectDiagonal = sqrt(2 * pow(_rectSize, 2));
     var circleDistanceToCorners = (rectDiagonal - outlineCircleInnerWidth) / 2;
     _iconOffset = sqrt(pow(circleDistanceToCorners, 2) / 2);
+    _createBitmapMapping().then((mapping) => _bitmapSubject.value = mapping);
   }
 
+  Future<Map<PointCategory, BitmapDescriptor>> get bitmapMapping =>
+      _bitmapSubject.where((mapping) => mapping != null).first;
 
+  Future<Map<PointCategory, BitmapDescriptor>> _createBitmapMapping() async {
+    Map<PointCategory, BitmapDescriptor> bitmapMap = HashMap();
+    for (MapEntry<PointCategory, IconInfo> entry in iconDataMap.entries) {
+      bitmapMap[entry.key] = await _createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.primary, Colors.white);
+    }
+    return bitmapMap;
+  }
 
   Future<BitmapDescriptor> _createBitmapFromIconData(IconData iconData, Color iconColor, Color circleColor, Color backgroundColor) async {
     var pictureRecorder = PictureRecorder();
@@ -71,26 +91,5 @@ class MarkerGenerator {
     );
     textPainter.layout();
     textPainter.paint(canvas, Offset(_iconOffset, _iconOffset));
-  }
-
-  void _tempPaintStuff(Canvas canvas, IconData iconData) {
-    _paintCircleFill(canvas, Colors.white);
-    _paintCircleStroke(canvas, Colors.blue);
-    _paintIcon(canvas, Colors.red, iconData);
-  }
-
-}
-
-
-
-class TestPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    MarkerGenerator()._tempPaintStuff(canvas, Icons.feedback);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
   }
 }

@@ -86,7 +86,8 @@ class Properties {
   String stroke;
   String fill;
   String venueId;
-  Properties({this.name, this.description, this.stroke, this.fill, this.venueId});
+  String placeCategory;
+  Properties({this.name, this.description, this.stroke, this.fill, this.venueId, this.placeCategory});
   factory Properties.fromJson(Map<String, dynamic> json) {
     return Properties(
       name: json['name'],
@@ -94,6 +95,7 @@ class Properties {
       stroke: json['stroke'],
       fill: json['fill'],
       venueId: json['venue_id'],
+      placeCategory: json['place_category']
     );
   }
 }

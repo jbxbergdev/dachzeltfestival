@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/util/utils.dart';
+import 'package:dachzeltfestival/view/map/icon_map.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -14,6 +15,7 @@ import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
 import 'package:rubber/rubber.dart';
 import 'package:rxdart/rxdart.dart';
 import 'map_settings.dart';
+import 'package:dachzeltfestival/model/geojson/point_category.dart';
 
 typedef Provider<T> = T Function();
 
@@ -46,7 +48,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   final FeatureConverter _featureConverter;
   RubberAnimationController _bottomSheetController;
   ScrollController _scrollController = ScrollController();
-  BehaviorSubject<geojson.Properties> _propertiesSubject;
+  BehaviorSubject<geojson.Feature> _featureSubject;
   Observable<_GoogleMapData> _mapDataStream;
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
@@ -58,7 +60,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _propertiesSubject = BehaviorSubject.seeded(null);
+    _featureSubject = BehaviorSubject.seeded(null);
     _bottomSheetController = RubberAnimationController(
         vsync: this,
         upperBoundValue: AnimationControllerValue(pixel: _headerHeightPx),
@@ -92,6 +94,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                     myLocationEnabled: mapData.locationPermissionGranted,
                     mapType: MapType.hybrid,
                     polygons: mapData?.polygons ?? Set(),
+                    markers: mapData?.markers ?? Set(),
                     onMapCreated: _onMapCreated,
                     onCameraMove: _onCameraMove,
                     onTap: _onTap,
@@ -116,9 +119,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       header: Padding(
         padding: EdgeInsets.symmetric(horizontal: 4.0),
         child: SizedBox.expand(
-          child: StreamBuilder<geojson.Properties>(
-              initialData: geojson.Properties(),
-              stream: _propertiesSubject.stream,
+          child: StreamBuilder<geojson.Feature>(
+              initialData: geojson.Feature(),
+              stream: _featureSubject.stream,
               builder: (buildContext, snapshot) {
                 return Container(
                     decoration: BoxDecoration(
@@ -130,7 +133,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                     ),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: hexToColor(snapshot?.data?.fill).withOpacity(0.2),
+                      color: snapshot?.data is geojson.Point ? Colors.white : hexToColor(snapshot?.data?.properties?.fill).withOpacity(0.2),
                       borderRadius: BorderRadius.only(
                           topLeft: Radius.circular(16),
                           topRight: Radius.circular(16)
@@ -140,18 +143,31 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16.0,
                         ),
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: AutoSizeText(
-                            snapshot?.data?.name ?? "",
-                            style: TextStyle(
-                              fontSize: 40,
-                              fontWeight: FontWeight.w300
-                            ),
-                            minFontSize: 16,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                        child: Row(
+                          children: <Widget>[
+                            snapshot?.data is geojson.Point && snapshot.data.properties != null ?
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8.0, bottom: 4.0),
+                              child: Icon(
+                                iconDataMap[snapshot.data.properties.pointCategory].icon,
+                                color: iconDataMap[snapshot.data.properties.pointCategory].color,
+                                size: 40.0,),
+                            )
+                            : Container(),
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: AutoSizeText(
+                                snapshot?.data?.properties?.name ?? "",
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w300
+                                ),
+                                minFontSize: 16,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            )
+                          ],
                         )
                     ),
                   ),
@@ -164,24 +180,24 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       upperLayer: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: Container(
-          child: StreamBuilder<geojson.Properties>(
-            stream: _propertiesSubject.stream,
+          child: StreamBuilder<geojson.Feature>(
+            stream: _featureSubject.stream,
             builder: (buildContext, snapshot) {
               return Container(
                 constraints: BoxConstraints.expand(),
                 color: Colors.white,
-                child: snapshot?.data?.description != null ?
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Text(
-                    snapshot.data.description,
-                    style: TextStyle(
-                      color: Colors.black,
-                      backgroundColor: Colors.white,
+                child: snapshot?.data?.properties?.description != null ?
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      snapshot.data.properties?.description,
+                      style: TextStyle(
+                        color: Colors.black,
+                        backgroundColor: Colors.white,
+                      ),
                     ),
-                  ),
-                )
-                : Container(),
+                  )
+                  : Container(),
               );
             },
           ),
@@ -191,10 +207,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     );
   }
 
-  void _onPolygonTapped(geojson.Properties properties) {
-    _propertiesSubject.add(properties);
-//    _bottomSheetController.animateTo(to: 0.3);
-  _bottomSheetController.expand();
+  void _onPolygonTapped(geojson.Feature feature) {
+    _featureSubject.add(feature);
+    _bottomSheetController.expand();
+  }
+
+  void _onMarkerTapped(geojson.Feature feature) {
+    _featureSubject.add(feature);
+    _bottomSheetController.expand();
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -227,8 +247,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _mapDataStream = BehaviorSubject.seeded(null);
 
       Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
-          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped).asStream()
-          .map((googlePolygons) => _GoogleMapData(googlePolygons, mapData.locationPermissionGranted, mapData.mapConfig)));
+          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped, _onMarkerTapped).asStream()
+          .map((mapsFeatures) => _GoogleMapData(mapsFeatures.polygons, mapsFeatures.markers, mapData.locationPermissionGranted, mapData.mapConfig)));
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
@@ -243,9 +263,11 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 }
 
 class _GoogleMapData {
+
   final Set<Polygon> polygons;
+  final Set<Marker> markers;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
 
-  _GoogleMapData(this.polygons, this.locationPermissionGranted, this.mapConfig);
+  _GoogleMapData(this.polygons, this.markers, this.locationPermissionGranted, this.mapConfig);
 }
