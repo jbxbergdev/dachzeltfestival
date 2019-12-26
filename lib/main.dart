@@ -9,6 +9,8 @@
 // ![A scaffold with a bottom navigation bar containing three bottom navigation
 // bar items. The first one is selected.](https://flutter.github.io/assets-for-api-docs/assets/material/bottom_navigation_bar.png)
 
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_analytics/observer.dart';
 import 'package:flutter/material.dart';
 import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
@@ -22,6 +24,8 @@ void main() async {
   runApp(appInjector.app);
 }
 
+FirebaseAnalytics _firebaseAnalytics = FirebaseAnalytics();
+
 @provide
 class MyApp extends StatelessWidget {
 
@@ -33,6 +37,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       onGenerateTitle: (context) => context.translations[AppString.appName],
+      navigatorObservers: <NavigatorObserver>[
+        FirebaseAnalyticsObserver(analytics: _firebaseAnalytics),
+      ],
       home: _myStatefulWidgetBuilder.build(),
       supportedLocales: Translations.supportedLanguages.map((language)  => Locale(language)),
       localizationsDelegates: [TranslationsDelegate(),
