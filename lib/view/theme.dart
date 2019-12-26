@@ -20,6 +20,8 @@ final ThemeData appTheme = ThemeData(
   colorScheme: colorScheme,
   primaryColor: colorScheme.primary,
   primaryColorBrightness: Brightness.light,
+  splashColor: colorScheme.secondary.withOpacity(0.2),
+  highlightColor: colorScheme.primary.withOpacity(0.2),
   accentColor: colorScheme.secondary,
   accentColorBrightness: Brightness.light,
   brightness: Brightness.light,

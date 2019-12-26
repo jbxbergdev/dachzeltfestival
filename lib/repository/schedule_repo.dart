@@ -45,8 +45,9 @@ class ScheduleRepoImpl extends ScheduleRepo {
       if (venueId != null && venueDocuments?.isNotEmpty == true) {
         DocumentSnapshot venueDocument = venueDocuments.firstWhere((documentSnapshot) => venueId == documentSnapshot.documentID, orElse: () => null);
         if (venueDocument != null) {
-          venueName = translatableDocument['name'];
-          venueColor = translatableDocument['color'];
+          final translatableVenueDocument = TranslatableDocument(venueDocument, locale);
+          venueName = translatableVenueDocument['name'];
+          venueColor = translatableVenueDocument['color'];
         }
       }
       return ScheduleItem(

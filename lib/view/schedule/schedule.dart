@@ -1,4 +1,7 @@
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:dachzeltfestival/util/utils.dart';
+import 'package:dachzeltfestival/view/schedule/schedule_item_dialog.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:inject/inject.dart';
 import 'schedule_viewmodel.dart';
@@ -67,7 +70,8 @@ class Schedule extends StatelessWidget {
                 weekday.format(start),
                 style: TextStyle(
                   color: theme.primaryColor,
-                  fontSize: 18.0,
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.w300,
                 ),),
             ),
           ),
@@ -78,12 +82,16 @@ class Schedule extends StatelessWidget {
         overlapsContent: true,
         header: Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text(
-              hourMinute.format(start),
-              style: TextStyle(
-                color: theme.primaryColor,
-                fontSize: 18.0,
-              ),),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+                hourMinute.format(start),
+                style: TextStyle(
+                  color: theme.primaryColor,
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w400,
+                ),),
+          ),
         ),
         sliver: SliverPadding(
           padding: EdgeInsets.only(
@@ -96,79 +104,69 @@ class Schedule extends StatelessWidget {
                     ScheduleItem scheduleItem = itemMap[start][index];
                     String speaker = scheduleItem.speaker;
                     if (speaker.isNotEmpty) { speaker = speaker + ": "; }
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(),
-                            child: Row(
-                              children: <Widget>[
-                                Flexible(
-                                  child: Text(
-                                    scheduleItem.title,
-                                    style: TextStyle(
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w400,
-                                    ),
+                    return InkWell(
+                      onTap: () => showScheduleItemDialog(context, scheduleItem),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: <Widget>[
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                  scheduleItem.title,
+                                  style: TextStyle(
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w300,
                                   ),
-                                )
-                              ],
+                                ),
                             ),
-                          ),
-                          Visibility(
-                            visible: scheduleItem.speaker != null && scheduleItem.speaker.isNotEmpty,
-                            child: Padding(
-                              padding: const EdgeInsets.only(top: 4.0),
-                              child: Row(
-                                children: <Widget>[
-                                  Text(
-                                    scheduleItem.speaker ?? "",
-                                    style: TextStyle(
-                                      color: Colors.grey[600]
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0, right: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: <Widget>[
-                                Row(
+                            Visibility(
+                              visible: scheduleItem.speaker != null && scheduleItem.speaker.isNotEmpty,
+                              child: Padding(
+                                padding: const EdgeInsets.only(top: 4.0),
+                                child: Row(
                                   children: <Widget>[
-                                    Padding(
-                                      padding: const EdgeInsets.only(right: 8.0),
-                                      child: Container(
-                                        width: 12,
-                                        height: 12,
-                                        decoration: BoxDecoration(
-                                          color: scheduleItem.color != null ? new Color(int.parse(scheduleItem.color.substring(1, 7), radix: 16) + 0xFF000000) : null,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                    ),
                                     Text(
-                                      scheduleItem.venue ?? "",
+                                      scheduleItem.speaker ?? "",
                                       style: TextStyle(
-                                        color: Colors.grey[600],
+                                        color: Colors.grey[600]
                                       ),
                                     ),
                                   ],
                                 ),
-                                Text(
-                                  "${context.translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
-                                  style: TextStyle(
-                                    fontSize: 12.0,
-                                    color: Colors.grey[500]
-                                  )
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0, right: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: <Widget>[
+                                  Row(
+                                    children: <Widget>[
+                                      Padding(
+                                        padding: const EdgeInsets.only(right: 8.0),
+                                        child: Icon(Icons.place, size: 12.0, color: hexToColor(scheduleItem.color),),
+                                      ),
+                                      Text(
+                                        scheduleItem.venue ?? "",
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Text(
+                                    "${context.translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      color: Colors.grey[500]
+                                    )
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
