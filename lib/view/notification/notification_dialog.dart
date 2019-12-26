@@ -11,6 +11,7 @@ void showNotificationDialog(notification.Notification notification, BuildContext
     barrierDismissible: false,
     builder: (buildContext) {
       return AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4.0))),
         title: Text(
           notification.title,
           style: TextStyle(

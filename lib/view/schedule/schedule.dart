@@ -55,7 +55,7 @@ class Schedule extends StatelessWidget {
 
     ThemeData theme = Theme.of(context);
     String language = Localizations.localeOf(context).languageCode;
-    DateFormat hourMinute = DateFormat.Hm(language);
+    DateFormat hourMinute = DateFormat.jm(language);
     DateFormat weekday = DateFormat.EEEE(language);
 
     int lastDay = -1;
