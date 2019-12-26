@@ -114,6 +114,6 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem) {
 String _formatTimestamps(DateTime start, DateTime end, BuildContext context) {
   String language = Localizations.localeOf(context).supportedOrDefaultLangCode;
   DateFormat from = DateFormat.EEEE(language).add_jm();
-  DateFormat to = DateFormat.jm();
+  DateFormat to = DateFormat.jm(language);
   return "${from.format(start)} - ${to.format(end)}";
 }
