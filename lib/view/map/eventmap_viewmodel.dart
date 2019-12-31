@@ -14,15 +14,18 @@ class EventMapViewModel {
   EventMapViewModel(this._mapDataRepo, this._permissionRepo);
 
   Observable<MapData> mapData() {
-    return Observable.combineLatest3(_mapDataRepo.mapFeatures(), _mapDataRepo.mapConfig(), _permissionRepo.locationPermissionState,
-        (mapFeatures, mapConfig, locationPermissionGranted) => MapData(mapFeatures, locationPermissionGranted, mapConfig));
+    return Observable.combineLatest4(_mapDataRepo.mapFeatures(), _mapDataRepo.mapConfig(), _permissionRepo.locationPermissionState, selectedPlaceId,
+        (mapFeatures, mapConfig, locationPermissionGranted, selectedPlaceId) => MapData(mapFeatures, locationPermissionGranted, mapConfig, selectedPlaceId));
   }
+
+  BehaviorSubject<String> selectedPlaceId = BehaviorSubject.seeded(null);
 }
 
 class MapData {
   final FeatureCollection mapFeatures;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
+  final String selectedPlaceId;
 
-  MapData(this.mapFeatures, this.locationPermissionGranted, this.mapConfig);
+  MapData(this.mapFeatures, this.locationPermissionGranted, this.mapConfig, this.selectedPlaceId);
 }

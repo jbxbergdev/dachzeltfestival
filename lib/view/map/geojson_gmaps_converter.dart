@@ -13,22 +13,23 @@ class FeatureConverter {
 
   FeatureConverter(this._markerIconGenerator);
 
-  Future<GoogleMapsFeatures> parseFeatureCollection(FeatureCollection featureCollection, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
-    return Observable.combineLatest2(_parsePolygons(featureCollection, onPolygonTap).asStream(), _parseMarkers(featureCollection, onMarkerTap).asStream(),
+  Future<GoogleMapsFeatures> parseFeatureCollection(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
+    return Observable.combineLatest2(_parsePolygons(featureCollection, selectedPlaceId, onPolygonTap).asStream(), _parseMarkers(featureCollection, onMarkerTap).asStream(),
         (polygons, markers) => GoogleMapsFeatures(polygons, markers)).first;
   }
 
-  Future<Set<googlemaps.Polygon>> _parsePolygons(FeatureCollection featureCollection, Function(Feature) onPolygonTap) async {
+  Future<Set<googlemaps.Polygon>> _parsePolygons(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap) async {
     int i = 0;
     return (featureCollection.features
       .where((feature) => feature is Polygon))
         .map((feature) {
       final polygon = feature as Polygon;
+      final isSelected = selectedPlaceId != null && polygon.properties.venueId == selectedPlaceId;
       return googlemaps.Polygon(
         polygonId: googlemaps.PolygonId((i++).toString()),
         strokeColor: hexToColor(feature.properties?.stroke),
-        fillColor: hexToColor(feature.properties?.fill).withOpacity(0.5),
-        strokeWidth: 2,
+        fillColor: hexToColor(feature.properties?.fill).withOpacity(isSelected ? 0.8 : 0.5),
+        strokeWidth: isSelected ? 10 : 2,
         points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
         consumeTapEvents: true,
         onTap: () => onPolygonTap(polygon),
@@ -37,6 +38,7 @@ class FeatureConverter {
   }
 
   Future<Set<googlemaps.Marker>> _parseMarkers(FeatureCollection featureCollection, Function(Feature) onMarkerTap) async {
+    // TODO handle marker selection state
     final bitmaps = await _markerIconGenerator.bitmapMapping;
     int i = 0;
     return (featureCollection.features

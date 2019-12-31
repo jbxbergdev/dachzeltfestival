@@ -209,6 +209,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onPolygonTapped(geojson.Feature feature) {
     _featureSubject.add(feature);
+    _eventMapViewModel.selectedPlaceId.add(feature.properties.venueId);
     _bottomSheetController.expand();
   }
 
@@ -247,7 +248,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _mapDataStream = BehaviorSubject.seeded(null);
 
       Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
-          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, _onPolygonTapped, _onMarkerTapped).asStream()
+          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, mapData.selectedPlaceId, _onPolygonTapped, _onMarkerTapped).asStream()
           .map((mapsFeatures) => _GoogleMapData(mapsFeatures.polygons, mapsFeatures.markers, mapData.locationPermissionGranted, mapData.mapConfig)));
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
