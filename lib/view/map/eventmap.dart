@@ -62,12 +62,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     super.initState();
     _featureSubject = BehaviorSubject.seeded(null);
     _bottomSheetController = RubberAnimationController(
-        vsync: this,
-        upperBoundValue: AnimationControllerValue(pixel: _headerHeightPx),
+      vsync: this,
+      upperBoundValue: AnimationControllerValue(pixel: _headerHeightPx),
 //        halfBoundValue: AnimationControllerValue(percentage: 0.5),
-        lowerBoundValue: AnimationControllerValue(percentage: 0.0),
-        duration: Duration(milliseconds: 200),
-        initialValue: 0.0,
+      lowerBoundValue: AnimationControllerValue(percentage: 0.0),
+      duration: Duration(milliseconds: 200),
+      initialValue: 0.0,
     );
   }
 
@@ -127,16 +127,16 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16)
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
                       ),
                     ),
                   child: Container(
                     decoration: BoxDecoration(
                       color: snapshot?.data is geojson.Point ? Colors.white : hexToColor(snapshot?.data?.properties?.fill).withOpacity(0.2),
                       borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          topRight: Radius.circular(16)
+                        topLeft: Radius.circular(16),
+                        topRight: Radius.circular(16),
                       ),
                     ),
                     child: Padding(
@@ -151,7 +151,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                               child: Icon(
                                 iconDataMap[snapshot.data.properties.pointCategory].icon,
                                 color: iconDataMap[snapshot.data.properties.pointCategory].color,
-                                size: 40.0,),
+                                size: 40.0,
+                              ),
                             )
                             : Container(),
                             Align(
@@ -229,6 +230,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onTap(LatLng tapCoords) {
     _bottomSheetController.collapse();
+    _eventMapViewModel.selectedPlaceId.add(null);
   }
 
   void _startNavigationApp() async {
