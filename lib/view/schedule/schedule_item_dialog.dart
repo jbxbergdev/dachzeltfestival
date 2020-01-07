@@ -87,7 +87,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem) {
             child: Padding(
               padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 0.0),
               child: SingleChildScrollView(
-                child: Text(
+                child: SelectableText(
                   scheduleItem.abstract,
                   style: TextStyle(
                     fontSize: 16.0,
