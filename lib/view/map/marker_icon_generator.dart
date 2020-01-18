@@ -12,6 +12,7 @@ import 'package:inject/inject.dart';
 import 'package:rxdart/rxdart.dart';
 
 @provide
+@singleton
 class MarkerIconGenerator {
 
   final BehaviorSubject<Map<PointCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
