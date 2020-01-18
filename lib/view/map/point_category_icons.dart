@@ -13,11 +13,36 @@ import 'package:rxdart/rxdart.dart';
 
 @provide
 @singleton
-class MarkerIconGenerator {
+class PointCategoryIcons {
+
+  final BehaviorSubject<Map<PointCategory, SelectionBitmapDescriptors>> _bitmapSubject = BehaviorSubject.seeded(null);
+
+  PointCategoryIcons() {
+    _createBitmapMapping().then((mapping) => _bitmapSubject.value = mapping);
+  }
+
+  Future<Map<PointCategory, SelectionBitmapDescriptors>> get bitmapMapping =>
+      _bitmapSubject.where((mapping) => mapping != null).first;
+
+  Future<Map<PointCategory, SelectionBitmapDescriptors>> _createBitmapMapping() async {
+    final unselectedGenerator = _BitmapGenerator(72.0);
+    final selectedGenerator = _BitmapGenerator(96.0);
+
+    Map<PointCategory, SelectionBitmapDescriptors> bitmapMap = HashMap();
+    for (MapEntry<PointCategory, IconInfo> entry in iconDataMap.entries) {
+      final unselected = await unselectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.primary, Colors.white);
+      final selected = await selectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.secondary, Colors.white);
+      bitmapMap[entry.key] = SelectionBitmapDescriptors(selected, unselected);
+    }
+    return bitmapMap;
+  }
+}
+
+class _BitmapGenerator {
 
   final BehaviorSubject<Map<PointCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
 
-  final _rectSize = 72.0;
+  final double _rectSize;
   double _circleStrokeWidth;
   double _circleOffset;
   double _outlineCircleWidth;
@@ -25,7 +50,7 @@ class MarkerIconGenerator {
   double _iconSize;
   double _iconOffset;
 
-  MarkerIconGenerator() {
+  _BitmapGenerator(this._rectSize) {
     _circleStrokeWidth = _rectSize / 10.0;
     _circleOffset = _rectSize / 2;
     _outlineCircleWidth = _circleOffset - (_circleStrokeWidth / 2);
@@ -35,18 +60,6 @@ class MarkerIconGenerator {
     var rectDiagonal = sqrt(2 * pow(_rectSize, 2));
     var circleDistanceToCorners = (rectDiagonal - outlineCircleInnerWidth) / 2;
     _iconOffset = sqrt(pow(circleDistanceToCorners, 2) / 2);
-    _createBitmapMapping().then((mapping) => _bitmapSubject.value = mapping);
-  }
-
-  Future<Map<PointCategory, BitmapDescriptor>> get bitmapMapping =>
-      _bitmapSubject.where((mapping) => mapping != null).first;
-
-  Future<Map<PointCategory, BitmapDescriptor>> _createBitmapMapping() async {
-    Map<PointCategory, BitmapDescriptor> bitmapMap = HashMap();
-    for (MapEntry<PointCategory, IconInfo> entry in iconDataMap.entries) {
-      bitmapMap[entry.key] = await _createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.primary, Colors.white);
-    }
-    return bitmapMap;
   }
 
   Future<BitmapDescriptor> _createBitmapFromIconData(IconData iconData, Color iconColor, Color circleColor, Color backgroundColor) async {
@@ -68,7 +81,7 @@ class MarkerIconGenerator {
     var paint = Paint()
       ..style = PaintingStyle.fill
       ..color = color;
-      canvas.drawCircle(Offset(_circleOffset, _circleOffset), _fillCircleWidth, paint);
+    canvas.drawCircle(Offset(_circleOffset, _circleOffset), _fillCircleWidth, paint);
   }
 
   void _paintCircleStroke(Canvas canvas, Color color) {
@@ -93,4 +106,12 @@ class MarkerIconGenerator {
     textPainter.layout();
     textPainter.paint(canvas, Offset(_iconOffset, _iconOffset));
   }
+
+}
+
+class SelectionBitmapDescriptors {
+  final BitmapDescriptor selected;
+  final BitmapDescriptor unselected;
+
+  SelectionBitmapDescriptors(this.selected, this.unselected);
 }

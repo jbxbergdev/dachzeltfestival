@@ -1,7 +1,7 @@
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
-import 'package:dachzeltfestival/view/map/marker_icon_generator.dart';
+import 'package:dachzeltfestival/view/map/point_category_icons.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';

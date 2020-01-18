@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:ui';
 
 import 'package:dachzeltfestival/i18n/locale_state.dart';
@@ -48,11 +49,14 @@ class MapDataRepoImpl extends MapDataRepo {
         // listen for venue data on Cloud Firestore
         _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), _localeState.localeSubject,
             (featureCollection, venueDocuments, locale) {
+
+          // Create HashMap for performance reasons
+          Map<String, DocumentSnapshot> venueMap = HashMap.fromIterable(venueDocuments, key: (document) => document.documentID, value: (document) => document);
+
           // if there is venue information from the Cloud Firestore collection, modify Features with it
           return FeatureCollection(
               features: featureCollection.features.map((feature) {
-                DocumentSnapshot venueDocument = venueDocuments.firstWhere((document) =>
-                document.documentID == feature.properties?.venueId, orElse: () => null);
+                DocumentSnapshot venueDocument = venueMap[feature.properties?.venueId];
                 if (venueDocument != null) {
                   TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
                   feature.properties.name = translatableDocument['name'];
