@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
-
 final ColorScheme colorScheme = ColorScheme(
-    primary: Color(0xFFF9847A),
-    primaryVariant: Color(0xFFC2544E),
-    secondary: Color(0xFF52C0E8),
-    secondaryVariant: Color(0xFF0090b6),
+    primary: Color(0xFF6FB84F),
+    primaryVariant: Color(0xFF3D8720),
+    secondary: Color(0xFFF9847A),
+    secondaryVariant: Color(0xFFC2544E),
     surface: Colors.white,
     background: Colors.white,
     error: Colors.red,

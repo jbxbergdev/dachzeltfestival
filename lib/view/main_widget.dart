@@ -1,7 +1,6 @@
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
-import 'package:dachzeltfestival/view/map/point_category_icons.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -82,13 +81,13 @@ class _MainWidgetState extends State<MainWidget> {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                            text: "#dzc",
+                            text: "#dzf",
                             style: TextStyle(
                                 color: Colors.black
                             )
                         ),
                         TextSpan(
-                            text: "silvester",
+                            text: "20",
                             style: TextStyle(
                                 color: Theme
                                     .of(context)
