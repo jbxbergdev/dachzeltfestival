@@ -194,7 +194,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onMapItemTapped(geojson.Feature feature) {
     _featureSubject.add(feature);
-    _eventMapViewModel.selectedPlaceId.add(feature.properties.venueId);
+    _eventMapViewModel.selectedPlaceId.add(feature.properties.placeId);
   }
 
   void _onMapCreated(GoogleMapController controller) {

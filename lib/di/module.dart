@@ -40,7 +40,7 @@ class AppModule {
 
   @provide
   @singleton
-  ScheduleRepo scheduleRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState) => ScheduleRepoImpl(firestore, authenticator, localeState);
+  ScheduleRepo scheduleRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState, MapDataRepo mapDataRepo) => ScheduleRepoImpl(firestore, authenticator, localeState, mapDataRepo);
 
   @provide
   ScheduleViewModel scheduleViewModel(ScheduleRepo scheduleRepo) => ScheduleViewModel(scheduleRepo);

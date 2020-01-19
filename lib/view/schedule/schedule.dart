@@ -33,14 +33,14 @@ class Schedule extends StatelessWidget {
     return StreamBuilder<Map<DateTime, List<ScheduleItem>>>(
       stream: _scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMap),
       builder: (BuildContext context, AsyncSnapshot<Map<DateTime, List<ScheduleItem>>> asyncSnapshot) {
-        if (asyncSnapshot.hasData) {
+        if (asyncSnapshot.hasData && asyncSnapshot.data.isNotEmpty) {
           return CustomScrollView(
             slivers: _buildListContent(asyncSnapshot.data, context),
           );
         } else if (asyncSnapshot.error != null) {
           return Text(asyncSnapshot.error.toString());
         } else {
-          return Text("loading ...");
+          return Center(child: Text(context.translations[AppString.loading]));
         }
       },
     );

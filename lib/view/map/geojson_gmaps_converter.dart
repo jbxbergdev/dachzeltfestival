@@ -24,7 +24,7 @@ class FeatureConverter {
       .where((feature) => feature is Polygon))
         .map((feature) {
       final polygon = feature as Polygon;
-      final isSelected = selectedPlaceId != null && polygon.properties.venueId == selectedPlaceId;
+      final isSelected = selectedPlaceId != null && polygon.properties.placeId == selectedPlaceId;
       return googlemaps.Polygon(
         polygonId: googlemaps.PolygonId((i++).toString()),
         strokeColor: hexToColor(feature.properties?.stroke),
@@ -44,7 +44,7 @@ class FeatureConverter {
       .where((feature) => feature is Point))
         .map((feature) {
           final point = feature as Point;
-          final isSelected = selectedPlaceId != null && point.properties.venueId == selectedPlaceId;
+          final isSelected = selectedPlaceId != null && point.properties.placeId == selectedPlaceId;
           SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
           return googlemaps.Marker(
              markerId: googlemaps.MarkerId((i++).toString()),

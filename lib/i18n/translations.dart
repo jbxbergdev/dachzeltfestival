@@ -16,6 +16,7 @@ enum AppString {
   feedback,
   today,
   yesterday,
+  loading,
 }
 
 class Translations {
@@ -84,6 +85,10 @@ class Translations {
     AppString.yesterday: {
       de: "gestern",
       en: "yesterday"
+    },
+    AppString.loading: {
+      de: "Lade...",
+      en: "Loading..."
     }
   };
 

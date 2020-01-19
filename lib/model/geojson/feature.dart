@@ -1,12 +1,12 @@
-import 'package:flutter/foundation.dart';
+import 'translatable_json.dart';
 
 class FeatureCollection {
   FeatureCollection({this.features});
   List<Feature> features;
 
-  factory FeatureCollection.fromJson(Map<String, dynamic> json) {
+  factory FeatureCollection.fromJson(Map<String, dynamic> json, String languageCode) {
     var featureList = json['features'] as List;
-    List<Feature> features = featureList.map((it) => Feature.fromJson(it)).toList();
+    List<Feature> features = featureList.map((it) => Feature.fromJson(it, languageCode)).toList();
     return FeatureCollection(features: features);
   }
 }
@@ -14,9 +14,9 @@ class FeatureCollection {
 class Feature {
   Properties properties;
   Feature({this.properties});
-  factory Feature.fromJson(Map<String, dynamic> json) {
+  factory Feature.fromJson(Map<String, dynamic> json, String languageCode) {
     Map<String, dynamic> geometry = json['geometry'];
-    Properties properties = Properties.fromJson(json['properties']);
+    Properties properties = Properties.fromJson(json['properties'], languageCode);
     String type = geometry['type'];
     switch (type) {
       case 'Point':
@@ -85,16 +85,16 @@ class Properties {
   String description;
   String stroke;
   String fill;
-  String venueId;
+  String placeId;
   String placeCategory;
-  Properties({this.name, this.description, this.stroke, this.fill, this.venueId, this.placeCategory});
-  factory Properties.fromJson(Map<String, dynamic> json) {
+  Properties({this.name, this.description, this.stroke, this.fill, this.placeId, this.placeCategory});
+  factory Properties.fromJson(Map<String, dynamic> json, String languageCode) {
     return Properties(
-      name: json['name'],
-      description: json['description'],
+      name: json.translated('name', languageCode),
+      description: json.translated('description', languageCode),
       stroke: json['stroke'],
       fill: json['fill'],
-      venueId: json['venue_id'],
+      placeId: json['place_id'],
       placeCategory: json['place_category']
     );
   }

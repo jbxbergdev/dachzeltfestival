@@ -16,8 +16,6 @@ import 'package:tuple/tuple.dart';
 import 'package:flutter/foundation.dart';
 import 'dart:convert';
 
-
-
 abstract class MapDataRepo {
   Observable<FeatureCollection> mapFeatures();
   Observable<MapConfig> mapConfig();
@@ -29,8 +27,6 @@ class MapDataRepoImpl extends MapDataRepo {
   static const String _FIRESTORE_DOCUMENT_MAP_CONFIG = "map_config";
   static const String _PREFERENCE_KEY_MAP_VERSION = "map_version";
   static const String _MAP_FILE_NAME = "map.geojson";
-  static const String _FIRESTORE_COLLECTION_VENUE = "venue";
-
 
   final Firestore _firestore;
   final FirebaseStorage _firebaseStorage;
@@ -43,29 +39,14 @@ class MapDataRepoImpl extends MapDataRepo {
 
   @override
   Observable<FeatureCollection> mapFeatures() {
-    Observable<FeatureCollection> mapFeatures = Observable.combineLatest3<FeatureCollection, List<DocumentSnapshot>, Locale, FeatureCollection>(
-      // listen for FeatureCollection from local map
-        _localMap().flatMap((mapFile) => _readFeatures(mapFile).asStream()),
-        // listen for venue data on Cloud Firestore
-        _firestore.collection(_FIRESTORE_COLLECTION_VENUE).snapshots().map((querySnapshot) => querySnapshot.documents), _localeState.localeSubject,
-            (featureCollection, venueDocuments, locale) {
 
-          // Create HashMap for performance reasons
-          Map<String, DocumentSnapshot> venueMap = HashMap.fromIterable(venueDocuments, key: (document) => document.documentID, value: (document) => document);
+    // get to locale
+    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.flatMap((locale) =>
+        // get map file
+        _localMap().flatMap((mapFile) =>
+            // parse features from file with locale
+            _readFeatures(mapFile, locale.languageCode).asStream()));
 
-          // if there is venue information from the Cloud Firestore collection, modify Features with it
-          return FeatureCollection(
-              features: featureCollection.features.map((feature) {
-                DocumentSnapshot venueDocument = venueMap[feature.properties?.venueId];
-                if (venueDocument != null) {
-                  TranslatableDocument translatableDocument = TranslatableDocument(venueDocument, locale);
-                  feature.properties.name = translatableDocument['name'];
-                  feature.properties.fill = translatableDocument['color'];
-                  feature.properties.stroke = translatableDocument['color'];
-                }
-                return feature;
-              }).toList());
-        });
     return _authenticator.authenticated.flatMap(
             (authenticated) => authenticated ? mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
   }
@@ -125,20 +106,22 @@ class MapDataRepoImpl extends MapDataRepo {
 
   Future<File> _localMapFile() => getApplicationDocumentsDirectory().then((docsDir) => File('${docsDir.path}/$_MAP_FILE_NAME'));
 
-  Future<FeatureCollection> _readFeatures(File mapFile) async {
-    return compute(_parseMapFile, mapFile);
+  Future<FeatureCollection> _readFeatures(File mapFile, String languageCode) async {
+    Map<String, dynamic> args = { 'file': mapFile, 'languageCode': languageCode };
+    return compute(_parseMapFile, args);
   }
-
 }
 
-Future<FeatureCollection> _parseMapFile(File file) async {
+Future<FeatureCollection> _parseMapFile(Map<String, dynamic> args) async {
+  File file = args['file'];
+  String languageCode = args['languageCode'];
   if (file?.existsSync() == true) {
-    return file.readAsString().then((fileContent) => _parseFeaturesFromJson(fileContent));
+    return file.readAsString().then((fileContent) => _parseFeaturesFromJson(fileContent, languageCode));
   } else {
     return FeatureCollection(features: List<Feature>());
   }
 }
 
-Future<FeatureCollection> _parseFeaturesFromJson(String jsonStr) async {
-  return jsonStr?.isNotEmpty == true ? FeatureCollection.fromJson(json.decode(jsonStr)) : FeatureCollection(features: List<Feature>());
+Future<FeatureCollection> _parseFeaturesFromJson(String jsonStr, String languageCode) async {
+  return jsonStr?.isNotEmpty == true ? FeatureCollection.fromJson(json.decode(jsonStr), languageCode) : FeatureCollection(features: List<Feature>());
 }
