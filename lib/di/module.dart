@@ -17,6 +17,7 @@ import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
 import 'package:dachzeltfestival/view/map/eventmap.dart';
 import 'package:dachzeltfestival/view/notification/notification_list_viewmodel.dart';
+import 'package:dachzeltfestival/view/place_selection_interactor.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -43,14 +44,15 @@ class AppModule {
   ScheduleRepo scheduleRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState, MapDataRepo mapDataRepo) => ScheduleRepoImpl(firestore, authenticator, localeState, mapDataRepo);
 
   @provide
-  ScheduleViewModel scheduleViewModel(ScheduleRepo scheduleRepo) => ScheduleViewModel(scheduleRepo);
+  ScheduleViewModel scheduleViewModel(ScheduleRepo scheduleRepo, PlaceSelectionInteractor placeSelectionInteractor) => ScheduleViewModel(scheduleRepo, placeSelectionInteractor);
 
   @provide
   @singleton
   ConfigRepo configRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState) => ConfigRepoImpl(firestore, authenticator, localeState);
 
   @provide
-  MainViewModel mainViewModel(ConfigRepo configRepo, PermissionRepo permissionRepo, NotificationRepo notificationRepo) => MainViewModel(configRepo, permissionRepo, notificationRepo);
+  MainViewModel mainViewModel(ConfigRepo configRepo, PermissionRepo permissionRepo, NotificationRepo notificationRepo, PlaceSelectionInteractor placeSelectionInteractor) =>
+      MainViewModel(configRepo, permissionRepo, notificationRepo, placeSelectionInteractor);
 
   @provide
   @singleton

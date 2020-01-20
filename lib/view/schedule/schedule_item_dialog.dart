@@ -1,11 +1,12 @@
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
 import 'package:dachzeltfestival/util/utils.dart';
+import 'package:dachzeltfestival/view/place_selection_interactor.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 
-void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem) {
+void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, PlaceSelectionInteractor placeSelectionInteractor) {
   showDialog(
       context: context,
       barrierDismissible: true,
@@ -57,29 +58,35 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem) {
               ),
             ),
           ),
-          isNotNullOrEmpty(scheduleItem.venue) ? Padding(
-            padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Row(
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.only(right: 8.0),
-                    child: Icon(
-                      Icons.place,
-                      size: 16.0,
-                      color: hexToColor(scheduleItem.color),
-                    ),
-                  ),
-                  Text(
-                    scheduleItem.venue,
-                    style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w300,
+          isNotNullOrEmpty(scheduleItem.venue) ? InkWell(
+            onTap: () {
+              Navigator.of(context).pop();
+              placeSelectionInteractor.selectedPlaceId.add(scheduleItem.venue);
+            },
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 16.0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.only(right: 8.0),
+                      child: Icon(
+                        Icons.place,
+                        size: 16.0,
                         color: hexToColor(scheduleItem.color),
+                      ),
                     ),
-                  ),
-                ],
+                    Text(
+                      scheduleItem.venue,
+                      style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.w300,
+                          color: hexToColor(scheduleItem.color),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ): Container(),

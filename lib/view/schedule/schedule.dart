@@ -105,7 +105,7 @@ class Schedule extends StatelessWidget {
                     String speaker = scheduleItem.speaker;
                     if (speaker.isNotEmpty) { speaker = speaker + ": "; }
                     return InkWell(
-                      onTap: () => showScheduleItemDialog(context, scheduleItem),
+                      onTap: () => showScheduleItemDialog(context, scheduleItem, _scheduleViewModel.placeSelectionInteractor),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Column(
