@@ -1,3 +1,6 @@
+import 'dart:collection';
+import 'dart:math';
+
 import 'package:dachzeltfestival/model/geojson/point_category.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/point_category_icons.dart';
@@ -14,8 +17,11 @@ class FeatureConverter {
   FeatureConverter(this._markerIconGenerator);
 
   Future<GoogleMapsFeatures> parseFeatureCollection(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
-    return Observable.combineLatest2(_parsePolygons(featureCollection, selectedPlaceId, onPolygonTap).asStream(), _parseMarkers(featureCollection, selectedPlaceId, onMarkerTap).asStream(),
-        (polygons, markers) => GoogleMapsFeatures(polygons, markers)).first;
+    return Observable.combineLatest4(_parsePolygons(featureCollection, selectedPlaceId, onPolygonTap).asStream(),
+        _parseMarkers(featureCollection, selectedPlaceId, onMarkerTap).asStream(),
+        _calculatePolygonBoundingBoxes(featureCollection).asStream(),
+        _mapPointCoordinates(featureCollection).asStream(),
+        (polygons, markers, boundingBoxMap, coordinatesMap) => GoogleMapsFeatures(polygons, markers, boundingBoxMap, coordinatesMap)).first;
   }
 
   Future<Set<googlemaps.Polygon>> _parsePolygons(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap) async {
@@ -48,7 +54,7 @@ class FeatureConverter {
           SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
           return googlemaps.Marker(
              markerId: googlemaps.MarkerId((i++).toString()),
-             position: googlemaps.LatLng(point.coordinates.lat, point.coordinates.lng),
+             position: point.toGmapsCoordinates(),
              icon: isSelected ? descriptors.selected : descriptors.unselected,
              consumeTapEvents: true,
              visible: true,
@@ -56,11 +62,58 @@ class FeatureConverter {
            );
     }).toSet();
   }
+
+  Future<Map<String, googlemaps.LatLngBounds>> _calculatePolygonBoundingBoxes(FeatureCollection featureCollection) async {
+    return HashMap.fromIterable(featureCollection.features.where((feature) => feature is Polygon),
+      key: (feature) => (feature as Polygon).properties.placeId, value: (feature) => (feature as Polygon).boundingBox());
+  }
+
+  Future<Map<String, googlemaps.LatLng>> _mapPointCoordinates(FeatureCollection featureCollection) async {
+    return HashMap.fromIterable(featureCollection.features.where((feature) => feature is Point),
+        key: (feature) => (feature as Point).properties.placeId, value: (feature) => (feature as Point).toGmapsCoordinates());
+  }
+
 }
 
 class GoogleMapsFeatures {
+
   final Set<googlemaps.Polygon> polygons;
   final Set<googlemaps.Marker> markers;
+  final Map<String, googlemaps.LatLngBounds> polygonBoundingBoxes;
+  final Map<String, googlemaps.LatLng> pointCoordinates;
 
-  GoogleMapsFeatures(this.polygons, this.markers);
+  GoogleMapsFeatures(this.polygons, this.markers, this.polygonBoundingBoxes, this.pointCoordinates);
+}
+
+extension on Point {
+  googlemaps.LatLng toGmapsCoordinates() => googlemaps.LatLng(this.coordinates.lat, this.coordinates.lng);
+}
+
+extension on Polygon {
+
+  googlemaps.LatLngBounds boundingBox() {
+
+    double north = -90.0;
+    double south = 90.0;
+    double west = 180.0;
+    double east = -180.0;
+
+    this.coordinates.forEach((coordinates) {
+      coordinates.forEach( (latLng) {
+        north = max(north, latLng.lat);
+        south = min(south, latLng.lat);
+        west = min(west, latLng.lng);
+        east = max(east, latLng.lng);
+      });
+    });
+
+    // in case there is an event somewhere in the Pacific
+    if (east - west > 180.0) {
+      final tempWest = west;
+      west = east;
+      east = tempWest;
+    }
+
+    return googlemaps.LatLngBounds(northeast: googlemaps.LatLng(north, east), southwest: googlemaps.LatLng(south, west));
+  }
 }

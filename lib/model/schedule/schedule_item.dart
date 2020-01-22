@@ -5,7 +5,8 @@ class ScheduleItem {
   final String abstract;
   final String speaker;
   final String venue;
+  final String placeId;
   final String color;
 
-  ScheduleItem(this.start, this.finish, this.title, this.abstract, this.speaker, this.venue, this.color);
+  ScheduleItem(this.start, this.finish, this.title, this.abstract, this.speaker, this.venue, this.placeId, this.color);
 }

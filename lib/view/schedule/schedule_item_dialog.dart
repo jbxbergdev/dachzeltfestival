@@ -61,7 +61,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
           isNotNullOrEmpty(scheduleItem.venue) ? InkWell(
             onTap: () {
               Navigator.of(context).pop();
-              placeSelectionInteractor.selectedPlaceId.add(scheduleItem.venue);
+              placeSelectionInteractor.selectedPlaceId.add(scheduleItem.placeId);
             },
             child: Padding(
               padding: EdgeInsets.fromLTRB(24.0, 0.0, 24.0, 16.0),

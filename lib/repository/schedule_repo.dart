@@ -58,6 +58,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
         translatableDocument['abstract'],
         translatableDocument['speaker'],
         venueName,
+        venueId,
         venueColor,
       );
     }).toList()..sort((item1, item2) => item1.start.compareTo(item2.start));

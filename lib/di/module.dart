@@ -37,7 +37,7 @@ class AppModule {
       MapDataRepoImpl(firestore, firebaseStorage, authenticator, localeState);
 
   @provide
-  EventMapViewModel eventMapViewModel(MapDataRepo mapDataRepo, PermissionRepo permissionRepo) => EventMapViewModel(mapDataRepo, permissionRepo);
+  EventMapViewModel eventMapViewModel(MapDataRepo mapDataRepo, PermissionRepo permissionRepo, PlaceSelectionInteractor placeSelectionInteractor) => EventMapViewModel(mapDataRepo, permissionRepo, placeSelectionInteractor);
 
   @provide
   @singleton

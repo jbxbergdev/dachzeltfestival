@@ -1,4 +1,6 @@
+import 'dart:collection';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
@@ -71,6 +73,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _widgetHeightSubject.add(context.size.height);
     });
     _widgetHeightSubject.add(null);
+
     return Stack(
       children: <Widget>[
         StreamBuilder<_GoogleMapData>(
@@ -194,12 +197,20 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onMapItemTapped(geojson.Feature feature) {
     _featureSubject.add(feature);
-    _eventMapViewModel.selectedPlaceId.add(feature.properties.placeId);
+    _eventMapViewModel.selectedFeatureId.add(feature.properties.placeId);
   }
 
   void _onMapCreated(GoogleMapController controller) {
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
+    _compositeSubscription.add(_eventMapViewModel.zoomToFeatureId.flatMap((featureId) => _mapData().map((mapData) {
+      return Tuple3(featureId, mapData.pointCoordinates, mapData.polygonBoundingBoxes);
+    })).listen((tuple3) {
+      final bbox = tuple3.item3[tuple3.item1];
+      if (bbox != null) {
+        _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(bbox, 16.0));
+      }
+    }));
   }
 
   void _onCameraMove(CameraPosition cameraPosition) {
@@ -208,7 +219,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onTap(LatLng tapCoords) {
     _featureSubject.add(null);
-    _eventMapViewModel.selectedPlaceId.add(null);
+    _eventMapViewModel.selectedFeatureId.add(null);
   }
 
   void _startNavigationApp() async {
@@ -223,13 +234,15 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     }
   }
 
-  BehaviorSubject<_GoogleMapData> _mapData() {
+  Observable<_GoogleMapData> _mapData() {
     if (_mapDataStream == null) {
       _mapDataStream = BehaviorSubject.seeded(null);
 
       Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
           .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, mapData.selectedPlaceId, _onMapItemTapped, _onMapItemTapped).asStream()
-          .map((mapsFeatures) => _GoogleMapData(mapsFeatures.polygons, mapsFeatures.markers, mapData.locationPermissionGranted, mapData.mapConfig)));
+          .map((mapsFeatures) {
+            return _GoogleMapData(mapsFeatures.polygons, mapsFeatures.markers, mapsFeatures.polygonBoundingBoxes, mapsFeatures.pointCoordinates, mapData.locationPermissionGranted, mapData.mapConfig);
+          }));
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
@@ -247,8 +260,10 @@ class _GoogleMapData {
 
   final Set<Polygon> polygons;
   final Set<Marker> markers;
+  final Map<String, LatLngBounds> polygonBoundingBoxes;
+  final Map<String, LatLng> pointCoordinates;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
 
-  _GoogleMapData(this.polygons, this.markers, this.locationPermissionGranted, this.mapConfig);
+  _GoogleMapData(this.polygons, this.markers, this.polygonBoundingBoxes, this.pointCoordinates, this.locationPermissionGranted, this.mapConfig);
 }
