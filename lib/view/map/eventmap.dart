@@ -53,6 +53,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
   BehaviorSubject<double> _widgetHeightSubject = BehaviorSubject.seeded(null);
+  BehaviorSubject<String> _selectedPlaceSubject = BehaviorSubject.seeded(null);
 
   static const double _headerHeightPx = 80.0;
 
@@ -197,7 +198,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onMapItemTapped(geojson.Feature feature) {
     _featureSubject.add(feature);
-    _eventMapViewModel.selectedFeatureId.add(feature.properties.placeId);
+    _selectedPlaceSubject.add(feature.properties.placeId);
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -219,7 +220,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onTap(LatLng tapCoords) {
     _featureSubject.add(null);
-    _eventMapViewModel.selectedFeatureId.add(null);
+    _selectedPlaceSubject.add(null);
   }
 
   void _startNavigationApp() async {
@@ -238,11 +239,23 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     if (_mapDataStream == null) {
       _mapDataStream = BehaviorSubject.seeded(null);
 
-      Observable<_GoogleMapData> mapDataObservable = _eventMapViewModel.mapData()
-          .flatMap((mapData) => _featureConverter.parseFeatureCollection(mapData.mapFeatures, mapData.selectedPlaceId, _onMapItemTapped, _onMapItemTapped).asStream()
+      Observable<String> selectedPlaceId = Observable.merge(<Observable<String>>[_selectedPlaceSubject, _eventMapViewModel.zoomToFeatureId]);
+      Observable<Tuple2<MapData, String>> mapDataSelectedPlaceId = Observable.combineLatest2(
+          _eventMapViewModel.mapData(), selectedPlaceId, (mapData, selectedPlaceId) => Tuple2(mapData, selectedPlaceId));
+      Observable<_GoogleMapData> mapDataObservable = mapDataSelectedPlaceId
+          .flatMap((mapDataSelectedPlaceId) {
+            final mapData = mapDataSelectedPlaceId.item1;
+            final selectedPlaceId = mapDataSelectedPlaceId.item2;
+            return _featureConverter.parseFeatureCollection(mapData.mapFeatures, selectedPlaceId, _onMapItemTapped, _onMapItemTapped).asStream()
           .map((mapsFeatures) {
-            return _GoogleMapData(mapsFeatures.polygons, mapsFeatures.markers, mapsFeatures.polygonBoundingBoxes, mapsFeatures.pointCoordinates, mapData.locationPermissionGranted, mapData.mapConfig);
-          }));
+            return _GoogleMapData(mapsFeatures.polygons,
+                mapsFeatures.markers,
+                mapsFeatures.polygonBoundingBoxes,
+                mapsFeatures.pointCoordinates,
+                mapData.locationPermissionGranted,
+                mapDataSelectedPlaceId.item1.mapConfig);
+          });
+          });
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
