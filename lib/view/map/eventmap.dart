@@ -237,11 +237,18 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   Observable<_GoogleMapData> _mapData() {
     if (_mapDataStream == null) {
+
+      // Minimize expensive map data parsing by caching in a BehaviorSubject
       _mapDataStream = BehaviorSubject.seeded(null);
 
+      // Use whatever place id is requested. zoomToFeatureId is a PublishSubject.
       Observable<String> selectedPlaceId = Observable.merge(<Observable<String>>[_selectedPlaceSubject, _eventMapViewModel.zoomToFeatureId]);
+
+      // Merge MapData and selectedPlaceId
       Observable<Tuple2<MapData, String>> mapDataSelectedPlaceId = Observable.combineLatest2(
           _eventMapViewModel.mapData(), selectedPlaceId, (mapData, selectedPlaceId) => Tuple2(mapData, selectedPlaceId));
+
+      // Parse Features to GoogleMaps objects, combine all the results to _GoogleMapData object
       Observable<_GoogleMapData> mapDataObservable = mapDataSelectedPlaceId
           .flatMap((mapDataSelectedPlaceId) {
             final mapData = mapDataSelectedPlaceId.item1;
