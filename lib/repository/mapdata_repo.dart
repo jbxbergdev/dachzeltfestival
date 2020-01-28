@@ -39,15 +39,16 @@ class MapDataRepoImpl extends MapDataRepo {
 
   @override
   Observable<FeatureCollection> mapFeatures() {
+    print('##### mapFeatures()');
 
     // get to locale
-    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.flatMap((locale) =>
+    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.doOnData((_) => print("##### new locale")).flatMap((locale) =>
         // get map file
-        _localMap().flatMap((mapFile) =>
+        _localMap().doOnData((_) => print('##### new localMep')).flatMap((mapFile) =>
             // parse features from file with locale
             _readFeatures(mapFile, locale.languageCode).asStream()));
 
-    return _authenticator.authenticated.flatMap(
+    return _authenticator.authenticated.doOnData((_) => print('##### new authentication state')).flatMap(
             (authenticated) => authenticated ? mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
   }
 

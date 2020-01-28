@@ -59,12 +59,15 @@ class _MainWidgetState extends State<MainWidget> {
       _builders.charityBuilder.build(PageStorageKey('Charity')),
       _builders.infoBuilder.build((PageStorageKey('Info'))),
     ];
+    _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId.doOnData((selectedId) => print('##### selectd id: $selectedId'))
+        .where((selectedPlaceId) => selectedPlaceId != null)
+        .doOnData((selectedId) => print('##### selectd id after filter: $selectedId'))
+        .listen((_) => this._onItemTapped(1)));
   }
 
   @override
   Widget build(BuildContext context) {
     _mainViewModel.localeSubject.value = Localizations.localeOf(context);
-    _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId.listen((_) => this._onItemTapped(1)));
     return StreamBuilder<AppConfig>(
         stream: _mainViewModel.appConfig,
         builder: (context, snapshot) {

@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:io';
 import 'dart:math';
 
@@ -48,12 +47,15 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   GoogleMapController _googleMapController;
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
-  BehaviorSubject<geojson.Feature> _featureSubject;
   Observable<_GoogleMapData> _mapDataStream;
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
   BehaviorSubject<double> _widgetHeightSubject = BehaviorSubject.seeded(null);
-  BehaviorSubject<String> _selectedPlaceSubject = BehaviorSubject.seeded(null);
+  BehaviorSubject<geojson.Feature> _selectedPlaceSubject = BehaviorSubject.seeded(null);
+  BehaviorSubject<bool> _mapInitialized = BehaviorSubject.seeded(false);
+  BehaviorSubject<bool> _layoutDone = BehaviorSubject.seeded(false);
+  CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
+
 
   static const double _headerHeightPx = 80.0;
 
@@ -62,11 +64,42 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    _featureSubject = BehaviorSubject.seeded(null);
+    print('##### initState()');
+
+    _layoutDone.add(false);
+    _mapInitialized.add(false);
+
+    final mapReadySub = Observable.combineLatest2(_layoutDone, _mapInitialized, (layoutDone, mapInitialized) => layoutDone && mapInitialized)
+        .listen((mapReady) {
+          print('##### mapReady: $mapReady');
+          if (mapReady) {
+            final zoomSub = _eventMapViewModel.zoomToFeatureId.where((zoomId) => zoomId != null)
+                .doOnData((zoomId) => print('##### zoomId: $zoomId'))
+                .flatMap((zoomId) => _eventMapViewModel.mapData().first.asStream().map((mapData) => mapData.mapFeatures.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
+                .listen((feature) {
+                  print('##### feature: $feature');
+              if (feature is geojson.Polygon) {
+                _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(feature.boundingBox(), 16.0));
+              } else if (feature is geojson.Point) {
+                _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(feature.toLatLng(), 18.0));
+              }
+              _selectedPlaceSubject.add(feature);
+              _eventMapViewModel.zoomHandled();
+            });
+            _zoomCompositeSubscription.add(zoomSub);
+          } else {
+            _zoomCompositeSubscription.clear();
+          }
+    });
+    _compositeSubscription.add(mapReadySub);
   }
 
   @override
   Widget build(BuildContext context) {
+    print('##### build()');
+    _layoutDone.add(false);
+    _mapInitialized.add(false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _layoutDone.add(true));
 
     // We need to know the widget height to calculate the bottom sheet initial height.
     // But we can only know this after the widget tree has been rendered.
@@ -88,6 +121,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                       initialMapCenter.lat, initialMapCenter.lng),
                       zoom: mapData.mapConfig.initialZoomLevel);
                 }
+                print('##### build GoogleMap');
                 return GoogleMap(
                   initialCameraPosition: _cameraPosition,
                   myLocationButtonEnabled: false,
@@ -115,7 +149,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           ),
         ),
         StreamBuilder<Tuple2<geojson.Feature, double>>(
-          stream: Observable.combineLatest2(_featureSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
+          stream: Observable.combineLatest2(_selectedPlaceSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
           builder: (buildContext, snapshot) {
             if (!snapshot.hasData || snapshot.data.item1 == null || snapshot.data.item2 == null) {
               return Container();
@@ -197,21 +231,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapItemTapped(geojson.Feature feature) {
-    _featureSubject.add(feature);
-    _selectedPlaceSubject.add(feature.properties.placeId);
+    _selectedPlaceSubject.add(feature);
   }
 
   void _onMapCreated(GoogleMapController controller) {
+    print('##### onMapCreated()');
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
-    _compositeSubscription.add(_eventMapViewModel.zoomToFeatureId.flatMap((featureId) => _mapData().map((mapData) {
-      return Tuple3(featureId, mapData.pointCoordinates, mapData.polygonBoundingBoxes);
-    })).listen((tuple3) {
-      final bbox = tuple3.item3[tuple3.item1];
-      if (bbox != null) {
-        _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(bbox, 16.0));
-      }
-    }));
+    _mapInitialized.add(true);
   }
 
   void _onCameraMove(CameraPosition cameraPosition) {
@@ -219,7 +246,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onTap(LatLng tapCoords) {
-    _featureSubject.add(null);
     _selectedPlaceSubject.add(null);
   }
 
@@ -236,31 +262,29 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   Observable<_GoogleMapData> _mapData() {
+
     if (_mapDataStream == null) {
 
       // Minimize expensive map data parsing by caching in a BehaviorSubject
       _mapDataStream = BehaviorSubject.seeded(null);
 
-      // Use whatever place id is requested. zoomToFeatureId is a PublishSubject.
-      Observable<String> selectedPlaceId = Observable.merge(<Observable<String>>[_selectedPlaceSubject, _eventMapViewModel.zoomToFeatureId]);
-
-      // Merge MapData and selectedPlaceId
-      Observable<Tuple2<MapData, String>> mapDataSelectedPlaceId = Observable.combineLatest2(
-          _eventMapViewModel.mapData(), selectedPlaceId, (mapData, selectedPlaceId) => Tuple2(mapData, selectedPlaceId));
+      // Merge MapData, selectedPlaceId and zoomId
+      Observable<Tuple2<MapData, String>> mapDataSelectedPlace = Observable.combineLatest2(
+          _eventMapViewModel.mapData().doOnData((_) => print('##### new map data')),
+          _selectedPlaceSubject.map((feature) => feature?.properties?.placeId).doOnData((_) => print('##### new selectedPlaceId')),
+              (mapData, selectedPlaceId) => Tuple2(mapData, selectedPlaceId));
 
       // Parse Features to GoogleMaps objects, combine all the results to _GoogleMapData object
-      Observable<_GoogleMapData> mapDataObservable = mapDataSelectedPlaceId
-          .flatMap((mapDataSelectedPlaceId) {
-            final mapData = mapDataSelectedPlaceId.item1;
-            final selectedPlaceId = mapDataSelectedPlaceId.item2;
+      Observable<_GoogleMapData> mapDataObservable = mapDataSelectedPlace
+          .flatMap((mapDataSelectedPlace) {
+            final mapData = mapDataSelectedPlace.item1;
+            final selectedPlaceId = mapDataSelectedPlace.item2;
             return _featureConverter.parseFeatureCollection(mapData.mapFeatures, selectedPlaceId, _onMapItemTapped, _onMapItemTapped).asStream()
           .map((mapsFeatures) {
-            return _GoogleMapData(mapsFeatures.polygons,
-                mapsFeatures.markers,
-                mapsFeatures.polygonBoundingBoxes,
-                mapsFeatures.pointCoordinates,
-                mapData.locationPermissionGranted,
-                mapDataSelectedPlaceId.item1.mapConfig);
+              return _GoogleMapData(mapsFeatures.polygons,
+                  mapsFeatures.markers,
+                  mapData.locationPermissionGranted,
+                  mapDataSelectedPlace.item1.mapConfig);
           });
           });
 
@@ -280,10 +304,41 @@ class _GoogleMapData {
 
   final Set<Polygon> polygons;
   final Set<Marker> markers;
-  final Map<String, LatLngBounds> polygonBoundingBoxes;
-  final Map<String, LatLng> pointCoordinates;
   final bool locationPermissionGranted;
   final MapConfig mapConfig;
 
-  _GoogleMapData(this.polygons, this.markers, this.polygonBoundingBoxes, this.pointCoordinates, this.locationPermissionGranted, this.mapConfig);
+  _GoogleMapData(this.polygons, this.markers, this.locationPermissionGranted, this.mapConfig);
+}
+
+extension on geojson.Polygon {
+
+  LatLngBounds boundingBox() {
+
+    double north = -90.0;
+    double south = 90.0;
+    double west = 180.0;
+    double east = -180.0;
+
+    this.coordinates.forEach((coordinates) {
+      coordinates.forEach( (latLng) {
+        north = max(north, latLng.lat);
+        south = min(south, latLng.lat);
+        west = min(west, latLng.lng);
+        east = max(east, latLng.lng);
+      });
+    });
+
+    // in case there is an event somewhere in the Pacific
+    if (east - west > 180.0) {
+      final tempWest = west;
+      west = east;
+      east = tempWest;
+    }
+
+    return LatLngBounds(northeast: LatLng(north, east), southwest: LatLng(south, west));
+  }
+}
+
+extension on geojson.Point {
+  LatLng toLatLng() => LatLng(this.coordinates.lat, this.coordinates.lng);
 }

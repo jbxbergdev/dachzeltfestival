@@ -145,7 +145,9 @@ class Schedule extends StatelessWidget {
                                     children: <Widget>[
                                       Padding(
                                         padding: const EdgeInsets.only(right: 8.0),
-                                        child: Icon(Icons.place, size: 12.0, color: hexToColor(scheduleItem.color),),
+                                        child: scheduleItem.venue != null
+                                            ? Icon(Icons.place, size: 12.0, color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.grey[600],)
+                                            : Container(),
                                       ),
                                       Text(
                                         scheduleItem.venue ?? "",

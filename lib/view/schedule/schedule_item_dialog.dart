@@ -74,7 +74,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
                       child: Icon(
                         Icons.place,
                         size: 16.0,
-                        color: hexToColor(scheduleItem.color),
+                        color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.black,
                       ),
                     ),
                     Text(
@@ -82,7 +82,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
                       style: TextStyle(
                           fontSize: 16.0,
                           fontWeight: FontWeight.w300,
-                          color: hexToColor(scheduleItem.color),
+                          color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.black,
                       ),
                     ),
                   ],

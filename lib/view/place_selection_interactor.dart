@@ -6,5 +6,5 @@ import 'package:rxdart/rxdart.dart';
 @singleton
 class PlaceSelectionInteractor {
   // ignore: close_sinks
-  final PublishSubject<String> selectedPlaceId = PublishSubject();
+  final BehaviorSubject<String> selectedPlaceId = BehaviorSubject();
 }
