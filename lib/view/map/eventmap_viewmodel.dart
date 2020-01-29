@@ -15,21 +15,13 @@ class EventMapViewModel {
 
   EventMapViewModel(this._mapDataRepo, this._permissionRepo, this._placeSelectionInteractor);
 
-  Observable<MapData> mapData() {
-    print('##### mapData()');
-    return Observable.combineLatest3(_mapDataRepo.mapFeatures().doOnData((_) => print('##### new map features')), _mapDataRepo.mapConfig().doOnData((_) => print('##### new map config')), _permissionRepo.locationPermissionState.doOnData((_) => print('##### new permission state')),
-        (mapFeatures, mapConfig, locationPermissionGranted) => MapData(mapFeatures, locationPermissionGranted, mapConfig));
-  }
+  Observable<FeatureCollection> features() => _mapDataRepo.mapFeatures();
+
+  Observable<bool> locationPermissionGranted() => _permissionRepo.locationPermissionState;
+
+  Observable<MapConfig> mapConfig() => _mapDataRepo.mapConfig();
 
   Observable<String> get zoomToFeatureId => _placeSelectionInteractor.selectedPlaceId;
 
   Future<void> zoomHandled() async => _placeSelectionInteractor.selectedPlaceId.add(null);
-}
-
-class MapData {
-  final FeatureCollection mapFeatures;
-  final bool locationPermissionGranted;
-  final MapConfig mapConfig;
-
-  MapData(this.mapFeatures, this.locationPermissionGranted, this.mapConfig);
 }

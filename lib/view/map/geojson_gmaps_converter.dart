@@ -8,6 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart' as googlemaps;
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:inject/inject.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 
 @provide
 class FeatureConverter {
@@ -20,106 +21,138 @@ class FeatureConverter {
 
   FeatureConverter(this._markerIconGenerator);
 
-  Future<GoogleMapsFeatures> parseFeatureCollection(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
-    return Observable.combineLatest4(_parsePolygons(featureCollection, selectedPlaceId, onPolygonTap).asStream(),
-        _parseMarkers(featureCollection, selectedPlaceId, onMarkerTap).asStream(),
-        _calculatePolygonBoundingBoxes(featureCollection).asStream(),
-        _mapPointCoordinates(featureCollection).asStream(),
-        (polygons, markers, boundingBoxMap, coordinatesMap) => GoogleMapsFeatures(polygons, markers, boundingBoxMap, coordinatesMap)).first;
+  Future<GoogleMapsGeometries> parseFeatureCollection(FeatureCollection featureCollection, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
+    return Observable.combineLatest2(_parsePolygons(featureCollection, onPolygonTap).asStream(),
+        _parseMarkers(featureCollection, onMarkerTap).asStream(),
+        (polygons, markers) => GoogleMapsGeometries(polygons, markers)).first;
   }
 
-  Future<Set<googlemaps.Polygon>> _parsePolygons(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onPolygonTap) async {
+  Future<Set<_IdSet<googlemaps.Polygon>>> _parsePolygons(FeatureCollection featureCollection, Function(Feature) onPolygonTap) async {
     int i = 0;
-    return (featureCollection.features
-      .where((feature) => feature is Polygon))
+    return featureCollection.features.where((feature) => feature is Polygon)
         .map((feature) {
-      final polygon = feature as Polygon;
-      final isSelected = selectedPlaceId != null && polygon.properties.placeId == selectedPlaceId;
-      return googlemaps.Polygon(
-        polygonId: googlemaps.PolygonId((i++).toString()),
-        strokeColor: hexToColor(feature.properties?.stroke),
-        fillColor: hexToColor(feature.properties?.fill).withOpacity(isSelected ? 1.0 : 0.5),
-        strokeWidth: isSelected ? 10 : 2,
-        points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
-        consumeTapEvents: true,
-        zIndex: POLYGON_Z_INDEX,
-        onTap: () => onPolygonTap(polygon),
-      );
+          final polygon = feature as Polygon;
+          return _parsePolygonIdSet(polygon, googlemaps.PolygonId((i++).toString()), onPolygonTap);
     }).toSet();
   }
 
-  Future<Set<googlemaps.Marker>> _parseMarkers(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onMarkerTap) async {
+  _IdSet<googlemaps.Polygon> _parsePolygonIdSet(Polygon polygon, googlemaps.PolygonId gmapsPolygonId, Function(Feature) onPolygonTap) {
+    return _IdSet<googlemaps.Polygon>(
+        polygon.properties.placeId,
+        _parsePolygon(polygon, true, gmapsPolygonId, onPolygonTap),
+        _parsePolygon(polygon, false, gmapsPolygonId, onPolygonTap));
+  }
+
+  googlemaps.Polygon _parsePolygon(Polygon polygon, bool selected, googlemaps.PolygonId gmapsPolygonId, Function(Feature) onPolygonTap) {
+    return googlemaps.Polygon(
+      polygonId: gmapsPolygonId,
+      strokeColor: hexToColor(polygon.properties?.stroke),
+      fillColor: hexToColor(polygon.properties?.fill).withOpacity(selected ? 1.0 : 0.5),
+      strokeWidth: selected ? 10 : 2,
+      points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
+      consumeTapEvents: true,
+      zIndex: POLYGON_Z_INDEX,
+      onTap: () => onPolygonTap(polygon),
+    );
+  }
+
+//  Future<Set<googlemaps.Polygon>> _parsePolygonsForSelectionState(FeatureCollection featureCollection, Function(Feature) onPolygonTap, bool selected) async {
+//    int i = 0;
+//    return (featureCollection.features
+//      .where((feature) => feature is Polygon))
+//        .map((feature) {
+//      final polygon = feature as Polygon;
+//      return googlemaps.Polygon(
+//        polygonId: googlemaps.PolygonId((i++).toString()),
+//        strokeColor: hexToColor(feature.properties?.stroke),
+//        fillColor: hexToColor(feature.properties?.fill).withOpacity(selected ? 1.0 : 0.5),
+//        strokeWidth: selected ? 10 : 2,
+//        points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
+//        consumeTapEvents: true,
+//        zIndex: POLYGON_Z_INDEX,
+//        onTap: () => onPolygonTap(polygon),
+//      );
+//    }).toSet();
+//  }
+
+  Future<Set<_IdSet<googlemaps.Marker>>> _parseMarkers(FeatureCollection featureCollection, Function(Feature) onMarkerTap) async {
     final bitmaps = await _markerIconGenerator.bitmapMapping;
     int i = 0;
-    return (featureCollection.features
-      .where((feature) => feature is Point))
+    return featureCollection.features.where((feature) => feature is Point)
         .map((feature) {
           final point = feature as Point;
-          final isSelected = selectedPlaceId != null && point.properties.placeId == selectedPlaceId;
-          SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
-          return googlemaps.Marker(
-             markerId: googlemaps.MarkerId((i++).toString()),
-             position: point.toGmapsCoordinates(),
-             icon: isSelected ? descriptors.selected : descriptors.unselected,
-             consumeTapEvents: true,
-             visible: true,
-             zIndex: isSelected ? SELECTED_MARKER_Z_INDEX : MARKER_Z_INDEX,
-             onTap: () => onMarkerTap(point),
-           );
+          return _parseMarkerIdSet(point, googlemaps.MarkerId((i++).toString()), onMarkerTap, bitmaps);
     }).toSet();
   }
 
-  Future<Map<String, googlemaps.LatLngBounds>> _calculatePolygonBoundingBoxes(FeatureCollection featureCollection) async {
-    return HashMap.fromIterable(featureCollection.features.where((feature) => feature is Polygon),
-      key: (feature) => (feature as Polygon).properties.placeId, value: (feature) => (feature as Polygon).boundingBox());
+  _IdSet<googlemaps.Marker> _parseMarkerIdSet(Point point, googlemaps.MarkerId markerId, Function(Feature) onMarkerTap, Map<PointCategory, SelectionBitmapDescriptors> bitmaps) {
+    return _IdSet<googlemaps.Marker>(
+      point.properties.placeId,
+      _parseMarker(point, true, markerId, onMarkerTap, bitmaps),
+      _parseMarker(point, false, markerId, onMarkerTap, bitmaps)
+    );
   }
 
-  Future<Map<String, googlemaps.LatLng>> _mapPointCoordinates(FeatureCollection featureCollection) async {
-    return HashMap.fromIterable(featureCollection.features.where((feature) => feature is Point),
-        key: (feature) => (feature as Point).properties.placeId, value: (feature) => (feature as Point).toGmapsCoordinates());
+  googlemaps.Marker _parseMarker(Point point, bool selected, googlemaps.MarkerId markerId, Function(Feature) onMarkerTap, Map<PointCategory, SelectionBitmapDescriptors> bitmaps) {
+    SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
+    return googlemaps.Marker(
+      markerId: markerId,
+      position: point.toGmapsCoordinates(),
+      icon: selected ? descriptors.selected : descriptors.unselected,
+      consumeTapEvents: true,
+      visible: true,
+      zIndex: selected ? SELECTED_MARKER_Z_INDEX : MARKER_Z_INDEX,
+      onTap: () => onMarkerTap(point),
+    );
   }
+
+//  Future<Set<googlemaps.Marker>> _parseMarkers(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onMarkerTap) async {
+//    final bitmaps = await _markerIconGenerator.bitmapMapping;
+//    int i = 0;
+//    return (featureCollection.features
+//      .where((feature) => feature is Point))
+//        .map((feature) {
+//          final point = feature as Point;
+//          final isSelected = selectedPlaceId != null && point.properties.placeId == selectedPlaceId;
+//          SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
+//          return googlemaps.Marker(
+//             markerId: googlemaps.MarkerId((i++).toString()),
+//             position: point.toGmapsCoordinates(),
+//             icon: isSelected ? descriptors.selected : descriptors.unselected,
+//             consumeTapEvents: true,
+//             visible: true,
+//             zIndex: isSelected ? SELECTED_MARKER_Z_INDEX : MARKER_Z_INDEX,
+//             onTap: () => onMarkerTap(point),
+//           );
+//    }).toSet();
+//  }
 
 }
 
-class GoogleMapsFeatures {
+class GoogleMapsGeometries {
 
-  final Set<googlemaps.Polygon> polygons;
-  final Set<googlemaps.Marker> markers;
-  final Map<String, googlemaps.LatLngBounds> polygonBoundingBoxes;
-  final Map<String, googlemaps.LatLng> pointCoordinates;
+  final Set<_IdSet<googlemaps.Polygon>> _polygons;
+  final Set<_IdSet<googlemaps.Marker>> _markers;
 
-  GoogleMapsFeatures(this.polygons, this.markers, this.polygonBoundingBoxes, this.pointCoordinates);
+  GoogleMapsGeometries(this._polygons, this._markers);
+
+  Set<googlemaps.Polygon> polygons(String selected) => _polygons.map((idSet) => idSet.id == selected ? idSet.selected : idSet.unselected ).toSet();
+
+  Set<googlemaps.Marker> markers(String selected) => _markers.map((idSet) => idSet.id == selected ? idSet.selected : idSet.unselected ).toSet();
+}
+
+class _IdSet<T> {
+  Tuple3<String, T, T> _tuple;
+
+  _IdSet(String id, T unselected, T selected) {
+    _tuple = Tuple3(id, unselected, selected);
+  }
+
+  String get id => _tuple.item1;
+  T get selected => _tuple.item2;
+  T get unselected => _tuple.item3;
 }
 
 extension on Point {
   googlemaps.LatLng toGmapsCoordinates() => googlemaps.LatLng(this.coordinates.lat, this.coordinates.lng);
-}
-
-extension on Polygon {
-
-  googlemaps.LatLngBounds boundingBox() {
-
-    double north = -90.0;
-    double south = 90.0;
-    double west = 180.0;
-    double east = -180.0;
-
-    this.coordinates.forEach((coordinates) {
-      coordinates.forEach( (latLng) {
-        north = max(north, latLng.lat);
-        south = min(south, latLng.lat);
-        west = min(west, latLng.lng);
-        east = max(east, latLng.lng);
-      });
-    });
-
-    // in case there is an event somewhere in the Pacific
-    if (east - west > 180.0) {
-      final tempWest = west;
-      west = east;
-      east = tempWest;
-    }
-
-    return googlemaps.LatLngBounds(northeast: googlemaps.LatLng(north, east), southwest: googlemaps.LatLng(south, west));
-  }
 }

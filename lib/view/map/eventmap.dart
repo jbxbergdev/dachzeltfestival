@@ -48,6 +48,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
   Observable<_GoogleMapData> _mapDataStream;
+  Observable<GoogleMapsGeometries> _geometriesStream;
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
   BehaviorSubject<double> _widgetHeightSubject = BehaviorSubject.seeded(null);
@@ -75,7 +76,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           if (mapReady) {
             final zoomSub = _eventMapViewModel.zoomToFeatureId.where((zoomId) => zoomId != null)
                 .doOnData((zoomId) => print('##### zoomId: $zoomId'))
-                .flatMap((zoomId) => _eventMapViewModel.mapData().first.asStream().map((mapData) => mapData.mapFeatures.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
+                .flatMap((zoomId) => _eventMapViewModel.features().first.asStream().map((features) => features.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
                 .listen((feature) {
                   print('##### feature: $feature');
               if (feature is geojson.Polygon) {
@@ -269,28 +270,36 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _mapDataStream = BehaviorSubject.seeded(null);
 
       // Merge MapData, selectedPlaceId and zoomId
-      Observable<Tuple2<MapData, String>> mapDataSelectedPlace = Observable.combineLatest2(
-          _eventMapViewModel.mapData().doOnData((_) => print('##### new map data')),
+      Observable<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> mapGeometriesSelectedPlaceMapConfigLocationPermission = Observable.combineLatest4(
+          _mapGeometries(),
           _selectedPlaceSubject.map((feature) => feature?.properties?.placeId).doOnData((_) => print('##### new selectedPlaceId')),
-              (mapData, selectedPlaceId) => Tuple2(mapData, selectedPlaceId));
+          _eventMapViewModel.mapConfig(),
+          _eventMapViewModel.locationPermissionGranted(),
+              (mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted) => Tuple4(mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted));
 
       // Parse Features to GoogleMaps objects, combine all the results to _GoogleMapData object
-      Observable<_GoogleMapData> mapDataObservable = mapDataSelectedPlace
-          .flatMap((mapDataSelectedPlace) {
-            final mapData = mapDataSelectedPlace.item1;
-            final selectedPlaceId = mapDataSelectedPlace.item2;
-            return _featureConverter.parseFeatureCollection(mapData.mapFeatures, selectedPlaceId, _onMapItemTapped, _onMapItemTapped).asStream()
-          .map((mapsFeatures) {
-              return _GoogleMapData(mapsFeatures.polygons,
-                  mapsFeatures.markers,
-                  mapData.locationPermissionGranted,
-                  mapDataSelectedPlace.item1.mapConfig);
-          });
+      Observable<_GoogleMapData> mapDataObservable = mapGeometriesSelectedPlaceMapConfigLocationPermission
+          .map((geometriesSelectedIdConfigPermission) {
+              return _GoogleMapData(geometriesSelectedIdConfigPermission.item1.polygons(geometriesSelectedIdConfigPermission.item2),
+                  geometriesSelectedIdConfigPermission.item1.markers(geometriesSelectedIdConfigPermission.item2),
+                  geometriesSelectedIdConfigPermission.item4,
+                  geometriesSelectedIdConfigPermission.item3);
           });
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
     }
     return _mapDataStream;
+  }
+
+  Observable<GoogleMapsGeometries> _mapGeometries() {
+    if (_geometriesStream == null) {
+      _geometriesStream = BehaviorSubject();
+      final subscription = _eventMapViewModel.features()
+          .flatMap((features) => _featureConverter.parseFeatureCollection(features, _onMapItemTapped, _onMapItemTapped).asStream())
+          .listen((googleMapsGeometries) => (_geometriesStream as BehaviorSubject<GoogleMapsGeometries>).add(googleMapsGeometries));
+      _compositeSubscription.add(subscription);
+    }
+    return _geometriesStream;
   }
 
   @override
@@ -309,6 +318,7 @@ class _GoogleMapData {
 
   _GoogleMapData(this.polygons, this.markers, this.locationPermissionGranted, this.mapConfig);
 }
+
 
 extension on geojson.Polygon {
 

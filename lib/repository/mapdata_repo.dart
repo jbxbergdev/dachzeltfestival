@@ -42,7 +42,7 @@ class MapDataRepoImpl extends MapDataRepo {
     print('##### mapFeatures()');
 
     // get to locale
-    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.doOnData((_) => print("##### new locale")).flatMap((locale) =>
+    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.distinct((previous, next) => previous.languageCode == next.languageCode).doOnData((_) => print("##### new locale")).flatMap((locale) =>
         // get map file
         _localMap().doOnData((_) => print('##### new localMep')).flatMap((mapFile) =>
             // parse features from file with locale
