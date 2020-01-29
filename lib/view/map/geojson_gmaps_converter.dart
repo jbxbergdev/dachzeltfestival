@@ -12,6 +12,10 @@ import 'package:rxdart/rxdart.dart';
 @provide
 class FeatureConverter {
 
+  static const int POLYGON_Z_INDEX = 0;
+  static const double MARKER_Z_INDEX = 1;
+  static const double SELECTED_MARKER_Z_INDEX = 2;
+
   final PointCategoryIcons _markerIconGenerator;
 
   FeatureConverter(this._markerIconGenerator);
@@ -38,6 +42,7 @@ class FeatureConverter {
         strokeWidth: isSelected ? 10 : 2,
         points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
         consumeTapEvents: true,
+        zIndex: POLYGON_Z_INDEX,
         onTap: () => onPolygonTap(polygon),
       );
     }).toSet();
@@ -58,7 +63,8 @@ class FeatureConverter {
              icon: isSelected ? descriptors.selected : descriptors.unselected,
              consumeTapEvents: true,
              visible: true,
-             onTap: () => onMarkerTap(point)
+             zIndex: isSelected ? SELECTED_MARKER_Z_INDEX : MARKER_Z_INDEX,
+             onTap: () => onMarkerTap(point),
            );
     }).toSet();
   }
