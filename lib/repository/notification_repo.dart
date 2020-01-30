@@ -22,6 +22,7 @@ class NotificationRepoImpl extends NotificationRepo {
   final LocaleState _localeState;
   final FirebaseMessageParser _firebaseMessageParser;
   final PublishSubject<String> _fcmMessageSubject = PublishSubject();
+  final BehaviorSubject<bool> _languageSubscriptionActive = BehaviorSubject.seeded(false);
   Observable<String> _newNotificationIds;
 
   NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState) {
@@ -38,16 +39,18 @@ class NotificationRepoImpl extends NotificationRepo {
         _fcmMessageSubject.add(_firebaseMessageParser.parseDocumentId(message));
       },
     );
+
     List<String> supportedLanguages = Translations.supportedLanguages;
     _localeState.localeSubject.where((locale) => locale != null).listen((locale) {
+      _languageSubscriptionActive.add(false);
       // on a new locale, first unsubscribe from current language topic (i.e. unsubscribe from all topics)
       supportedLanguages.forEach((langCode) => _firebaseMessaging.unsubscribeFromTopic(langCode));
 
       // if the locale's language is supported, subscribe to its topic, otherwise subscribe to the default language
       if (supportedLanguages.contains(locale.languageCode)) {
-        _firebaseMessaging.subscribeToTopic(locale.languageCode);
+        _firebaseMessaging.subscribeToTopic(locale.languageCode).whenComplete(() => _languageSubscriptionActive.add(true));
       } else {
-        _firebaseMessaging.subscribeToTopic(supportedLanguages[0]);
+        _firebaseMessaging.subscribeToTopic(supportedLanguages[0]).whenComplete(() => _languageSubscriptionActive.add(true));
       }
     });
   }
@@ -62,7 +65,7 @@ class NotificationRepoImpl extends NotificationRepo {
 
   @override
   Observable<List<notification.Notification>> allNotifications() {
-    return _localeState.localeSubject.flatMap((locale) =>
+    return _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.localeSubject).doOnData((locale) => print('##### locale: ${locale.languageCode}')).flatMap((locale) =>
         Observable(_firestore.collection('notifications')
             .where('language', isEqualTo: locale.supportedOrDefaultLangCode)
             .orderBy('timestamp', descending: true)
