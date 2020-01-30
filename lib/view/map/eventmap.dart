@@ -101,6 +101,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   initialCameraPosition: _cameraPosition,
                   myLocationButtonEnabled: false,
                   myLocationEnabled: mapData.locationPermissionGranted,
+                  tiltGesturesEnabled: false,
+                  rotateGesturesEnabled: false,
                   mapType: MapType.hybrid,
                   polygons: mapData?.polygons ?? Set(),
                   markers: mapData?.markers ?? Set(),
@@ -112,12 +114,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               return Container();
             }),
         Positioned(
-          bottom: 10,
-          right: 10,
+          bottom: 16,
+          right: 16,
           child: FloatingActionButton(
             onPressed: _startNavigationApp,
             child: Icon(
-              Icons.navigation,
+              Icons.directions_car,
               color: Theme.of(context).primaryColor,
             ),
             backgroundColor: Colors.grey[100],
@@ -206,7 +208,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapItemTapped(geojson.Feature feature) {
-    _selectedPlaceSubject.add(feature);
+    _selectedPlaceSubject.first.then((selectedFeature) => _selectedPlaceSubject.add(selectedFeature == null ? feature : null));
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -285,7 +287,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             .flatMap((zoomId) => _eventMapViewModel.features().first.asStream().map((features) => features.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
             .listen((feature) {
           if (feature is geojson.Polygon) {
-            _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(feature.boundingBox(), 16.0));
+            _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(feature.boundingBox(), 64.0));
           } else if (feature is geojson.Point) {
             _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(feature.toLatLng(), 18.0));
           }
