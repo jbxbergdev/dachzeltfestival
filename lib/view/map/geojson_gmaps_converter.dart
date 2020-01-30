@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:math';
 
 import 'package:dachzeltfestival/model/geojson/point_category.dart';
@@ -56,25 +55,6 @@ class FeatureConverter {
     );
   }
 
-//  Future<Set<googlemaps.Polygon>> _parsePolygonsForSelectionState(FeatureCollection featureCollection, Function(Feature) onPolygonTap, bool selected) async {
-//    int i = 0;
-//    return (featureCollection.features
-//      .where((feature) => feature is Polygon))
-//        .map((feature) {
-//      final polygon = feature as Polygon;
-//      return googlemaps.Polygon(
-//        polygonId: googlemaps.PolygonId((i++).toString()),
-//        strokeColor: hexToColor(feature.properties?.stroke),
-//        fillColor: hexToColor(feature.properties?.fill).withOpacity(selected ? 1.0 : 0.5),
-//        strokeWidth: selected ? 10 : 2,
-//        points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
-//        consumeTapEvents: true,
-//        zIndex: POLYGON_Z_INDEX,
-//        onTap: () => onPolygonTap(polygon),
-//      );
-//    }).toSet();
-//  }
-
   Future<Set<_IdSet<googlemaps.Marker>>> _parseMarkers(FeatureCollection featureCollection, Function(Feature) onMarkerTap) async {
     final bitmaps = await _markerIconGenerator.bitmapMapping;
     int i = 0;
@@ -105,27 +85,6 @@ class FeatureConverter {
       onTap: () => onMarkerTap(point),
     );
   }
-
-//  Future<Set<googlemaps.Marker>> _parseMarkers(FeatureCollection featureCollection, String selectedPlaceId, Function(Feature) onMarkerTap) async {
-//    final bitmaps = await _markerIconGenerator.bitmapMapping;
-//    int i = 0;
-//    return (featureCollection.features
-//      .where((feature) => feature is Point))
-//        .map((feature) {
-//          final point = feature as Point;
-//          final isSelected = selectedPlaceId != null && point.properties.placeId == selectedPlaceId;
-//          SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
-//          return googlemaps.Marker(
-//             markerId: googlemaps.MarkerId((i++).toString()),
-//             position: point.toGmapsCoordinates(),
-//             icon: isSelected ? descriptors.selected : descriptors.unselected,
-//             consumeTapEvents: true,
-//             visible: true,
-//             zIndex: isSelected ? SELECTED_MARKER_Z_INDEX : MARKER_Z_INDEX,
-//             onTap: () => onMarkerTap(point),
-//           );
-//    }).toSet();
-//  }
 
 }
 

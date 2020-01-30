@@ -57,7 +57,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   BehaviorSubject<bool> _layoutDone = BehaviorSubject.seeded(false);
   CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
 
-
   static const double _headerHeightPx = 80.0;
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
@@ -65,41 +64,17 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    print('##### initState()');
 
     _layoutDone.add(false);
     _mapInitialized.add(false);
 
-    final mapReadySub = Observable.combineLatest2(_layoutDone, _mapInitialized, (layoutDone, mapInitialized) => layoutDone && mapInitialized)
-        .listen((mapReady) {
-          print('##### mapReady: $mapReady');
-          if (mapReady) {
-            final zoomSub = _eventMapViewModel.zoomToFeatureId.where((zoomId) => zoomId != null)
-                .doOnData((zoomId) => print('##### zoomId: $zoomId'))
-                .flatMap((zoomId) => _eventMapViewModel.features().first.asStream().map((features) => features.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
-                .listen((feature) {
-                  print('##### feature: $feature');
-              if (feature is geojson.Polygon) {
-                _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(feature.boundingBox(), 16.0));
-              } else if (feature is geojson.Point) {
-                _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(feature.toLatLng(), 18.0));
-              }
-              _selectedPlaceSubject.add(feature);
-              _eventMapViewModel.zoomHandled();
-            });
-            _zoomCompositeSubscription.add(zoomSub);
-          } else {
-            _zoomCompositeSubscription.clear();
-          }
-    });
-    _compositeSubscription.add(mapReadySub);
+    _listenToZoomRequests();
   }
 
   @override
   Widget build(BuildContext context) {
-    print('##### build()');
     _layoutDone.add(false);
-    _mapInitialized.add(false);
+    _mapInitialized.add(_googleMapController != null);
     WidgetsBinding.instance.addPostFrameCallback((_) => _layoutDone.add(true));
 
     // We need to know the widget height to calculate the bottom sheet initial height.
@@ -122,7 +97,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                       initialMapCenter.lat, initialMapCenter.lng),
                       zoom: mapData.mapConfig.initialZoomLevel);
                 }
-                print('##### build GoogleMap');
                 return GoogleMap(
                   initialCameraPosition: _cameraPosition,
                   myLocationButtonEnabled: false,
@@ -236,7 +210,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _onMapCreated(GoogleMapController controller) {
-    print('##### onMapCreated()');
     _googleMapController = controller;
     _googleMapController.setMapStyle(mapStyle);
     _mapInitialized.add(true);
@@ -269,10 +242,10 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       // Minimize expensive map data parsing by caching in a BehaviorSubject
       _mapDataStream = BehaviorSubject.seeded(null);
 
-      // Merge MapData, selectedPlaceId and zoomId
+      // Merge map geometries, selectedPlaceId, zoomId and location permission state
       Observable<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> mapGeometriesSelectedPlaceMapConfigLocationPermission = Observable.combineLatest4(
           _mapGeometries(),
-          _selectedPlaceSubject.map((feature) => feature?.properties?.placeId).doOnData((_) => print('##### new selectedPlaceId')),
+          _selectedPlaceSubject.map((feature) => feature?.properties?.placeId),
           _eventMapViewModel.mapConfig(),
           _eventMapViewModel.locationPermissionGranted(),
               (mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted) => Tuple4(mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted));
@@ -293,6 +266,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   Observable<GoogleMapsGeometries> _mapGeometries() {
     if (_geometriesStream == null) {
+      // cache the geometries in a Behaviorsubject as the creation may be expensive
       _geometriesStream = BehaviorSubject();
       final subscription = _eventMapViewModel.features()
           .flatMap((features) => _featureConverter.parseFeatureCollection(features, _onMapItemTapped, _onMapItemTapped).asStream())
@@ -300,6 +274,30 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _compositeSubscription.add(subscription);
     }
     return _geometriesStream;
+  }
+
+  void _listenToZoomRequests() {
+    // before zooming is possible, layout must be complete and a GoogleMapController must be available. Listen to these states.
+    final mapReadySub = Observable.combineLatest2(_layoutDone, _mapInitialized, (layoutDone, mapInitialized) => layoutDone && mapInitialized)
+        .listen((mapReady) {
+      if (mapReady) {
+        final zoomSub = _eventMapViewModel.zoomToFeatureId.where((zoomId) => zoomId != null)
+            .flatMap((zoomId) => _eventMapViewModel.features().first.asStream().map((features) => features.features.firstWhere((feature) => feature.properties.placeId == zoomId)))
+            .listen((feature) {
+          if (feature is geojson.Polygon) {
+            _googleMapController.animateCamera(CameraUpdate.newLatLngBounds(feature.boundingBox(), 16.0));
+          } else if (feature is geojson.Point) {
+            _googleMapController.animateCamera(CameraUpdate.newLatLngZoom(feature.toLatLng(), 18.0));
+          }
+          _selectedPlaceSubject.add(feature);
+          _eventMapViewModel.zoomHandled();
+        });
+        _zoomCompositeSubscription.add(zoomSub);
+      } else {
+        _zoomCompositeSubscription.clear();
+      }
+    });
+    _compositeSubscription.add(mapReadySub);
   }
 
   @override
