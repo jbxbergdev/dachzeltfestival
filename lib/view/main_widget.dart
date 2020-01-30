@@ -54,14 +54,13 @@ class _MainWidgetState extends State<MainWidget> {
     initializeDateFormatting();
     _initNotificationHandling(context);
     _pages = <Widget>[
-      _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
+      _builders.notificationListBuilder.build(PageStorageKey('NotificationList')),
       _builders.eventMapBuilder.build(PageStorageKey('Map')),
-      _builders.charityBuilder.build(PageStorageKey('Charity')),
+      _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
       _builders.infoBuilder.build((PageStorageKey('Info'))),
     ];
-    _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId.doOnData((selectedId) => print('##### selectd id: $selectedId'))
+    _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId
         .where((selectedPlaceId) => selectedPlaceId != null)
-        .doOnData((selectedId) => print('##### selectd id after filter: $selectedId'))
         .listen((_) => this._onItemTapped(1)));
   }
 
@@ -115,16 +114,16 @@ class _MainWidgetState extends State<MainWidget> {
                 type: BottomNavigationBarType.fixed,
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.event),
-                    title: Text(context.translations[AppString.navItemSchedule]),
+                    icon: Icon(Icons.notifications_none),
+                    title: Text(context.translations[AppString.notificationListTitle]),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.map),
                     title: Text(context.translations[AppString.navItemMap]),
                   ),
                   BottomNavigationBarItem(
-                    icon: Icon(Icons.favorite_border),
-                    title: Text(context.translations[AppString.navItemDonate]),
+                    icon: Icon(Icons.event),
+                    title: Text(context.translations[AppString.navItemSchedule]),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.arrow_forward),

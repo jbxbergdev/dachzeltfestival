@@ -1,3 +1,4 @@
+import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/feedback/feedback.dart';
 import 'package:dachzeltfestival/view/info/event_info.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
@@ -12,24 +13,24 @@ import '../routes.dart';
 @provide
 class MoreBuilder {
 
-  final NotificationListBuilder _notificationListBuilder;
+  final CharityBuilder _charityBuilder;
   final LegalBuilder _legalBuilder;
   final FeedbackBuilder _feedbackBuilder;
   final EventInfoBuilder _eventInfoBuilder;
 
-  MoreBuilder(this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
+  MoreBuilder(this._charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
 
-  More build(Key key) => More(key, _notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
+  More build(Key key) => More(key, _charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder);
 }
 
 class More extends StatelessWidget {
 
-  final NotificationListBuilder _notificationListBuilder;
+  final CharityBuilder _charityBuilder;
   final LegalBuilder _legalBuilder;
   final FeedbackBuilder _feedbackBuilder;
   final EventInfoBuilder _eventInfoBuilder;
 
-  More(Key key, this._notificationListBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder): super(key: key);
+  More(Key key, this._charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -47,8 +48,8 @@ class More extends StatelessWidget {
             case 0:
               return Padding(
                 padding: const EdgeInsets.only(top: 4.0),
-                child: _buildListItem(context, Icons.notifications_none, AppString.notificationListTitle,
-                        () => _notificationListBuilder.build(PageStorageKey('NotificationList'))),
+                child: _buildListItem(context, Icons.favorite_border, AppString.navItemDonate,
+                        () => _charityBuilder.build(PageStorageKey('Charity'))),
               );
             case 1:
               return _buildListItem(context, Icons.info_outline, AppString.eventInfo,
