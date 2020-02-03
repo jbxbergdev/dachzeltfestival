@@ -46,6 +46,7 @@ dependencies:
   firebase_messaging: ^6.0.2
   google_fonts: ^0.1.1
   firebase_analytics: ^5.0.9
+  bubble_tab_indicator: ^0.1.4
 
   inject:
     git:

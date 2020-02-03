@@ -1,10 +1,12 @@
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/schedule/schedule_item_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:inject/inject.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:tuple/tuple.dart';
 import 'schedule_viewmodel.dart';
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +40,9 @@ class _ScheduleState extends State<Schedule> {
 
   final BehaviorSubject<DateTime> _currentTime = BehaviorSubject();
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
+  final BehaviorSubject<int> _selectedPageIndex = BehaviorSubject.seeded(0);
+  List<Widget> _tabList;
+  bool _firstLayout = true;
 
   @override
   void initState() {
@@ -48,13 +53,11 @@ class _ScheduleState extends State<Schedule> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Map<DateTime, _ItemsWithEndTime>>(
-      stream: widget._scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMap),
-      builder: (BuildContext context, AsyncSnapshot<Map<DateTime, _ItemsWithEndTime>> asyncSnapshot) {
+    return StreamBuilder<Map<DateTime, Map<DateTime, _ItemsWithEndTime>>>(
+      stream: widget._scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMaps),
+      builder: (BuildContext context, AsyncSnapshot<Map<DateTime, Map<DateTime, _ItemsWithEndTime>>> asyncSnapshot) {
         if (asyncSnapshot.hasData && asyncSnapshot.data.isNotEmpty) {
-          return CustomScrollView(
-            slivers: _buildListContent(asyncSnapshot.data, context),
-          );
+          return _buildTabLayout(asyncSnapshot.data, context);
         } else if (asyncSnapshot.error != null) {
           return Text(asyncSnapshot.error.toString());
         } else {
@@ -64,7 +67,106 @@ class _ScheduleState extends State<Schedule> {
     );
   }
 
-  List<Widget> _buildListContent(Map<DateTime, _ItemsWithEndTime> itemMap, BuildContext context) {
+  Widget _buildTabLayout(Map<DateTime, Map<DateTime, _ItemsWithEndTime>> itemMap, BuildContext context) {
+    _tabList = itemMap.keys.map((date) {
+      return Container(
+        color: Theme.of(context).colorScheme.background,
+        child: CustomScrollView(
+          slivers: _buildListContent(itemMap[date]),
+        ),
+      );
+    }).toList();
+    ThemeData theme = Theme.of(context);
+    String language = Localizations.localeOf(context).languageCode;
+    DateFormat shortDate = DateFormat.Md(language);
+    bool firstLayout = _firstLayout;
+    _firstLayout = false;
+    return SizedBox.expand(
+      child: StreamBuilder<DateTime>(
+        stream: _currentTime.first.asStream(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return Container();
+          }
+          return DefaultTabController(
+            length: itemMap.length,
+            initialIndex: firstLayout ? _dateSelectionIndex(DateTime(snapshot.data.year, snapshot.data.month, snapshot.data.day), itemMap.keys.toList()) : 0,
+            child: Column(
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(top: 8.0),
+                  child: Container(
+                    color: theme.colorScheme.background,
+                    height: 40,
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: TabBar(
+                        onTap: (index) => _selectedPageIndex.add(index),
+                        isScrollable: true,
+                        indicator: new BubbleTabIndicator(
+                          indicatorHeight: 24.0,
+                          indicatorColor: theme.primaryColor.withOpacity(0.5),
+                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
+                        ),
+                        tabs: itemMap.keys.map((date) => Tab(
+                            child: StreamBuilder<Tuple2<int, DateTime>>(
+                              stream: Observable.combineLatest2(_selectedPageIndex, _currentTime, (index, time) => Tuple2(index, time)),
+                              builder: (context, snapshot) {
+                                if (!snapshot.hasData) {
+                                  return Container();
+                                }
+                                bool isSelected = snapshot.data.item1 == itemMap.keys.toList().indexOf(date);
+                                bool isDayPassed = _isDayPassed(snapshot.data.item2, date);
+                                return Text(
+                                  shortDate.format(date),
+                                  style: TextStyle(
+                                    color: isSelected ? theme.colorScheme.background : (isDayPassed ? Colors.grey[400] : theme.colorScheme.onPrimary),
+                                  ),
+                                );
+                              }
+                            )),
+                        ).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Stack(
+                    children: <Widget>[
+                      StreamBuilder<int>(
+                        stream: _selectedPageIndex,
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Container();
+                          }
+                          return IndexedStack(
+                            index: snapshot.data,
+                            children: _tabList,
+                          );
+                        }
+                      ),
+                      Container(
+                        height: 2,
+                        decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: <Color>[Colors.white, Colors.white.withOpacity(0.0)],
+                            )
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      ),
+    );
+  }
+
+  List<Widget> _buildListContent(Map<DateTime, _ItemsWithEndTime> itemMap) {
     List<Widget> listContent = List();
 
     if (itemMap.isEmpty) {
@@ -74,7 +176,7 @@ class _ScheduleState extends State<Schedule> {
     ThemeData theme = Theme.of(context);
     String language = Localizations.localeOf(context).languageCode;
     DateFormat hourMinute = DateFormat.jm(language);
-    DateFormat weekday = DateFormat('EEEE,', language).add_Md();
+    DateFormat weekday = DateFormat.EEEE(language);
 
     int lastDay = -1;
 
@@ -83,7 +185,7 @@ class _ScheduleState extends State<Schedule> {
         listContent.add(SliverStickyHeader(
           header: Center(
             child: Padding(
-              padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+              padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
               child: StreamBuilder<bool>(
                 stream: _currentTime.map((dateTime) => _isDayPassed(dateTime, start)),
                 builder: (context, snapshot) {
@@ -249,20 +351,37 @@ class _ScheduleState extends State<Schedule> {
     return listContent;
   }
 
-  Future<Map<DateTime, _ItemsWithEndTime>> _buildScheduleMap(List<ScheduleItem> itemList) async {
-    Set<String> venues = Set();
-    Map<DateTime, List<ScheduleItem>> scheduleMap = LinkedHashMap(); // maintains key insertion order
+  /// Mapping start day -> start time -> schedule items
+  Future<Map<DateTime, Map<DateTime, _ItemsWithEndTime>>> _buildScheduleMaps(List<ScheduleItem> itemList) async {
+
+    Map<DateTime, Map<DateTime, List<ScheduleItem>>> datesMap = LinkedHashMap();
+
     itemList.forEach((scheduleItem) {
-      if (scheduleMap[scheduleItem.start] == null) {
-        scheduleMap[scheduleItem.start] = List();
+      DateTime day = DateTime(scheduleItem.start.year, scheduleItem.start.month, scheduleItem.start.day);
+      if (datesMap[day] == null) {
+        datesMap[day] = LinkedHashMap();
       }
-      scheduleMap[scheduleItem.start].add(scheduleItem);
-      venues.add(scheduleItem.venue);
+      if (datesMap[day][scheduleItem.start] == null) {
+        datesMap[day][scheduleItem.start] = List();
+      }
+      datesMap[day][scheduleItem.start].add(scheduleItem);
     });
-    return scheduleMap.map((start, scheduleItems) => MapEntry(start, _ItemsWithEndTime(scheduleItems)));
+
+    return datesMap.map((day, dayMap) =>
+        MapEntry(day, dayMap.map((start, scheduleItems) =>
+            MapEntry(start, _ItemsWithEndTime(scheduleItems)))));
   }
 
   bool _isDayPassed(DateTime now, DateTime toCheck) => toCheck.year < now.year || toCheck.month < now.month || toCheck.day < now.day;
+
+  int _dateSelectionIndex(DateTime today, List<DateTime> dates) {
+    // return current date index if it is within the date range
+    if (dates.contains(today)) {
+      return dates.indexOf(today);
+    }
+    // otherwise, return first index
+    return 0;
+  }
 
   @override
   void dispose() {
