@@ -1,4 +1,3 @@
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:dachzeltfestival/util/utils.dart';
@@ -76,9 +75,6 @@ class _ScheduleState extends State<Schedule> {
         ),
       );
     }).toList();
-    ThemeData theme = Theme.of(context);
-    String language = Localizations.localeOf(context).languageCode;
-    DateFormat shortDate = DateFormat.Md(language);
     bool firstLayout = _firstLayout;
     _firstLayout = false;
     return SizedBox.expand(
@@ -88,80 +84,98 @@ class _ScheduleState extends State<Schedule> {
           if (!snapshot.hasData) {
             return Container();
           }
+          int initialIndex = 0;
+          if (firstLayout) {
+            initialIndex = _dateSelectionIndex(snapshot.data.dayMonthYear(), itemMap.keys.toList());
+            _selectedPageIndex.add(initialIndex);
+          }
+          // Because flutter_sticky_headers doesn't work well with TabBarView, we use a 'hacked' tab layout that doesn't use TabBarView,
+          // but an IndexedStack instead.
           return DefaultTabController(
             length: itemMap.length,
-            initialIndex: firstLayout ? _dateSelectionIndex(DateTime(snapshot.data.year, snapshot.data.month, snapshot.data.day), itemMap.keys.toList()) : 0,
+            initialIndex: initialIndex,
             child: Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(top: 8.0),
-                  child: Container(
-                    color: theme.colorScheme.background,
-                    height: 40,
-                    child: Align(
-                      alignment: Alignment.center,
-                      child: TabBar(
-                        onTap: (index) => _selectedPageIndex.add(index),
-                        isScrollable: true,
-                        indicator: new BubbleTabIndicator(
-                          indicatorHeight: 24.0,
-                          indicatorColor: theme.primaryColor.withOpacity(0.5),
-                          tabBarIndicatorSize: TabBarIndicatorSize.tab,
-                        ),
-                        tabs: itemMap.keys.map((date) => Tab(
-                            child: StreamBuilder<Tuple2<int, DateTime>>(
-                              stream: Observable.combineLatest2(_selectedPageIndex, _currentTime, (index, time) => Tuple2(index, time)),
-                              builder: (context, snapshot) {
-                                if (!snapshot.hasData) {
-                                  return Container();
-                                }
-                                bool isSelected = snapshot.data.item1 == itemMap.keys.toList().indexOf(date);
-                                bool isDayPassed = _isDayPassed(snapshot.data.item2, date);
-                                return Text(
-                                  shortDate.format(date),
-                                  style: TextStyle(
-                                    color: isSelected ? theme.colorScheme.background : (isDayPassed ? Colors.grey[400] : theme.colorScheme.onPrimary),
-                                  ),
-                                );
-                              }
-                            )),
-                        ).toList(),
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Stack(
-                    children: <Widget>[
-                      StreamBuilder<int>(
-                        stream: _selectedPageIndex,
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Container();
-                          }
-                          return IndexedStack(
-                            index: snapshot.data,
-                            children: _tabList,
-                          );
-                        }
-                      ),
-                      Container(
-                        height: 2,
-                        decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: <Color>[Colors.white, Colors.white.withOpacity(0.0)],
-                            )
-                        ),
-                      )
-                    ],
-                  ),
-                ),
+                _buildTabSelector(itemMap, context),
+                _buildTabs(),
               ],
             ),
           );
         }
+      ),
+    );
+  }
+
+  Widget _buildTabSelector(Map<DateTime, Map<DateTime, _ItemsWithEndTime>> itemMap, BuildContext context) {
+    ThemeData theme = Theme.of(context);
+    String language = Localizations.localeOf(context).languageCode;
+    DateFormat shortDate = DateFormat.Md(language);
+    return Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Container(
+        color: theme.colorScheme.background,
+        height: 40,
+        child: Align(
+          alignment: Alignment.center,
+          child: TabBar(
+            onTap: (index) => _selectedPageIndex.add(index),
+            isScrollable: true,
+            indicator: new BubbleTabIndicator(
+              indicatorHeight: 24.0,
+              indicatorColor: theme.primaryColor.withOpacity(0.5),
+              tabBarIndicatorSize: TabBarIndicatorSize.tab,
+            ),
+            tabs: itemMap.keys.map((date) => Tab(
+                child: StreamBuilder<Tuple2<int, DateTime>>(
+                    stream: Observable.combineLatest2(_selectedPageIndex, _currentTime, (index, time) => Tuple2(index, time)),
+                    builder: (context, snapshot) {
+                      if (!snapshot.hasData) {
+                        return Container();
+                      }
+                      bool isSelected = snapshot.data.item1 == itemMap.keys.toList().indexOf(date);
+                      bool isDayPassed = _isDayPassed(snapshot.data.item2, date);
+                      return Text(
+                        shortDate.format(date),
+                        style: TextStyle(
+                          color: isSelected ? theme.colorScheme.background : (isDayPassed ? Colors.grey[400] : theme.colorScheme.onPrimary),
+                        ),
+                      );
+                    }
+                )),
+            ).toList(),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabs() {
+    return Expanded(
+      child: Stack(
+        children: <Widget>[
+          StreamBuilder<int>(
+              stream: _selectedPageIndex,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Container();
+                }
+                return IndexedStack(
+                  index: snapshot.data,
+                  children: _tabList,
+                );
+              }
+          ),
+          Container(
+            height: 2,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: <Color>[Colors.white, Colors.white.withOpacity(0.0)],
+                )
+            ),
+          )
+        ],
       ),
     );
   }
@@ -221,7 +235,9 @@ class _ScheduleState extends State<Schedule> {
                   child: Text(
                       hourMinute.format(start),
                       style: TextStyle(
-                        color: start.isAfter(snapshot.data) ? theme.primaryColor : (itemMap[start].allItemsFinished(snapshot.data) ? Colors.grey[400] : theme.primaryColor.withOpacity(0.4)),
+                        color: start.isAfter(snapshot.data)
+                            ? theme.primaryColor
+                            : (itemMap[start].allItemsFinished(snapshot.data) ? Colors.grey[400] : theme.primaryColor.withOpacity(0.4)),
                         fontSize: 16.0,
                         fontWeight: FontWeight.w400,
                       ),),
@@ -357,7 +373,7 @@ class _ScheduleState extends State<Schedule> {
     Map<DateTime, Map<DateTime, List<ScheduleItem>>> datesMap = LinkedHashMap();
 
     itemList.forEach((scheduleItem) {
-      DateTime day = DateTime(scheduleItem.start.year, scheduleItem.start.month, scheduleItem.start.day);
+      DateTime day = scheduleItem.start.dayMonthYear();
       if (datesMap[day] == null) {
         datesMap[day] = LinkedHashMap();
       }
@@ -405,4 +421,8 @@ class _ItemsWithEndTime {
   DateTime get finish => _finish;
 
   bool allItemsFinished(DateTime now) => now.isAfter(_finish);
+}
+
+extension on DateTime {
+  DateTime dayMonthYear() => DateTime(year, month, day);
 }
