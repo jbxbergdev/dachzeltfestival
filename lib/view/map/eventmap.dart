@@ -47,8 +47,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   GoogleMapController _googleMapController;
   final EventMapViewModel _eventMapViewModel;
   final FeatureConverter _featureConverter;
-  Observable<_GoogleMapData> _mapDataStream;
-  Observable<GoogleMapsGeometries> _geometriesStream;
+  Stream<_GoogleMapData> _mapDataStream;
+  Stream<GoogleMapsGeometries> _geometriesStream;
   CameraPosition _cameraPosition;
   CompositeSubscription _compositeSubscription = CompositeSubscription();
   BehaviorSubject<double> _widgetHeightSubject = BehaviorSubject.seeded(null);
@@ -126,7 +126,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
           ),
         ),
         StreamBuilder<Tuple2<geojson.Feature, double>>(
-          stream: Observable.combineLatest2(_selectedPlaceSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
+          stream: Rx.combineLatest2(_selectedPlaceSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
           builder: (buildContext, snapshot) {
             if (!snapshot.hasData || snapshot.data.item1 == null || snapshot.data.item2 == null) {
               return Container();
@@ -237,7 +237,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     }
   }
 
-  Observable<_GoogleMapData> _mapData() {
+  Stream<_GoogleMapData> _mapData() {
 
     if (_mapDataStream == null) {
 
@@ -245,7 +245,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _mapDataStream = BehaviorSubject.seeded(null);
 
       // Merge map geometries, selectedPlaceId, zoomId and location permission state
-      Observable<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> mapGeometriesSelectedPlaceMapConfigLocationPermission = Observable.combineLatest4(
+      Stream<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> mapGeometriesSelectedPlaceMapConfigLocationPermission = Rx.combineLatest4(
           _mapGeometries(),
           _selectedPlaceSubject.map((feature) => feature?.properties?.placeId),
           _eventMapViewModel.mapConfig(),
@@ -253,7 +253,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               (mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted) => Tuple4(mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted));
 
       // Parse Features to GoogleMaps objects, combine all the results to _GoogleMapData object
-      Observable<_GoogleMapData> mapDataObservable = mapGeometriesSelectedPlaceMapConfigLocationPermission
+      Stream<_GoogleMapData> mapDataObservable = mapGeometriesSelectedPlaceMapConfigLocationPermission
           .map((geometriesSelectedIdConfigPermission) {
               return _GoogleMapData(geometriesSelectedIdConfigPermission.item1.polygons(geometriesSelectedIdConfigPermission.item2),
                   geometriesSelectedIdConfigPermission.item1.markers(geometriesSelectedIdConfigPermission.item2),
@@ -266,7 +266,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     return _mapDataStream;
   }
 
-  Observable<GoogleMapsGeometries> _mapGeometries() {
+  Stream<GoogleMapsGeometries> _mapGeometries() {
     if (_geometriesStream == null) {
       // cache the geometries in a Behaviorsubject as the creation may be expensive
       _geometriesStream = BehaviorSubject();
@@ -280,7 +280,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _listenToZoomRequests() {
     // before zooming is possible, layout must be complete and a GoogleMapController must be available. Listen to these states.
-    final mapReadySub = Observable.combineLatest2(_layoutDone, _mapInitialized, (layoutDone, mapInitialized) => layoutDone && mapInitialized)
+    final mapReadySub = Rx.combineLatest2(_layoutDone, _mapInitialized, (layoutDone, mapInitialized) => layoutDone && mapInitialized)
         .listen((mapReady) {
       if (mapReady) {
         final zoomSub = _eventMapViewModel.zoomToFeatureId.where((zoomId) => zoomId != null)

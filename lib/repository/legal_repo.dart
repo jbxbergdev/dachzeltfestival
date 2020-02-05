@@ -5,8 +5,8 @@ import 'package:flutter/services.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class TextRepo {
-  Observable<String> legalMarkdown();
-  Observable<String> feedbackMarkdown();
+  Stream<String> legalMarkdown();
+  Stream<String> feedbackMarkdown();
 }
 
 class TextRepoImpl extends TextRepo {
@@ -19,12 +19,12 @@ class TextRepoImpl extends TextRepo {
   TextRepoImpl(this._localeState);
 
   @override
-  Observable<String> legalMarkdown() => _loadString(legal);
+  Stream<String> legalMarkdown() => _loadString(legal);
 
   @override
-  Observable<String> feedbackMarkdown() =>_loadString(feedback);
+  Stream<String> feedbackMarkdown() =>_loadString(feedback);
 
-  Observable<String> _loadString(String filePath) {
+  Stream<String> _loadString(String filePath) {
     return _localeState.localeSubject.where((locale) => locale != null)
         .flatMap((locale) => _loadLocalizedAssetFile(locale, filePath).asStream());
   }

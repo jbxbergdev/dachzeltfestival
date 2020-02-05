@@ -15,7 +15,7 @@ class ScheduleViewModel {
     return _scheduleRepo.observeSchedule();
   }
 
-  Stream<DateTime> currentTimeMinuteInterval() => Observable.periodic(Duration(seconds: 1))
+  Stream<DateTime> currentTimeMinuteInterval() => Stream.periodic(Duration(seconds: 1))
       .map((_) => DateTime.now())
       .distinct((previous, next) => previous.minute == next.minute);
 

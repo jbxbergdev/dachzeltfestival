@@ -8,5 +8,5 @@ class EventInfoViewModel {
 
   EventInfoViewModel(this._eventInfoRepo);
 
-  Observable<String> get markdown => _eventInfoRepo.eventInfoMarkup;
+  Stream<String> get markdown => _eventInfoRepo.eventInfoMarkup;
 }

@@ -10,9 +10,9 @@ import 'package:dachzeltfestival/model/notification/notification.dart' as notifi
 
 abstract class NotificationRepo {
   /// Must only have one subscription at a time!
-  Observable<notification.Notification> newNotifications();
+  Stream<notification.Notification> newNotifications();
 
-  Observable<List<notification.Notification>> allNotifications();
+  Stream<List<notification.Notification>> allNotifications();
 }
 
 class NotificationRepoImpl extends NotificationRepo {
@@ -23,7 +23,7 @@ class NotificationRepoImpl extends NotificationRepo {
   final FirebaseMessageParser _firebaseMessageParser;
   final PublishSubject<String> _fcmMessageSubject = PublishSubject();
   final BehaviorSubject<bool> _languageSubscriptionActive = BehaviorSubject.seeded(false);
-  Observable<String> _newNotificationIds;
+  Stream<String> _newNotificationIds;
 
   NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState) {
     _newNotificationIds = _fcmMessageSubject.where((messageId) => messageId != null).distinct();
@@ -57,19 +57,19 @@ class NotificationRepoImpl extends NotificationRepo {
 
   /// This must only have one subscription!
   @override
-  Observable<notification.Notification> newNotifications() {
+  Stream<notification.Notification> newNotifications() {
     // Set up language-based topic subscription
     return _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
         .map((documentSnapshot) => documentSnapshot.asNotification));
   }
 
   @override
-  Observable<List<notification.Notification>> allNotifications() {
-    return _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.localeSubject).doOnData((locale) => print('##### locale: ${locale.languageCode}')).flatMap((locale) =>
-        Observable(_firestore.collection('notifications')
+  Stream<List<notification.Notification>> allNotifications() {
+    return _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.localeSubject).flatMap((locale) =>
+        _firestore.collection('notifications')
             .where('language', isEqualTo: locale.supportedOrDefaultLangCode)
             .orderBy('timestamp', descending: true)
-            .snapshots())
+            .snapshots()
         .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification).toList()).doOnError((error) => print(error)));
   }
 }

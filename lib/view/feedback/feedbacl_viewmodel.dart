@@ -10,6 +10,6 @@ class FeedbackViewModel {
 
   FeedbackViewModel(this._textRepo);
 
-  Observable<String> get markdown => _textRepo.feedbackMarkdown();
+  Stream<String> get markdown => _textRepo.feedbackMarkdown();
 
 }

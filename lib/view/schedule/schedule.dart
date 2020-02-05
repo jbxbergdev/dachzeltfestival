@@ -127,7 +127,7 @@ class _ScheduleState extends State<Schedule> {
             ),
             tabs: itemMap.keys.map((date) => Tab(
                 child: StreamBuilder<Tuple2<int, DateTime>>(
-                    stream: Observable.combineLatest2(_selectedPageIndex, _currentTime, (index, time) => Tuple2(index, time)),
+                    stream: Rx.combineLatest2(_selectedPageIndex, _currentTime, (index, time) => Tuple2(index, time)),
                     builder: (context, snapshot) {
                       if (!snapshot.hasData) {
                         return Container();

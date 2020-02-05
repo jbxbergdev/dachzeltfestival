@@ -8,5 +8,5 @@ class NotificationListViewModel {
 
   NotificationListViewModel(this._notificationRepo);
 
-  Observable<List<notification.Notification>> notifications() => _notificationRepo.allNotifications();
+  Stream<List<notification.Notification>> notifications() => _notificationRepo.allNotifications();
 }

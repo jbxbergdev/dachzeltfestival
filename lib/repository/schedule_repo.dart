@@ -13,7 +13,7 @@ import 'package:dachzeltfestival/model/geojson/feature.dart';
 
 
 abstract class ScheduleRepo {
-  Observable<List<ScheduleItem>> observeSchedule();
+  Stream<List<ScheduleItem>> observeSchedule();
 }
 
 class ScheduleRepoImpl extends ScheduleRepo {
@@ -57,9 +57,9 @@ class ScheduleRepoImpl extends ScheduleRepo {
 //  }
 
   @override
-  Observable<List<ScheduleItem>> observeSchedule() {
+  Stream<List<ScheduleItem>> observeSchedule() {
 //    return Observable(_buildMockList());
-    Observable<List<ScheduleItem>> scheduleFromFirestore = Observable.combineLatest3<QuerySnapshot, Map<String, Feature>, Locale, List<ScheduleItem>>(
+    Stream<List<ScheduleItem>> scheduleFromFirestore = Rx.combineLatest3<QuerySnapshot, Map<String, Feature>, Locale, List<ScheduleItem>>(
         _firestore.collection(_FIRESTORE_COLLECTION_SCHEDULE).orderBy('start', descending: false).snapshots(),
         _mapDataRepo.mapFeatures().map((featureCollection) =>
             // use a HashMap for performance reasons
@@ -68,7 +68,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
         _mapSchedule);
 
     return _authenticator.authenticated.flatMap(
-            (authenticated) => authenticated ? scheduleFromFirestore : Observable.just(List<ScheduleItem>()));
+            (authenticated) => authenticated ? scheduleFromFirestore : Stream.value(List<ScheduleItem>()));
   }
 
   List<ScheduleItem> _mapSchedule(QuerySnapshot scheduleQuerySnapshot, Map<String, Feature> venues, Locale locale) {

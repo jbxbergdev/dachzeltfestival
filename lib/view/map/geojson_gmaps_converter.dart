@@ -21,7 +21,7 @@ class FeatureConverter {
   FeatureConverter(this._markerIconGenerator);
 
   Future<GoogleMapsGeometries> parseFeatureCollection(FeatureCollection featureCollection, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
-    return Observable.combineLatest2(_parsePolygons(featureCollection, onPolygonTap).asStream(),
+    return Rx.combineLatest2(_parsePolygons(featureCollection, onPolygonTap).asStream(),
         _parseMarkers(featureCollection, onMarkerTap).asStream(),
         (polygons, markers) => GoogleMapsGeometries(polygons, markers)).first;
   }

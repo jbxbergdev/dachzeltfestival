@@ -11,5 +11,5 @@ class LegalViewModel {
 
   LegalViewModel(this._legalRepo);
 
-  Observable<String> legalMarkdown() => _legalRepo.legalMarkdown();
+  Stream<String> legalMarkdown() => _legalRepo.legalMarkdown();
 }

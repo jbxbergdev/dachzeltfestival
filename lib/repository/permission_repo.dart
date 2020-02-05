@@ -3,7 +3,7 @@ import 'package:rxdart/rxdart.dart';
 
 abstract class PermissionRepo {
   void requestLocationPermission();
-  Observable<bool> locationPermissionState;
+  Stream<bool> locationPermissionState;
 }
 
 class PermissionRepoImpl extends PermissionRepo {
@@ -14,7 +14,7 @@ class PermissionRepoImpl extends PermissionRepo {
   BehaviorSubject<bool> _locationPermission = BehaviorSubject.seeded(null); // TODO null initial value is a workaround for https://github.com/jbxbergdev/dachzeltfestival/issues/37
 
   @override
-  Observable<bool> get locationPermissionState => _locationPermission.distinct();
+  Stream<bool> get locationPermissionState => _locationPermission.distinct();
 
   @override
   void requestLocationPermission() {

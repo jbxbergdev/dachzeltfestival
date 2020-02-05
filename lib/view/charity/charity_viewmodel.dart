@@ -11,5 +11,5 @@ class CharityViewModel {
 
   CharityViewModel(this._charityRepo);
 
-  Observable<CharityConfig> get charityConfig => _charityRepo.charityConfig;
+  Stream<CharityConfig> get charityConfig => _charityRepo.charityConfig;
 }

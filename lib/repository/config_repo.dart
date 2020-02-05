@@ -9,7 +9,7 @@ import 'package:package_info/package_info.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class ConfigRepo {
-  Observable<AppConfig> appConfig;
+  Stream<AppConfig> appConfig;
   // ignore: close_sinks
   BehaviorSubject<Locale> localeSubject;
 }
@@ -23,15 +23,15 @@ class ConfigRepoImpl extends ConfigRepo {
   ConfigRepoImpl(this._firestore, this._authenticator, this._localeState);
 
   @override
-  Observable<AppConfig> get appConfig {
-    Observable<AppConfig> appConfigFromFirestore = Observable.combineLatest3(
+  Stream<AppConfig> get appConfig {
+    Stream<AppConfig> appConfigFromFirestore = Rx.combineLatest3(
         _firestore.collection("configuration").document("app_config").snapshots(),
         PackageInfo.fromPlatform().asStream(),
         localeSubject,
         _mapConfig
     );
     return _authenticator.authenticated.flatMap(
-        (authenticated) => authenticated ? appConfigFromFirestore : Observable.just(null)
+        (authenticated) => authenticated ? appConfigFromFirestore : Stream.value(null)
     );
   }
 

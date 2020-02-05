@@ -8,7 +8,7 @@ import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class CharityRepo {
-  Observable<CharityConfig> charityConfig;
+  Stream<CharityConfig> charityConfig;
 }
 
 class CharityRepoImpl extends CharityRepo {
@@ -22,14 +22,14 @@ class CharityRepoImpl extends CharityRepo {
 
 
   @override
-  Observable<CharityConfig> get charityConfig {
-    Observable<CharityConfig> charityConfigFromFirestore = Observable.combineLatest2(
+  Stream<CharityConfig> get charityConfig {
+    Stream<CharityConfig> charityConfigFromFirestore = Rx.combineLatest2(
       _firestore.collection("configuration").document("charity_config").snapshots(),
       _localeState.localeSubject,
       _mapToCharityConfig
     );
     return _authenticator.authenticated.flatMap(
-        (authenticated) => authenticated ? charityConfigFromFirestore : Observable.just(null)
+        (authenticated) => authenticated ? charityConfigFromFirestore : Stream.value(null)
     );
   }
 

@@ -21,9 +21,9 @@ class MainViewModel {
 
   BehaviorSubject<Locale> get localeSubject => _configRepo.localeSubject;
 
-  Observable<AppConfig> get appConfig => _configRepo.appConfig;
+  Stream<AppConfig> get appConfig => _configRepo.appConfig;
 
-  Observable<notification.Notification> get notifications => _notificationRepo.newNotifications();
+  Stream<notification.Notification> get notifications => _notificationRepo.newNotifications();
 
   PlaceSelectionInteractor get placeSelectionInteractor => _placeSelectionInteractor;
 

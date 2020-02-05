@@ -7,7 +7,7 @@ import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class EventInfoRepo {
-  Observable<String> eventInfoMarkup;
+  Stream<String> eventInfoMarkup;
 }
 
 class EventInfoRepoImpl extends EventInfoRepo {
@@ -19,14 +19,14 @@ class EventInfoRepoImpl extends EventInfoRepo {
   EventInfoRepoImpl(this._authenticator, this._firestore, this._localeState);
 
   @override
-  Observable<String> get eventInfoMarkup {
-    Observable<String> markdownFromFirestore = Observable.combineLatest2(
+  Stream<String> get eventInfoMarkup {
+    Stream<String> markdownFromFirestore = Rx.combineLatest2(
         _firestore.collection('configuration').document('event_info_config').snapshots(),
         _localeState.localeSubject,
         _mapMarkdown
     );
     return _authenticator.authenticated.flatMap(
-            (authenticated) => authenticated ? markdownFromFirestore : Observable.just(null)
+            (authenticated) => authenticated ? markdownFromFirestore : Stream.value(null)
     );
   }
 

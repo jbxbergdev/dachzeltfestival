@@ -20,7 +20,7 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  rxdart: ^0.22.6
+  rxdart: ^0.23.1
   google_maps_flutter:
     git:
       url: git@github.com:jbxbergdev/plugins.git

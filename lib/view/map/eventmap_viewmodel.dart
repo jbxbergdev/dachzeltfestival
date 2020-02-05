@@ -15,13 +15,13 @@ class EventMapViewModel {
 
   EventMapViewModel(this._mapDataRepo, this._permissionRepo, this._placeSelectionInteractor);
 
-  Observable<FeatureCollection> features() => _mapDataRepo.mapFeatures();
+  Stream<FeatureCollection> features() => _mapDataRepo.mapFeatures();
 
-  Observable<bool> locationPermissionGranted() => _permissionRepo.locationPermissionState;
+  Stream<bool> locationPermissionGranted() => _permissionRepo.locationPermissionState;
 
-  Observable<MapConfig> mapConfig() => _mapDataRepo.mapConfig();
+  Stream<MapConfig> mapConfig() => _mapDataRepo.mapConfig();
 
-  Observable<String> get zoomToFeatureId => _placeSelectionInteractor.selectedPlaceId;
+  Stream<String> get zoomToFeatureId => _placeSelectionInteractor.selectedPlaceId;
 
   Future<void> zoomHandled() async => _placeSelectionInteractor.selectedPlaceId.add(null);
 }

@@ -17,8 +17,8 @@ import 'package:flutter/foundation.dart';
 import 'dart:convert';
 
 abstract class MapDataRepo {
-  Observable<FeatureCollection> mapFeatures();
-  Observable<MapConfig> mapConfig();
+  Stream<FeatureCollection> mapFeatures();
+  Stream<MapConfig> mapConfig();
 }
 
 class MapDataRepoImpl extends MapDataRepo {
@@ -38,25 +38,25 @@ class MapDataRepoImpl extends MapDataRepo {
   MapDataRepoImpl(this._firestore, this._firebaseStorage, this._authenticator, this._localeState);
 
   @override
-  Observable<FeatureCollection> mapFeatures() {
+  Stream<FeatureCollection> mapFeatures() {
 
     // get to locale
-    Observable<FeatureCollection> mapFeatures = _localeState.localeSubject.distinct((previous, next) => previous.languageCode == next.languageCode).flatMap((locale) =>
+    Stream<FeatureCollection> mapFeatures = _localeState.localeSubject.distinct((previous, next) => previous.languageCode == next.languageCode).flatMap((locale) =>
         // get map file
         _localMap().flatMap((mapFile) =>
             // parse features from file with locale
             _readFeatures(mapFile, locale.languageCode).asStream()));
 
     return _authenticator.authenticated.flatMap(
-            (authenticated) => authenticated ? mapFeatures : Observable.just(FeatureCollection(features: List<Feature>())));
+            (authenticated) => authenticated ? mapFeatures : Stream.value(FeatureCollection(features: List<Feature>())));
   }
 
   @override
-  Observable<MapConfig> mapConfig() {
+  Stream<MapConfig> mapConfig() {
     if (_mapConfig == null) {
       // _mapConfig has multiple subscribers, so we use a BehaviorSubject to reduce Firestore reads
       _mapConfig = BehaviorSubject();
-      Observable<MapConfig> mapConfigFromFirestore = Observable(_firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots())
+      Stream<MapConfig> mapConfigFromFirestore = _firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots()
           // parse map configuration
           .map((snapshot) {
             GeoPoint initialCenter = snapshot["initial_center"];
@@ -72,16 +72,16 @@ class MapDataRepoImpl extends MapDataRepo {
               mapUrl: mapUrl,
             );
           });
-      Observable<MapConfig> sourceObservable = _authenticator.authenticated.flatMap(
-              (authenticated) => authenticated ? mapConfigFromFirestore : Observable.just(null));
+      Stream<MapConfig> sourceObservable = _authenticator.authenticated.flatMap(
+              (authenticated) => authenticated ? mapConfigFromFirestore : Stream.value(null));
       sourceObservable.listen((data) => _mapConfig.add(data));
     }
     return _mapConfig.where((mapConfig) => mapConfig != null);
   }
 
-  Observable<File> _localMap() {
+  Stream<File> _localMap() {
     // listen to map meta data in Cloud Firestore
-    Observable<void> downloadNewMap = mapConfig()
+    Stream<void> downloadNewMap = mapConfig()
         .where((config) => config != null)
         // read version of local map, combine local version, remote version and remote map URL
         .flatMap((mapConfig) => _readPersistedMapVersion().asStream().map((persistedVersion) => Tuple2(mapConfig, persistedVersion)))
@@ -96,8 +96,8 @@ class MapDataRepoImpl extends MapDataRepo {
             .then((_) => _persistMapVersion(storageReferenceRemoteVersion.item2)).asStream();
         });
     // read local map immediately and when a new map version was downloaded
-    Observable<void> initialTrigger = Observable.just(null);
-    return Observable.merge([downloadNewMap, initialTrigger]).flatMap((_) => _localMapFile().asStream());
+    Stream<void> initialTrigger = Stream.value(null);
+    return Rx.merge([downloadNewMap, initialTrigger]).flatMap((_) => _localMapFile().asStream());
   }
 
   Future<int> _readPersistedMapVersion() => SharedPreferences.getInstance().then((sharedPreferences) => sharedPreferences.getInt(_PREFERENCE_KEY_MAP_VERSION));
