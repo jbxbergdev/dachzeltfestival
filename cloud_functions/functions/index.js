@@ -30,3 +30,23 @@ exports.notification = functions
         console.log(messagingPayload);
         admin.messaging().sendToTopic(topic, messagingPayload);
     });
+
+exports.notificationQueue = functions
+    .region('europe-west1')
+    .pubsub
+    .schedule('every 1 minutes')
+    .onRun((context) => {
+        const now = admin.firestore.Timestamp.now();
+        const query = admin.firestore().collection('notification_queue')
+            .where('timestamp', '<=', now);
+        query.get().then((querySnapshot) => {
+            console.log('querySnapshot size: ' + querySnapshot.size);
+            if (!querySnapshot.empty) {
+                querySnapshot.forEach((snapshot) => {
+                    admin.firestore().collection('notifications').add(snapshot.data());
+                    snapshot.ref.delete();
+                });
+            }
+            return null;
+        }).catch((error) => {});
+    });
