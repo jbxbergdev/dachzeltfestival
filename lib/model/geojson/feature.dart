@@ -87,7 +87,8 @@ class Properties {
   String fill;
   String placeId;
   String placeCategory;
-  Properties({this.name, this.description, this.stroke, this.fill, this.placeId, this.placeCategory});
+  int detailLevel;
+  Properties({this.name, this.description, this.stroke, this.fill, this.placeId, this.placeCategory, this.detailLevel});
   factory Properties.fromJson(Map<String, dynamic> json, String languageCode) {
     return Properties(
       name: json.translated('name', languageCode),
@@ -95,7 +96,8 @@ class Properties {
       stroke: json['stroke'],
       fill: json['fill'],
       placeId: json['place_id'],
-      placeCategory: json['place_category']
+      placeCategory: json['place_category'],
+      detailLevel: json['detail_level']
     );
   }
 }

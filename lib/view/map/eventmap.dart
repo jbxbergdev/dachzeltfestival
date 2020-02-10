@@ -55,9 +55,11 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   BehaviorSubject<geojson.Feature> _selectedPlaceSubject = BehaviorSubject.seeded(null);
   BehaviorSubject<bool> _mapInitialized = BehaviorSubject.seeded(false);
   BehaviorSubject<bool> _layoutDone = BehaviorSubject.seeded(false);
+  BehaviorSubject<int> _detailLevel = BehaviorSubject.seeded(null);
   CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
 
   static const double _headerHeightPx = 80.0;
+  static const double _detailLevelZoomThreshold = 1000; // TODO Set to actually possible zoom level as soon as https://github.com/jbxbergdev/dachzeltfestival/issues/51 can be implemented.
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
 
@@ -219,6 +221,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   void _onCameraMove(CameraPosition cameraPosition) {
     _cameraPosition = cameraPosition;
+    _updateDetailLevel(_cameraPosition.zoom);
   }
 
   void _onTap(LatLng tapCoords) {
@@ -245,7 +248,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _mapDataStream = BehaviorSubject.seeded(null);
 
       // Merge map geometries, selectedPlaceId, zoomId and location permission state
-      Stream<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> mapGeometriesSelectedPlaceMapConfigLocationPermission = Rx.combineLatest4(
+      Stream<Tuple4<GoogleMapsGeometries, String, MapConfig, bool>> dataValuesStream = Rx.combineLatest4(
           _mapGeometries(),
           _selectedPlaceSubject.map((feature) => feature?.properties?.placeId),
           _eventMapViewModel.mapConfig(),
@@ -253,12 +256,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               (mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted) => Tuple4(mapGeometries, selectedPlaceId, mapConfig, locationPermissionGranted));
 
       // Parse Features to GoogleMaps objects, combine all the results to _GoogleMapData object
-      Stream<_GoogleMapData> mapDataObservable = mapGeometriesSelectedPlaceMapConfigLocationPermission
-          .map((geometriesSelectedIdConfigPermission) {
-              return _GoogleMapData(geometriesSelectedIdConfigPermission.item1.polygons(geometriesSelectedIdConfigPermission.item2),
-                  geometriesSelectedIdConfigPermission.item1.markers(geometriesSelectedIdConfigPermission.item2),
-                  geometriesSelectedIdConfigPermission.item4,
-                  geometriesSelectedIdConfigPermission.item3);
+      Stream<_GoogleMapData> mapDataObservable = dataValuesStream
+          .map((values) {
+              return _GoogleMapData(values.item1.polygons(values.item2),
+                  values.item1.markers(values.item2),
+                  values.item4,
+                  values.item3);
           });
 
       _compositeSubscription.add(mapDataObservable.listen((mapData) => (_mapDataStream as BehaviorSubject<_GoogleMapData>).value = mapData));
@@ -270,8 +273,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     if (_geometriesStream == null) {
       // cache the geometries in a Behaviorsubject as the creation may be expensive
       _geometriesStream = BehaviorSubject();
-      final subscription = _eventMapViewModel.features()
-          .flatMap((features) => _featureConverter.parseFeatureCollection(features, _onMapItemTapped, _onMapItemTapped).asStream())
+      final featuresDetailLevelStream = Rx.combineLatest2(_eventMapViewModel.features(), _detailLevel.distinct(), (features, detailLevel) => Tuple2(features, detailLevel ?? 0));
+      final subscription = featuresDetailLevelStream
+          .flatMap((featuresDeatilLevel) => _featureConverter.parseFeatureCollection(featuresDeatilLevel.item1, featuresDeatilLevel.item2, _onMapItemTapped, _onMapItemTapped).asStream())
           .listen((googleMapsGeometries) => (_geometriesStream as BehaviorSubject<GoogleMapsGeometries>).add(googleMapsGeometries));
       _compositeSubscription.add(subscription);
     }
@@ -300,6 +304,17 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       }
     });
     _compositeSubscription.add(mapReadySub);
+  }
+
+  void _updateDetailLevel(double zoom) {
+    print('##### zoom level: $zoom');
+    int detailLevel;
+    if (zoom < _detailLevelZoomThreshold) {
+      detailLevel = 0;
+    } else {
+      detailLevel = 1;
+    }
+    _detailLevel.add(detailLevel);
   }
 
   @override
