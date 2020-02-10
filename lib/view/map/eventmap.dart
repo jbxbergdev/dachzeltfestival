@@ -307,7 +307,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   }
 
   void _updateDetailLevel(double zoom) {
-    print('##### zoom level: $zoom');
     int detailLevel;
     if (zoom < _detailLevelZoomThreshold) {
       detailLevel = 0;
