@@ -13,6 +13,7 @@ enum  PointCategory {
   HOT_TUB,
   CHARITY,
   ELECTRICITY,
+  EXHIBITOR,
   OTHER
 }
 
@@ -43,6 +44,8 @@ extension CategoryMapper on Properties {
         return PointCategory.CHARITY;
       case 'electricity':
         return PointCategory.ELECTRICITY;
+      case 'exhibitor':
+        return PointCategory.EXHIBITOR;
       default:
         return PointCategory.OTHER;
     }

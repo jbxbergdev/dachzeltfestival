@@ -46,6 +46,9 @@ dependencies:
   google_fonts: ^0.3.7
   firebase_analytics: ^5.0.11
   bubble_tab_indicator: ^0.1.4
+  sticky_headers: ^0.1.8+1
+  sliding_up_panel: ^1.0.0
+  cached_network_image: ^2.0.0
 
   inject:
     git:

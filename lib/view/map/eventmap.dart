@@ -2,12 +2,15 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/icon_map.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sliding_up_panel/sliding_up_panel.dart';
+import 'package:sticky_headers/sticky_headers.dart';
 import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'eventmap_viewmodel.dart';
@@ -59,6 +62,12 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
 
   static const double _headerHeightPx = 80.0;
+  static const double _teaserHeightPx = 24.0;
+  static const double _imageHeightPx = 120.0;
+  static const double _expandedSheetRelativeHeight = 0.8;
+  static const double _sheetHeaderMargin = 16.0;
+  static const double _sheetHeaderIconSize = 40.0;
+  static const double _sheetHeaderIconPaddingRight = 8.0;
   static const double _detailLevelZoomThreshold = 1000; // TODO Set to actually possible zoom level as soon as https://github.com/jbxbergdev/dachzeltfestival/issues/51 can be implemented.
 
   _EventMapState(this._eventMapViewModel, this._featureConverter);
@@ -127,85 +136,231 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             backgroundColor: Colors.grey[100],
           ),
         ),
-        StreamBuilder<Tuple2<geojson.Feature, double>>(
-          stream: Rx.combineLatest2(_selectedPlaceSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
-          builder: (buildContext, snapshot) {
-            if (!snapshot.hasData || snapshot.data.item1 == null || snapshot.data.item2 == null) {
-              return Container();
-            }
-            return DraggableScrollableSheet(
-                minChildSize: 0.0,
-                initialChildSize: _headerHeightPx / snapshot.data.item2,
-                maxChildSize: 0.7,
-                builder: (buildContext, scrollController) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: _header(snapshot.data.item1),
+        SizedBox.expand(
+          child: StreamBuilder<Tuple2<geojson.Feature, double>>(
+            stream: Rx.combineLatest2(_selectedPlaceSubject, _widgetHeightSubject, (feature, height) => Tuple2(feature, height)),
+            builder: (buildContext, snapshot) {
+              if (!snapshot.hasData || snapshot.data.item1 == null || snapshot.data.item2 == null) {
+                return Container(key: UniqueKey());
+              }
+              final listKey = PageStorageKey(DateTime.now());
+              return SlidingUpPanel(
+                margin: EdgeInsets.symmetric(horizontal: 8.0),
+                borderRadius: BorderRadius.circular(16.0),
+                maxHeight: _maxSheetHeight(snapshot.data.item1, snapshot.data.item2),
+                minHeight: _initialSheetHeight(snapshot.data.item1, snapshot.data.item2),
+                panelBuilder: (scrollController) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(16.0), topRight: Radius.circular(16.0)),
+                    child: Container(
+                      decoration: BoxDecoration(color: Colors.white),
+                      child: ListView(
+                        key: listKey,
+                        controller: scrollController,
+                        children: <Widget>[
+                        StickyHeader(
+                          header: _header(snapshot.data.item1),
+                          content: _description(snapshot.data.item1),
+                        ),
+                        ],
+                      ),
+                    ),
                   );
                 },
-            );
-          },
+              );
+//              final listKey = PageStorageKey(DateTime.now());
+//              return DraggableScrollableSheet(
+//                  key: UniqueKey(),
+//                  minChildSize: _headerHeightPx / snapshot.data.item2,
+//                  initialChildSize: _initialSheetHeight(snapshot.data.item1, snapshot.data.item2),
+//                  maxChildSize: _maxSheetHeight(snapshot.data.item1, snapshot.data.item2),
+//                  builder: (buildContext, scrollController) {
+//                    print('##### build, id:${snapshot.data.item1.properties.placeId}');
+//                    return Padding(
+//                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+//                      child: ClipRRect(
+//                        borderRadius: BorderRadius.only(topLeft: Radius.circular(16.0), topRight: Radius.circular(16.0)),
+//                        child: Container(
+//                          decoration: BoxDecoration(color: Colors.white),
+//                          child: ListView(
+//                            key: listKey,
+//                            controller: scrollController,
+//                            children: <Widget>[
+////                              _header(snapshot.data.item1),
+////                              _description(snapshot.data.item1),
+//                            StickyHeader(
+//                              header: _header(snapshot.data.item1),
+//                              content: _description(snapshot.data.item1),
+//                            ),
+//                            ],
+//                          ),
+//                        ),
+//                      ),
+//                    );
+//                  },
+//              );
+            },
+          ),
         ),
       ],
     );
+  }
+
+  double _initialSheetHeight(geojson.Feature feature, double totalWidgetHeight) {
+    final properties = feature.properties;
+    if (properties.description != null || properties.url != null || properties.imageUrl != null) {
+      return _headerHeightPx + _teaserHeightPx;
+    }
+    return _headerHeightPx;
+  }
+
+  double _maxSheetHeight(geojson.Feature feature, double totalWidgetHeight) {
+    final properties = feature.properties;
+    if (properties.description != null || properties.imageUrl != null || properties.url != null) {
+      return _expandedSheetRelativeHeight * totalWidgetHeight;
+    }
+    return _headerHeightPx;
   }
 
   Widget _header(geojson.Feature feature) {
     return Container(
       height: _headerHeightPx,
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        color: Colors.white
       ),
-      child: Container(
-        decoration: BoxDecoration(
-          color: feature is geojson.Point
-              ? Colors.white
-              : hexToColor(feature.properties?.fill)
-              .withOpacity(0.2),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16),
-            topRight: Radius.circular(16),
+      child: Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
           ),
-        ),
-        child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-            ),
-            child: Row(
+          child: LayoutBuilder(
+            builder: (context, constraints) => Row(
               children: <Widget>[
-                feature is geojson.Point &&
-                    feature.properties != null ?
-                Padding(
-                  padding: const EdgeInsets.only(
-                      right: 8.0, bottom: 4.0),
-                  child: Icon(
-                    iconDataMap[feature.properties.pointCategory].icon,
-                    color: iconDataMap[feature.properties.pointCategory].color,
-                    size: 40.0,
-                  ),
-                )
-                    : Container(),
+                _headerIcon(feature),
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: AutoSizeText(
-                    feature.properties?.name ?? "",
-                    style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w300
+                  child: SizedBox(
+                    width: constraints.maxWidth - 80,
+                    child: AutoSizeText(
+                      feature.properties?.name ?? "",
+                      style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w300
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    minFontSize: 16,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 )
               ],
             )
-        ),
+//            child: Row(
+//              children: <Widget>[
+//                _headerIcon(feature),
+//                Align(
+//                  alignment: Alignment.centerLeft,
+//                  child: AutoSizeText(
+//                    feature.properties?.name ?? "",
+//                    style: TextStyle(
+//                        fontSize: 40,
+//                        fontWeight: FontWeight.w300
+//                    ),
+//                    minFontSize: 16,
+//                    maxLines: 1,
+//                    overflow: TextOverflow.ellipsis,
+//                  ),
+//                )
+//              ],
+//            ),
+          )
       ),
+    );
+  }
+
+  Widget _headerIcon(geojson.Feature feature) {
+
+    final padding = EdgeInsets.only(right: _sheetHeaderIconPaddingRight, bottom: 4.0);
+
+    if (feature.properties.logoUrl != null) {
+      return Padding(
+        padding: padding,
+        child: CachedNetworkImage(
+          imageUrl: feature.properties.logoUrl,
+          height: _sheetHeaderIconSize,
+          width: _sheetHeaderIconSize,
+          fit: BoxFit.contain,
+        ),
+      );
+    }
+
+    if (feature is geojson.Point) {
+      return Padding(
+        padding: padding,
+        child: Icon(
+          iconDataMap[feature.properties.pointCategory].icon,
+          color: iconDataMap[feature.properties.pointCategory].color,
+          size: _sheetHeaderIconSize,
+        ),
+      );
+    }
+
+    return Container();
+  }
+
+  Widget _description(geojson.Feature feature) {
+    final properties = feature.properties;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: <Widget>[
+        properties.imageUrl != null
+            ? Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: CachedNetworkImage(
+                  imageUrl: properties.imageUrl,
+                  fit: BoxFit.cover,
+                  height: _imageHeightPx,
+                  width: double.infinity,
+                ),
+            )
+            : Container(),
+        properties.url != null
+            ? Material(
+              color: Colors.transparent,
+              child: InkWell(
+                  onTap: () => launch(properties.url),
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Icon(
+                            Icons.public,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
+                        Text(
+                          properties.url,
+                          style: TextStyle(
+                            color: Colors.grey[500],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+              ),
+            )
+            : Container(),
+        properties.description != null ? Padding(
+          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+          child: Text(
+            properties.description,
+            style: TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ) : Container(),
+      ],
     );
   }
 

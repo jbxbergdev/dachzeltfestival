@@ -69,6 +69,7 @@ class _ScheduleState extends State<Schedule> {
   Widget _buildTabLayout(Map<DateTime, Map<DateTime, _ItemsWithEndTime>> itemMap, BuildContext context) {
     _tabList = itemMap.keys.map((date) {
       return Container(
+        key: ValueKey(date),
         color: Theme.of(context).colorScheme.background,
         child: CustomScrollView(
           slivers: _buildListContent(itemMap[date]),
@@ -90,7 +91,7 @@ class _ScheduleState extends State<Schedule> {
             _selectedPageIndex.add(initialIndex);
           }
           // Because flutter_sticky_headers doesn't work well with TabBarView, we use a 'hacked' tab layout that doesn't use TabBarView,
-          // but an IndexedStack instead.
+          // but an AnimatedSwitcher instead.
           return DefaultTabController(
             length: itemMap.length,
             initialIndex: initialIndex,
@@ -159,9 +160,9 @@ class _ScheduleState extends State<Schedule> {
                 if (!snapshot.hasData) {
                   return Container();
                 }
-                return IndexedStack(
-                  index: snapshot.data,
-                  children: _tabList,
+                return AnimatedSwitcher(
+                  duration: Duration(milliseconds: 250),
+                  child: _tabList[snapshot.data],
                 );
               }
           ),
@@ -267,89 +268,92 @@ class _ScheduleState extends State<Schedule> {
                           opacity: isFinished ? 0.4 : 1.0,
                           child: Padding(
                             padding: const EdgeInsets.only(left: 0),
-                            child: InkWell(
-                              onTap: () => showScheduleItemDialog(context, scheduleItem, widget._scheduleViewModel.placeSelectionInteractor),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Column(
-                                  children: <Widget>[
-                                    Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                          scheduleItem.title,
-                                          style: TextStyle(
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w300,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => showScheduleItemDialog(context, scheduleItem, widget._scheduleViewModel.placeSelectionInteractor),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    children: <Widget>[
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                            scheduleItem.title,
+                                            style: TextStyle(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w300,
+                                            ),
                                           ),
-                                        ),
-                                    ),
-                                    IntrinsicHeight(
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: <Widget>[
-                                          Flexible(
-                                            flex: 1,
-                                            child: IntrinsicWidth(
-                                              child: Column(
-                                                children: <Widget>[
-                                                  Visibility(
-                                                    visible: scheduleItem.speaker != null && scheduleItem.speaker.isNotEmpty,
-                                                    child: Padding(
-                                                      padding: const EdgeInsets.only(top: 8.0),
-                                                      child: Align(
-                                                        alignment: Alignment.bottomLeft,
-                                                        child: Text(
-                                                          scheduleItem.speaker ?? "",
-                                                          style: TextStyle(
-                                                              color: Colors.grey[600]
+                                      ),
+                                      IntrinsicHeight(
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            Flexible(
+                                              flex: 1,
+                                              child: IntrinsicWidth(
+                                                child: Column(
+                                                  children: <Widget>[
+                                                    Visibility(
+                                                      visible: scheduleItem.speaker != null && scheduleItem.speaker.isNotEmpty,
+                                                      child: Padding(
+                                                        padding: const EdgeInsets.only(top: 8.0),
+                                                        child: Align(
+                                                          alignment: Alignment.bottomLeft,
+                                                          child: Text(
+                                                            scheduleItem.speaker ?? "",
+                                                            style: TextStyle(
+                                                                color: Colors.grey[600]
+                                                            ),
                                                           ),
                                                         ),
                                                       ),
                                                     ),
-                                                  ),
-                                                  Visibility(
-                                                    visible: scheduleItem.venue?.isNotEmpty == true,
-                                                    child: Padding(
-                                                      padding: EdgeInsets.only(top: 8.0),
-                                                      child: Row(
-                                                        children: <Widget>[
-                                                          Padding(
-                                                            padding: const EdgeInsets.only(right: 8.0),
-                                                            child: scheduleItem.venue != null
-                                                                ? Icon(Icons.place, size: 12.0, color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.grey[600],)
-                                                                : Container(),
-                                                          ),
-                                                          Text(
-                                                            scheduleItem.venue ?? "",
-                                                            style: TextStyle(
-                                                              color: Colors.grey[600],
+                                                    Visibility(
+                                                      visible: scheduleItem.venue?.isNotEmpty == true,
+                                                      child: Padding(
+                                                        padding: EdgeInsets.only(top: 8.0),
+                                                        child: Row(
+                                                          children: <Widget>[
+                                                            Padding(
+                                                              padding: const EdgeInsets.only(right: 8.0),
+                                                              child: scheduleItem.venue != null
+                                                                  ? Icon(Icons.place, size: 12.0, color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.grey[600],)
+                                                                  : Container(),
                                                             ),
-                                                          ),
-                                                        ],
+                                                            Text(
+                                                              scheduleItem.venue ?? "",
+                                                              style: TextStyle(
+                                                                color: Colors.grey[600],
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
                                                       ),
-                                                    ),
-                                                  )
-                                                ],
+                                                    )
+                                                  ],
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                          Flexible(
-                                            flex: 0,
-                                            child: Align(
-                                              alignment: Alignment.bottomRight,
-                                              child: Text(
-                                                  "${context.translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
-                                                  style: TextStyle(
-                                                    fontSize: 12.0,
-                                                    color: Colors.grey[500],
-                                                  )
+                                            Flexible(
+                                              flex: 0,
+                                              child: Align(
+                                                alignment: Alignment.bottomRight,
+                                                child: Text(
+                                                    "${context.translations[AppString.scheduleUntil]} ${hourMinute.format(scheduleItem.finish)}",
+                                                    style: TextStyle(
+                                                      fontSize: 12.0,
+                                                      color: Colors.grey[500],
+                                                    )
+                                                ),
                                               ),
-                                            ),
-                                          )
-                                        ],
+                                            )
+                                          ],
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -388,7 +392,7 @@ class _ScheduleState extends State<Schedule> {
             MapEntry(start, _ItemsWithEndTime(scheduleItems)))));
   }
 
-  bool _isDayPassed(DateTime now, DateTime toCheck) => toCheck.year < now.year || toCheck.month < now.month || toCheck.day < now.day;
+  bool _isDayPassed(DateTime now, DateTime toCheck) => toCheck.year <= now.year && toCheck.month <= now.month && toCheck.day < now.day;
 
   int _dateSelectionIndex(DateTime today, List<DateTime> dates) {
     // return current date index if it is within the date range

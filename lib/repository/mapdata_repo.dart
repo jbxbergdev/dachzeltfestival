@@ -59,9 +59,9 @@ class MapDataRepoImpl extends MapDataRepo {
       Stream<MapConfig> mapConfigFromFirestore = _firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots()
           // parse map configuration
           .map((snapshot) {
-            GeoPoint initialCenter = snapshot["initial_center"];
+            GeoPoint initialCenter = /*snapshot["initial_center"]*/GeoPoint(48.338083, 13.475219);
             double initialZoom = (snapshot["initial_zoom"] as num).toDouble(); // Firestore SDK treats *.0 numbers as ints
-            String mapUrl = /*snapshot["map_url"]*/ 'gs://dachzeltfestival.appspot.com/silvester_lageplan.geojson';
+            String mapUrl = /*snapshot["map_url"]*/"gs://dachzeltfestival.appspot.com/silvester_lageplan.geojson";
             int mapVersion = snapshot["map_version"];
             GeoPoint navDestination = snapshot["nav_destination"];
             return MapConfig(
