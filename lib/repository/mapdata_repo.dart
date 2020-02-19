@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
+import 'package:dachzeltfestival/model/geojson/place_category.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -18,6 +19,7 @@ import 'dart:convert';
 
 abstract class MapDataRepo {
   Stream<FeatureCollection> mapFeatures();
+  Stream<List<Feature>> exhibitors();
   Stream<MapConfig> mapConfig();
 }
 
@@ -50,6 +52,11 @@ class MapDataRepoImpl extends MapDataRepo {
     return _authenticator.authenticated.flatMap(
             (authenticated) => authenticated ? mapFeatures : Stream.value(FeatureCollection(features: List<Feature>())));
   }
+
+  @override
+  Stream<List<Feature>> exhibitors() => mapFeatures().map((featureCollection) =>
+      featureCollection.features.where((feature) => feature.properties.mappedCategory == PlaceCategory.EXHIBITOR
+          || feature.properties.mappedCategory == PlaceCategory.PREMIUM_EXHIBITOR));
 
   @override
   Stream<MapConfig> mapConfig() {

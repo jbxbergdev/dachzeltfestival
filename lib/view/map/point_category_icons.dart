@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:dachzeltfestival/model/geojson/point_category.dart';
+import 'package:dachzeltfestival/model/geojson/place_category.dart';
 import 'package:dachzeltfestival/view/map/icon_map.dart';
 import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/cupertino.dart';
@@ -15,21 +15,21 @@ import 'package:rxdart/rxdart.dart';
 @singleton
 class PointCategoryIcons {
 
-  final BehaviorSubject<Map<PointCategory, SelectionBitmapDescriptors>> _bitmapSubject = BehaviorSubject.seeded(null);
+  final BehaviorSubject<Map<PlaceCategory, SelectionBitmapDescriptors>> _bitmapSubject = BehaviorSubject.seeded(null);
 
   PointCategoryIcons() {
     _createBitmapMapping().then((mapping) => _bitmapSubject.value = mapping);
   }
 
-  Future<Map<PointCategory, SelectionBitmapDescriptors>> get bitmapMapping =>
+  Future<Map<PlaceCategory, SelectionBitmapDescriptors>> get bitmapMapping =>
       _bitmapSubject.where((mapping) => mapping != null).first;
 
-  Future<Map<PointCategory, SelectionBitmapDescriptors>> _createBitmapMapping() async {
+  Future<Map<PlaceCategory, SelectionBitmapDescriptors>> _createBitmapMapping() async {
     final unselectedGenerator = _BitmapGenerator(72.0);
     final selectedGenerator = _BitmapGenerator(96.0);
 
-    Map<PointCategory, SelectionBitmapDescriptors> bitmapMap = HashMap();
-    for (MapEntry<PointCategory, IconInfo> entry in iconDataMap.entries) {
+    Map<PlaceCategory, SelectionBitmapDescriptors> bitmapMap = HashMap();
+    for (MapEntry<PlaceCategory, IconInfo> entry in iconDataMap.entries) {
       final unselected = await unselectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.primary, Colors.white);
       final selected = await selectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.secondary, Colors.white);
       bitmapMap[entry.key] = SelectionBitmapDescriptors(selected, unselected);
@@ -40,7 +40,7 @@ class PointCategoryIcons {
 
 class _BitmapGenerator {
 
-  final BehaviorSubject<Map<PointCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
+  final BehaviorSubject<Map<PlaceCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
 
   final double _rectSize;
   double _circleStrokeWidth;

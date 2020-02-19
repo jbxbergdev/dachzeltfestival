@@ -20,7 +20,7 @@ import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
 import 'package:rxdart/rxdart.dart';
 import 'map_settings.dart';
-import 'package:dachzeltfestival/model/geojson/point_category.dart';
+import 'package:dachzeltfestival/model/geojson/place_category.dart';
 
 typedef Provider<T> = T Function();
 
@@ -246,8 +246,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       return Padding(
         padding: padding,
         child: Icon(
-          iconDataMap[feature.properties.pointCategory].icon,
-          color: iconDataMap[feature.properties.pointCategory].color,
+          iconDataMap[feature.properties.mappedCategory].icon,
+          color: iconDataMap[feature.properties.mappedCategory].color,
           size: size,
         ),
       );

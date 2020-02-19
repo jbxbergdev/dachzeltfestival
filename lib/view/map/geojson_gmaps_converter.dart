@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:dachzeltfestival/model/geojson/point_category.dart';
+import 'package:dachzeltfestival/model/geojson/place_category.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/point_category_icons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as googlemaps;
@@ -70,7 +70,7 @@ class FeatureConverter {
     }).toSet();
   }
 
-  _IdSet<googlemaps.Marker> _parseMarkerIdSet(Point point, googlemaps.MarkerId markerId, double zIndex, Function(Feature) onMarkerTap, Map<PointCategory, SelectionBitmapDescriptors> bitmaps) {
+  _IdSet<googlemaps.Marker> _parseMarkerIdSet(Point point, googlemaps.MarkerId markerId, double zIndex, Function(Feature) onMarkerTap, Map<PlaceCategory, SelectionBitmapDescriptors> bitmaps) {
     return _IdSet<googlemaps.Marker>(
       point.properties.placeId,
       _parseMarker(point, true, markerId, zIndex, onMarkerTap, bitmaps),
@@ -78,8 +78,8 @@ class FeatureConverter {
     );
   }
 
-  googlemaps.Marker _parseMarker(Point point, bool selected, googlemaps.MarkerId markerId, double zIndex, Function(Feature) onMarkerTap, Map<PointCategory, SelectionBitmapDescriptors> bitmaps) {
-    SelectionBitmapDescriptors descriptors = bitmaps[point.properties.pointCategory];
+  googlemaps.Marker _parseMarker(Point point, bool selected, googlemaps.MarkerId markerId, double zIndex, Function(Feature) onMarkerTap, Map<PlaceCategory, SelectionBitmapDescriptors> bitmaps) {
+    SelectionBitmapDescriptors descriptors = bitmaps[point.properties.mappedCategory];
     return googlemaps.Marker(
       markerId: markerId,
       position: point.toGmapsCoordinates(),
