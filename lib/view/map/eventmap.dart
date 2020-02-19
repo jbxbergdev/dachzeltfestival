@@ -5,6 +5,7 @@ import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
+import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/icon_map.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -192,7 +193,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     return Container(
       height: _headerHeightPx,
       decoration: BoxDecoration(
-        color: Colors.white
+        color: (feature.properties.fill != null ? hexToColor(feature.properties.fill) : Theme.of(context).colorScheme.primary).withOpacity(0.2),
       ),
       child: Padding(
           padding: const EdgeInsets.symmetric(
@@ -270,7 +271,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   width: double.infinity,
                 ),
             )
-            : Container(),
+            : Container(height: 8.0,),
         properties.url != null
             ? Material(
               color: Colors.transparent,
@@ -305,13 +306,16 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               ),
             )
             : Container(),
-        properties.description != null ? Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
-          child: Text(
-            properties.description,
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.w300,
+        properties.description != null ? Align(
+          alignment: Alignment.topLeft,
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
+            child: Text(
+              properties.description,
+              style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w300,
+              ),
             ),
           ),
         ) : Container(),
