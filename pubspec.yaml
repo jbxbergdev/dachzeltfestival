@@ -49,6 +49,7 @@ dependencies:
   sticky_headers: ^0.1.8+1
   sliding_up_panel: ^1.0.0
   cached_network_image: ^2.0.0
+  assorted_layout_widgets: ^1.0.15
 
   inject:
     git:
