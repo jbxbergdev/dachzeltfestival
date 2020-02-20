@@ -56,7 +56,7 @@ class MapDataRepoImpl extends MapDataRepo {
   @override
   Stream<List<Feature>> exhibitors() => mapFeatures().map((featureCollection) =>
       featureCollection.features.where((feature) => feature.properties.mappedCategory == PlaceCategory.EXHIBITOR
-          || feature.properties.mappedCategory == PlaceCategory.PREMIUM_EXHIBITOR));
+          || feature.properties.mappedCategory == PlaceCategory.PREMIUM_EXHIBITOR).toList());
 
   @override
   Stream<MapConfig> mapConfig() {

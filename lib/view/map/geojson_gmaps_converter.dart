@@ -19,13 +19,9 @@ class FeatureConverter {
   FeatureConverter(this._markerIconGenerator);
 
   Future<GoogleMapsGeometries> parseFeatureCollection(FeatureCollection featureCollection, int detailVisibility, Function(Feature) onPolygonTap, Function(Feature) onMarkerTap) {
-    final start = DateTime.now();
     return Rx.combineLatest2(_parsePolygons(featureCollection, detailVisibility, onPolygonTap).asStream(),
         _parseMarkers(featureCollection, detailVisibility, onMarkerTap).asStream(),
-        (polygons, markers) {
-          print('##### parsing took ${DateTime.now().difference(start).inMilliseconds}ms');
-          return GoogleMapsGeometries(polygons, markers);
-        }).first;
+        (polygons, markers) => GoogleMapsGeometries(polygons, markers)).first;
   }
 
   Future<Set<_IdSet<googlemaps.Polygon>>> _parsePolygons(FeatureCollection featureCollection, int detailVisibility, Function(Feature) onPolygonTap) async {

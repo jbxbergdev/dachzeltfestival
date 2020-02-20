@@ -11,7 +11,7 @@ import 'package:dachzeltfestival/repository/legal_repo.dart';
 import 'package:dachzeltfestival/repository/notification_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
-import 'package:dachzeltfestival/view/feedback/feedbacl_viewmodel.dart';
+import 'package:dachzeltfestival/view/feedback/feedback_viewmodel.dart';
 import 'package:dachzeltfestival/view/info/event_info_viewmodel.dart';
 import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';

@@ -17,6 +17,7 @@ enum AppString {
   today,
   yesterday,
   loading,
+  vendors,
 }
 
 class Translations {
@@ -89,7 +90,11 @@ class Translations {
     AppString.loading: {
       de: "Lade...",
       en: "Loading..."
-    }
+    },
+    AppString.vendors: {
+      de: "Händler",
+      en: "Vendors"
+    },
   };
 
   dynamic operator[](AppString appString) => _stringMap[appString][_locale.languageCode];

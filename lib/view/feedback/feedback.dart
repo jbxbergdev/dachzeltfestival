@@ -1,5 +1,5 @@
 
-import 'package:dachzeltfestival/view/feedback/feedbacl_viewmodel.dart';
+import 'package:dachzeltfestival/view/feedback/feedback_viewmodel.dart';
 import 'package:dachzeltfestival/view/markdown_view.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
