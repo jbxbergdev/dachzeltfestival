@@ -46,7 +46,7 @@ class FeatureConverter {
       polygonId: gmapsPolygonId,
       strokeColor: hexToColor(polygon.properties?.stroke),
       fillColor: hexToColor(polygon.properties?.fill).withOpacity(selected ? 1.0 : 0.5),
-      strokeWidth: selected ? 10 : 2,
+      strokeWidth: 2,
       points: polygon.coordinates[0].map((coordinates) => googlemaps.LatLng(coordinates.lat, coordinates.lng)).toList(),
       consumeTapEvents: true,
       zIndex: zIndex,

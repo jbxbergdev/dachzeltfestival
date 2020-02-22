@@ -65,7 +65,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   static const double _headerHeightPx = 80.0;
   static const double _teaserHeightPx = 24.0;
   static const double _imageHeightPx = 120.0;
-  static const double _sheetLinkIconHeight = 32.0;
+  static const double _sheetLinkIconHeight = 24.0;
   static const double _sheetItemsBottomPadding = 8.0;
   static const double _expandedSheetRelativeHeight = 0.8;
   static const double _detailLevelZoomThreshold = 1000; // TODO Set to actually possible zoom level as soon as https://github.com/jbxbergdev/dachzeltfestival/issues/51 can be implemented.

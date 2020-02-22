@@ -2,17 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "loading_screen-2.jpg",
+      "filename" : "DZN_Logo_Classic_weiss_1x.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
-      "filename" : "loading_screen-1.jpg",
+      "filename" : "DZN_Logo_Classic_weiss_2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
-      "filename" : "loading_screen.jpg",
+      "filename" : "DZN_Logo_Classic_weiss_3x.png",
       "scale" : "3x"
     }
   ],

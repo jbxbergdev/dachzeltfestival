@@ -4,6 +4,7 @@ import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/model/geojson/place_category.dart';
 import 'package:dachzeltfestival/view/exhibitor/exhibitors_viewmodel.dart';
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
+import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -37,11 +38,26 @@ class Exhibitors extends StatelessWidget {
           return Container(
             color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
             child: ListView.builder(
-              itemCount: snapshot.data.length,
+              itemCount: snapshot.data.length + 1,
               itemBuilder: (context, index) {
-                Feature item = snapshot.data[index];
-                double paddingAbove = index == 0 ? 8.0 : 2.0;
-                double paddingBelow = index == snapshot.data.length - 1 ? 8.0 : 2.0;
+                if (index == 0) {
+                  return Align(
+                    alignment: Alignment.centerRight,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 16.0, top: 8.0),
+                      child: Text(
+                        context.translations[AppString.advertisement],
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 8.0,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+                Feature item = snapshot.data[index - 1];
+                double paddingAbove = 2.0;
+                double paddingBelow = index == snapshot.data.length ? 8.0 : 2.0;
                 return Padding(
                   padding: EdgeInsets.only(left: 8.0, top: paddingAbove, right: 8.0, bottom: paddingBelow),
                   child: Card(

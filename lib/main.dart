@@ -11,6 +11,7 @@
 
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_analytics/observer.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'di/app_injector.dart';
 import 'package:inject/inject.dart';
@@ -44,7 +45,10 @@ class MyApp extends StatelessWidget {
       supportedLocales: Translations.supportedLanguages.map((language)  => Locale(language)),
       localizationsDelegates: [TranslationsDelegate(),
         GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate],
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate,
+      ],
       theme: appTheme,
     );
   }

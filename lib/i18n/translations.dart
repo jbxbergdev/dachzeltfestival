@@ -18,6 +18,7 @@ enum AppString {
   yesterday,
   loading,
   vendors,
+  advertisement,
 }
 
 class Translations {
@@ -94,6 +95,10 @@ class Translations {
     AppString.vendors: {
       de: "Händler",
       en: "Vendors"
+    },
+    AppString.advertisement: {
+      de: "WERBUNG",
+      en: "ADVERTISEMENT"
     },
   };
 
