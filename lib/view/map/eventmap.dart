@@ -65,6 +65,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   static const double _headerHeightPx = 80.0;
   static const double _teaserHeightPx = 24.0;
   static const double _imageHeightPx = 120.0;
+  static const double _sheetLinkIconHeight = 32.0;
+  static const double _sheetItemsBottomPadding = 8.0;
   static const double _expandedSheetRelativeHeight = 0.8;
   static const double _detailLevelZoomThreshold = 1000; // TODO Set to actually possible zoom level as soon as https://github.com/jbxbergdev/dachzeltfestival/issues/51 can be implemented.
 
@@ -183,44 +185,53 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   double _maxSheetHeight(geojson.Feature feature, double totalWidgetHeight) {
     final properties = feature.properties;
-    if (properties.description != null || properties.imageUrl != null || properties.url != null) {
+    if (properties.description != null) {
       return _expandedSheetRelativeHeight * totalWidgetHeight;
     }
-    return _headerHeightPx;
+    double height = _headerHeightPx;
+    if (properties.url != null) {
+      height += (_sheetLinkIconHeight + _sheetItemsBottomPadding * 2);
+    }
+    if (properties.imageUrl != null) {
+      height += (_imageHeightPx + _sheetItemsBottomPadding);
+    }
+    return height;
   }
 
   Widget _header(geojson.Feature feature) {
     return Container(
-      height: _headerHeightPx,
-      decoration: BoxDecoration(
-        color: (feature.properties.fill != null ? hexToColor(feature.properties.fill) : Theme.of(context).colorScheme.primary).withOpacity(0.2),
-      ),
-      child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-          ),
-          child: LayoutBuilder(
-            builder: (context, constraints) => Row(
+      color: Colors.white,
+      child: Container(
+        height: _headerHeightPx,
+        decoration: BoxDecoration(
+          color: (feature.properties.fill != null ? hexToColor(feature.properties.fill) : Theme.of(context).colorScheme.primary).withOpacity(0.2),
+        ),
+        child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16.0,
+            ),
+            child: Row(
               children: <Widget>[
                 _headerIcon(feature),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: SizedBox(
-                    width: constraints.maxWidth - 48,
-                    child: AutoSizeText(
-                      feature.properties?.name ?? "",
-                      style: TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w300
+                Container(
+                  child: Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: AutoSizeText(
+                        feature.properties?.name ?? "",
+                        style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.w300
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 )
               ],
             )
-          )
+        ),
       ),
     );
   }
@@ -263,7 +274,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       children: <Widget>[
         properties.imageUrl != null
             ? Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
+              padding: const EdgeInsets.only(bottom: _sheetItemsBottomPadding),
               child: CachedNetworkImage(
                   imageUrl: properties.imageUrl,
                   fit: BoxFit.cover,
@@ -278,29 +289,28 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               child: InkWell(
                   onTap: () => launch(properties.url),
                   child: Padding(
-                    padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 8.0),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) => Row(
-                        children: <Widget>[
-                          Padding(
-                            padding: const EdgeInsets.only(right: 8.0),
-                            child: Icon(
-                              Icons.public,
-                              size: 32,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
+                    padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: _sheetItemsBottomPadding),
+                    child: Row(
+                      children: <Widget>[
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Icon(
+                            Icons.public,
+                            size: _sheetLinkIconHeight,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                          SizedBox(
-                            width: constraints.maxWidth - 40,
+                        ),
+                        Container(
+                          child: Expanded(
                             child: TextOneLine(
                               properties.url,
                               style: TextStyle(
                                 color: Colors.grey[500],
                               ),
                             ),
-                          )
-                        ],
-                      ),
+                          ),
+                        )
+                      ],
                     ),
                   ),
               ),

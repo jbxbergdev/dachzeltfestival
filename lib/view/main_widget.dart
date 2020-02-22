@@ -61,7 +61,7 @@ class _MainWidgetState extends State<MainWidget> {
     ];
     _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId
         .where((selectedPlaceId) => selectedPlaceId != null)
-        .listen((_) => this._onItemTapped(1)));
+        .listen((_) => this._onPlaceSelected()));
   }
 
   @override
@@ -144,6 +144,11 @@ class _MainWidgetState extends State<MainWidget> {
         _mainViewModel.requestLocationPermission();
       }
     });
+  }
+
+  void _onPlaceSelected() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    _onItemTapped(1);
   }
 
   void _initNotificationHandling(BuildContext context) {
