@@ -1,3 +1,4 @@
+import 'package:dachzeltfestival/util/custom_markers_icons.dart';
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
@@ -57,6 +58,7 @@ class _MainWidgetState extends State<MainWidget> {
       _builders.notificationListBuilder.build(PageStorageKey('NotificationList')),
       _builders.eventMapBuilder.build(PageStorageKey('Map')),
       _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
+      _builders.feedBuilder.build(PageStorageKey('Feed')),
       _builders.infoBuilder.build((PageStorageKey('Info'))),
     ];
     _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId
@@ -127,6 +129,10 @@ class _MainWidgetState extends State<MainWidget> {
                   BottomNavigationBarItem(
                     icon: Icon(Icons.event),
                     title: Text(context.translations[AppString.navItemSchedule]),
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(CustomMarkers.hash),
+                    title: Text(context.translations[AppString.feed]),
                   ),
                   BottomNavigationBarItem(
                     icon: Icon(Icons.arrow_forward),

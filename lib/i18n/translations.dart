@@ -19,6 +19,7 @@ enum AppString {
   loading,
   vendors,
   advertisement,
+  feed,
 }
 
 class Translations {
@@ -100,6 +101,10 @@ class Translations {
       de: "WERBUNG",
       en: "ADVERTISEMENT"
     },
+    AppString.feed: {
+      de: "Feed",
+      en: "Feed"
+    }
   };
 
   dynamic operator[](AppString appString) => _stringMap[appString][_locale.languageCode];

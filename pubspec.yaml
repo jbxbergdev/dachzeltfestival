@@ -50,6 +50,7 @@ dependencies:
   sliding_up_panel: ^1.0.0
   cached_network_image: ^2.0.0
   assorted_layout_widgets: ^1.0.15
+  webview_flutter: ^0.3.19+8
 
   inject:
     git:

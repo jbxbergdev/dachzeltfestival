@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dachzeltfestival/repository/event_info_repo.dart';
+import 'package:dachzeltfestival/repository/feed_repo.dart';
 import 'package:dachzeltfestival/view/builders.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
@@ -11,6 +12,7 @@ import 'package:dachzeltfestival/repository/legal_repo.dart';
 import 'package:dachzeltfestival/repository/notification_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
+import 'package:dachzeltfestival/view/feed/feed_viewmodel.dart';
 import 'package:dachzeltfestival/view/feedback/feedback_viewmodel.dart';
 import 'package:dachzeltfestival/view/info/event_info_viewmodel.dart';
 import 'package:dachzeltfestival/view/legal/legal_viewmodel.dart';
@@ -89,6 +91,13 @@ class AppModule {
 
   @provide
   EventInfoViewModel eventInfoViewModel(EventInfoRepo eventInfoRepo) => EventInfoViewModel(eventInfoRepo);
+
+  @provide
+  @singleton
+  FeedRepo feedRepo(Authenticator authenticator, Firestore firestore) => FeedRepoImpl(firestore, authenticator);
+
+  @provide
+  FeedViewModel feedViewModel(FeedRepo feedRepo) => FeedViewModel(feedRepo);
 
   @provide
   @singleton
