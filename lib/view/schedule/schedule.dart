@@ -39,7 +39,7 @@ class _ScheduleState extends State<Schedule> {
 
   final BehaviorSubject<DateTime> _currentTime = BehaviorSubject();
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
-  final BehaviorSubject<int> _selectedPageIndex = BehaviorSubject.seeded(0);
+  BehaviorSubject<int> _selectedPageIndex = BehaviorSubject.seeded(0);
   List<Widget> _tabList;
   bool _firstLayout = true;
 

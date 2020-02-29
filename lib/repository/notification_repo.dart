@@ -3,6 +3,7 @@ import 'dart:core';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/firebase_message_parser.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:rxdart/rxdart.dart';
@@ -19,13 +20,14 @@ class NotificationRepoImpl extends NotificationRepo {
 
   final FirebaseMessaging _firebaseMessaging;
   final Firestore _firestore;
+  final Authenticator _authenticator;
   final LocaleState _localeState;
   final FirebaseMessageParser _firebaseMessageParser;
   final PublishSubject<String> _fcmMessageSubject = PublishSubject();
   final BehaviorSubject<bool> _languageSubscriptionActive = BehaviorSubject.seeded(false);
   Stream<String> _newNotificationIds;
 
-  NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._firebaseMessageParser, this._localeState) {
+  NotificationRepoImpl(this._firebaseMessaging, this._firestore, this._authenticator, this._firebaseMessageParser, this._localeState) {
     _newNotificationIds = _fcmMessageSubject.where((messageId) => messageId != null).distinct();
     _firebaseMessaging.requestNotificationPermissions();
     _firebaseMessaging.configure(
@@ -41,14 +43,14 @@ class NotificationRepoImpl extends NotificationRepo {
     );
 
     List<String> supportedLanguages = Translations.supportedLanguages;
-    _localeState.localeSubject.where((locale) => locale != null).listen((locale) {
+    _localeState.locale.listen((locale) {
       _languageSubscriptionActive.add(false);
       // on a new locale, first unsubscribe from current language topic (i.e. unsubscribe from all topics)
       supportedLanguages.forEach((langCode) => _firebaseMessaging.unsubscribeFromTopic(langCode));
 
       // if the locale's language is supported, subscribe to its topic, otherwise subscribe to the default language
       if (supportedLanguages.contains(locale.languageCode)) {
-        _firebaseMessaging.subscribeToTopic(locale.languageCode).whenComplete(() => _languageSubscriptionActive.add(true));
+        _firebaseMessaging.subscribeToTopic(/*locale.languageCode*/ 'test').whenComplete(() => _languageSubscriptionActive.add(true));
       } else {
         _firebaseMessaging.subscribeToTopic(supportedLanguages[0]).whenComplete(() => _languageSubscriptionActive.add(true));
       }
@@ -59,18 +61,21 @@ class NotificationRepoImpl extends NotificationRepo {
   @override
   Stream<notification.Notification> newNotifications() {
     // Set up language-based topic subscription
-    return _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
+    Stream<notification.Notification> notificationStream = _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
         .map((documentSnapshot) => documentSnapshot.asNotification));
+    return _authenticator.authenticated.where((authenticated) => authenticated).flatMap((_) => notificationStream);
   }
 
   @override
   Stream<List<notification.Notification>> allNotifications() {
-    return _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.localeSubject).flatMap((locale) =>
+    Stream<List<notification.Notification>> notificationStream = _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.locale)
+        .flatMap((locale) =>
         _firestore.collection('notifications')
             .where('language', isEqualTo: locale.supportedOrDefaultLangCode)
             .orderBy('timestamp', descending: true)
             .snapshots()
         .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification).toList()).doOnError((error) => print(error)));
+    return _authenticator.authenticated.where((authenticated) => authenticated).flatMap((_) => notificationStream);
   }
 }
 

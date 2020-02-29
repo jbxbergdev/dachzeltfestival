@@ -16,12 +16,15 @@ class MainViewModel {
   final PermissionRepo _permissionRepo;
   final NotificationRepo _notificationRepo;
   final PlaceSelectionInteractor _placeSelectionInteractor;
+  final BehaviorSubject<AppConfig> _appConfigSubject = BehaviorSubject();
 
-  MainViewModel(this._configRepo, this._permissionRepo, this._notificationRepo, this._placeSelectionInteractor);
+  MainViewModel(this._configRepo, this._permissionRepo, this._notificationRepo, this._placeSelectionInteractor) {
+    _configRepo.appConfig.listen((appConfig) => _appConfigSubject.add(appConfig));
+  }
 
-  BehaviorSubject<Locale> get localeSubject => _configRepo.localeSubject;
+  Sink<Locale> get localeSink => _configRepo.localeSink;
 
-  Stream<AppConfig> get appConfig => _configRepo.appConfig;
+  Stream<AppConfig> get appConfig => _appConfigSubject;
 
   Stream<notification.Notification> get notifications => _notificationRepo.newNotifications();
 

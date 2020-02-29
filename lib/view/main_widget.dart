@@ -68,7 +68,7 @@ class _MainWidgetState extends State<MainWidget> {
 
   @override
   Widget build(BuildContext context) {
-    _mainViewModel.localeSubject.value = Localizations.localeOf(context);
+    _mainViewModel.localeSink.add(Localizations.localeOf(context));
     return StreamBuilder<AppConfig>(
         stream: _mainViewModel.appConfig,
         builder: (context, snapshot) {

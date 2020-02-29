@@ -25,7 +25,7 @@ class TextRepoImpl extends TextRepo {
   Stream<String> feedbackMarkdown() =>_loadString(feedback);
 
   Stream<String> _loadString(String filePath) {
-    return _localeState.localeSubject.where((locale) => locale != null)
+    return _localeState.locale
         .flatMap((locale) => _loadLocalizedAssetFile(locale, filePath).asStream());
   }
 

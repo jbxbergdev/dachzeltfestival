@@ -43,7 +43,8 @@ class MapDataRepoImpl extends MapDataRepo {
   Stream<FeatureCollection> mapFeatures() {
 
     // get to locale
-    Stream<FeatureCollection> mapFeatures = _localeState.localeSubject.distinct((previous, next) => previous.languageCode == next.languageCode).flatMap((locale) =>
+    Stream<FeatureCollection> mapFeatures = _localeState.locale
+        .flatMap((locale) =>
         // get map file
         _localMap().flatMap((mapFile) =>
             // parse features from file with locale

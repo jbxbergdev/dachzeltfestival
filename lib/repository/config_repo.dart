@@ -11,7 +11,7 @@ import 'package:rxdart/rxdart.dart';
 abstract class ConfigRepo {
   Stream<AppConfig> appConfig;
   // ignore: close_sinks
-  BehaviorSubject<Locale> localeSubject;
+  Sink<Locale> localeSink;
 }
 
 class ConfigRepoImpl extends ConfigRepo {
@@ -27,7 +27,7 @@ class ConfigRepoImpl extends ConfigRepo {
     Stream<AppConfig> appConfigFromFirestore = Rx.combineLatest3(
         _firestore.collection("configuration").document("app_config").snapshots(),
         PackageInfo.fromPlatform().asStream(),
-        localeSubject,
+        _localeState.locale,
         _mapConfig
     );
     return _authenticator.authenticated.flatMap(
@@ -37,7 +37,7 @@ class ConfigRepoImpl extends ConfigRepo {
 
   @override
   // ignore: close_sinks
-  BehaviorSubject<Locale> get localeSubject => _localeState.localeSubject;
+  Sink<Locale> get localeSink => _localeState.sink;
 
   AppConfig _mapConfig(DocumentSnapshot documentSnapshot, PackageInfo packageInfo, Locale locale) {
     int appVersion = int.parse(packageInfo.buildNumber);

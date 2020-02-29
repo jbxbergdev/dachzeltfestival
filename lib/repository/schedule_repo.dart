@@ -64,7 +64,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
         _mapDataRepo.mapFeatures().map((featureCollection) =>
             // use a HashMap for performance reasons
             HashMap.fromIterable(featureCollection.features, key: (feature) => (feature as Feature).properties.placeId, value: (feature) => feature as Feature)),
-        _localeState.localeSubject.distinct(),
+        _localeState.locale,
         _mapSchedule);
 
     return _authenticator.authenticated.flatMap(

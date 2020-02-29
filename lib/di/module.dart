@@ -79,8 +79,8 @@ class AppModule {
 
   @provide
   @singleton
-  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, Firestore firestore, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
-      NotificationRepoImpl(firebaseMessaging, firestore, firebaseMessageParser, localeState);
+  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, Firestore firestore, Authenticator authenticator, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
+      NotificationRepoImpl(firebaseMessaging, firestore, authenticator, firebaseMessageParser, localeState);
 
   @provide
   NotificationListViewModel notificationListViewModel(NotificationRepo notificationRepo) => NotificationListViewModel(notificationRepo);

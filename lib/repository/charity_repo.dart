@@ -25,7 +25,7 @@ class CharityRepoImpl extends CharityRepo {
   Stream<CharityConfig> get charityConfig {
     Stream<CharityConfig> charityConfigFromFirestore = Rx.combineLatest2(
       _firestore.collection("configuration").document("charity_config").snapshots(),
-      _localeState.localeSubject,
+      _localeState.locale,
       _mapToCharityConfig
     );
     return _authenticator.authenticated.flatMap(

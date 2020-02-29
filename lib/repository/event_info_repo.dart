@@ -22,7 +22,7 @@ class EventInfoRepoImpl extends EventInfoRepo {
   Stream<String> get eventInfoMarkup {
     Stream<String> markdownFromFirestore = Rx.combineLatest2(
         _firestore.collection('configuration').document('event_info_config').snapshots(),
-        _localeState.localeSubject,
+        _localeState.locale,
         _mapMarkdown
     );
     return _authenticator.authenticated.flatMap(
