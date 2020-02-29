@@ -61,7 +61,7 @@ class NotificationRepoImpl extends NotificationRepo {
   @override
   Stream<notification.Notification> newNotifications() {
     // Set up language-based topic subscription
-    Stream<notification.Notification> notificationStream = _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots()
+    Stream<notification.Notification> notificationStream = _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots().first.asStream()
         .map((documentSnapshot) => documentSnapshot.asNotification));
     return _authenticator.authenticated.where((authenticated) => authenticated).flatMap((_) => notificationStream);
   }
