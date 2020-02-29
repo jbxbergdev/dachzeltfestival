@@ -50,7 +50,7 @@ class NotificationRepoImpl extends NotificationRepo {
 
       // if the locale's language is supported, subscribe to its topic, otherwise subscribe to the default language
       if (supportedLanguages.contains(locale.languageCode)) {
-        _firebaseMessaging.subscribeToTopic(/*locale.languageCode*/ 'test').whenComplete(() => _languageSubscriptionActive.add(true));
+        _firebaseMessaging.subscribeToTopic(locale.languageCode).whenComplete(() => _languageSubscriptionActive.add(true));
       } else {
         _firebaseMessaging.subscribeToTopic(supportedLanguages[0]).whenComplete(() => _languageSubscriptionActive.add(true));
       }
