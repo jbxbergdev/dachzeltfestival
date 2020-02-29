@@ -322,10 +322,14 @@ class _ScheduleState extends State<Schedule> {
                                                                   ? Icon(Icons.place, size: 12.0, color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.grey[600],)
                                                                   : Container(),
                                                             ),
-                                                            Text(
-                                                              scheduleItem.venue ?? "",
-                                                              style: TextStyle(
-                                                                color: Colors.grey[600],
+                                                            Container(
+                                                              child: Expanded(
+                                                                child: Text(
+                                                                  scheduleItem.venue ?? "",
+                                                                  style: TextStyle(
+                                                                    color: Colors.grey[600],
+                                                                  ),
+                                                                ),
                                                               ),
                                                             ),
                                                           ],
