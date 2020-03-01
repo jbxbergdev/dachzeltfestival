@@ -63,7 +63,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
 
   static const double _headerHeightPx = 80.0;
-  static const double _teaserHeightPx = 24.0;
+  static const double _teaserHeightPx = 56.0;
   static const double _imageHeightPx = 120.0;
   static const double _sheetLinkIconHeight = 24.0;
   static const double _sheetItemsBottomPadding = 8.0;
@@ -144,7 +144,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                 return Container(key: UniqueKey());
               }
               final listKey = PageStorageKey(DateTime.now());
+              PanelController panelController = PanelController();
               return SlidingUpPanel(
+                controller: panelController,
                 margin: EdgeInsets.symmetric(horizontal: 8.0),
                 borderRadius: BorderRadius.circular(16.0),
                 maxHeight: _maxSheetHeight(snapshot.data.item1, snapshot.data.item2),
@@ -159,7 +161,14 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                         controller: scrollController,
                         children: <Widget>[
                         StickyHeader(
-                          header: _header(snapshot.data.item1),
+                          header: GestureDetector(
+                            onTap: () {
+                              if (!panelController.isPanelOpen) {
+                                panelController.open();
+                              }
+                            },
+                            child: _header(snapshot.data.item1),
+                          ),
                           content: _description(snapshot.data.item1),
                         ),
                         ],

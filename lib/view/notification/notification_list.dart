@@ -29,11 +29,12 @@ class NotificationList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<List<notification.Notification>>(
-        stream: _viewModel.notifications(),
+        stream: _viewModel.notifications().sortPersistentFirst(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
+            ThemeData theme = Theme.of(context);
             return Container(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+              color: Colors.grey[100],
               child: ListView.builder(
                 itemCount: snapshot.data.length,
                 itemBuilder: (context, index) {
@@ -43,62 +44,69 @@ class NotificationList extends StatelessWidget {
                   return Padding(
                     padding: EdgeInsets.only(left: 8.0, top: paddingAbove, right: 8.0, bottom: paddingBelow),
                     child: Card(
-                      elevation: 4.0,
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 4.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: <Widget>[
-                            Padding(
-                              padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0),
-                              child: Column(
-                                children: <Widget>[
-                                  Padding(
-                                    padding: EdgeInsets.only(bottom: 12.0),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        _formatTimestamp(item.timestamp, context),
-                                        style: TextStyle(
-                                          color: Colors.grey[600],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 12.0),
-                                    child: Align(
-                                      alignment: Alignment.centerLeft,
-                                      child: Text(
-                                        item.title,
-                                        style: TextStyle(
-                                          fontSize: 24.0,
-                                          fontWeight: FontWeight.w300,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Align(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                        item.message,
-                                        style: TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.w300,
-                                        )
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                           item.url != null ? ButtonBar(
+                      elevation: 2.0,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                        child: Container(
+                          color: item.persistent ? theme.colorScheme.primary.withOpacity(0.15) : theme.colorScheme.background,
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
                               children: <Widget>[
-                                FlatButton(
-                                  child: Text(context.translations[AppString.notificationDialogOpenLink]),
-                                  onPressed: () => launch(item.url),
-                              )],
-                            ) : Container(height: 24.0,),
-                          ],
+                                Padding(
+                                  padding: const EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0),
+                                  child: Column(
+                                    children: <Widget>[
+                                      item.persistent ? Container() : Padding(
+                                        padding: EdgeInsets.only(bottom: 12.0),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            _formatTimestamp(item.timestamp, context),
+                                            style: TextStyle(
+                                              color: Colors.grey[600],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 12.0),
+                                        child: Align(
+                                          alignment: Alignment.centerLeft,
+                                          child: Text(
+                                            item.title,
+                                            style: TextStyle(
+                                              fontSize: 24.0,
+                                              fontWeight: FontWeight.w300,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                            item.message,
+                                            style: TextStyle(
+                                              fontSize: 16.0,
+                                              fontWeight: FontWeight.w300,
+                                            )
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                               item.url != null ? ButtonBar(
+                                  children: <Widget>[
+                                    FlatButton(
+                                      child: Text(context.translations[AppString.notificationDialogOpenLink]),
+                                      onPressed: () => launch(item.url),
+                                      textColor: item.persistent ? theme.colorScheme.primary : theme.colorScheme.primary,
+                                  )],
+                                ) : Container(height: 24.0,),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -130,4 +138,15 @@ class NotificationList extends StatelessWidget {
     }
   }
 
+}
+
+extension on Stream<List<notification.Notification>> {
+  Stream<List<notification.Notification>> sortPersistentFirst() {
+    return this.asyncMap((notifications) => notifications..sort((left, right) {
+      if (left.persistent != right.persistent) {
+        return left.persistent ? -1 : 1;
+      }
+      return right.timestamp.compareTo(left.timestamp);
+    }));
+  }
 }

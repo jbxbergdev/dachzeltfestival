@@ -81,6 +81,6 @@ class NotificationRepoImpl extends NotificationRepo {
 
 extension _NotificationParser on DocumentSnapshot {
   notification.Notification get asNotification =>
-      notification.Notification(this['title'], this['message'], this['url'], (this['timestamp'] as Timestamp).toDate());
+      notification.Notification(this['title'], this['message'], this['url'], (this['timestamp'] as Timestamp).toDate(), this['persistent'] ?? false);
 }
 
