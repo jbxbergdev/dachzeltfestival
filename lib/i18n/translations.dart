@@ -78,8 +78,8 @@ class Translations {
       en: "About, Legal"
     },
     AppString.feedback: {
-      de: "Feedback",
-      en: "Feedback"
+      de: "Feedback und Support",
+      en: "Feedback and Support"
     },
     AppString.today: {
       de: "heute",
