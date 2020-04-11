@@ -68,7 +68,7 @@ class NotificationRepoImpl extends NotificationRepo {
 
   @override
   Stream<List<notification.Notification>> allNotifications() {
-    Stream<List<notification.Notification>> notificationStream = _languageSubscriptionActive.where((subscriptionActive) => subscriptionActive).flatMap((_) => _localeState.locale)
+    Stream<List<notification.Notification>> notificationStream = _localeState.locale
         .flatMap((locale) =>
         _firestore.collection('notifications')
             .where('language', isEqualTo: locale.supportedOrDefaultLangCode)
