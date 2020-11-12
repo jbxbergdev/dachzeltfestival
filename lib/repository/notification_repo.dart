@@ -19,7 +19,7 @@ abstract class NotificationRepo {
 class NotificationRepoImpl extends NotificationRepo {
 
   final FirebaseMessaging _firebaseMessaging;
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final Authenticator _authenticator;
   final LocaleState _localeState;
   final FirebaseMessageParser _firebaseMessageParser;
@@ -61,7 +61,7 @@ class NotificationRepoImpl extends NotificationRepo {
   @override
   Stream<notification.Notification> newNotifications() {
     // Set up language-based topic subscription
-    Stream<notification.Notification> notificationStream = _newNotificationIds.flatMap((documentId) => _firestore.document('notifications/$documentId').snapshots().first.asStream()
+    Stream<notification.Notification> notificationStream = _newNotificationIds.flatMap((documentId) => _firestore.doc('notifications/$documentId').snapshots().first.asStream()
         .map((documentSnapshot) => documentSnapshot.asNotification));
     return _authenticator.authenticated.where((authenticated) => authenticated).flatMap((_) => notificationStream);
   }
@@ -74,13 +74,13 @@ class NotificationRepoImpl extends NotificationRepo {
             .where('language', isEqualTo: locale.supportedOrDefaultLangCode)
             .orderBy('timestamp', descending: true)
             .snapshots()
-        .map((querySnapshot) => querySnapshot.documents.map((documentSnapshot) => documentSnapshot.asNotification).toList()).doOnError((error) => print(error)));
+            .map((querySnapshot) => querySnapshot.docs.map((documentSnapshot) => documentSnapshot.asNotification).toList()).doOnError((error) => print(error)));
     return _authenticator.authenticated.where((authenticated) => authenticated).flatMap((_) => notificationStream);
   }
 }
 
 extension _NotificationParser on DocumentSnapshot {
   notification.Notification get asNotification =>
-      notification.Notification(this['title'], this['message'], this['url'], (this['timestamp'] as Timestamp).toDate(), this['persistent'] ?? false);
+      notification.Notification(data()['title'], data()['message'], data()['url'], (data()['timestamp'] as Timestamp).toDate(), data()['persistent'] ?? false);
 }
 

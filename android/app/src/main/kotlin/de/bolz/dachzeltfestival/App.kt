@@ -8,7 +8,7 @@ import io.flutter.plugin.common.PluginRegistry
 import io.flutter.plugins.GeneratedPluginRegistrant
 import io.flutter.plugins.firebasemessaging.FlutterFirebaseMessagingService
 
-class App: FlutterApplication(), PluginRegistry.PluginRegistrantCallback{
+class App: FlutterApplication() {
 
     override fun onCreate() {
         super.onCreate()
@@ -16,7 +16,6 @@ class App: FlutterApplication(), PluginRegistry.PluginRegistrantCallback{
     }
 
     private fun setupNotificationChannel() {
-        FlutterFirebaseMessagingService.setPluginRegistrant(this)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channelName = getString(R.string.notification_channel_name)
             val descriptionText = getString(R.string.notification_channel_description)
@@ -26,9 +25,5 @@ class App: FlutterApplication(), PluginRegistry.PluginRegistrantCallback{
             val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(mChannel)
         }
-    }
-
-    override fun registerWith(pluginRegistry: PluginRegistry?) {
-        GeneratedPluginRegistrant.registerWith(pluginRegistry)
     }
 }

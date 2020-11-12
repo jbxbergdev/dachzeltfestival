@@ -20,7 +20,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
 
   static const String _FIRESTORE_COLLECTION_SCHEDULE = "schedule";
 
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final Authenticator _authenticator;
   final LocaleState _localeState;
   final MapDataRepo _mapDataRepo;
@@ -72,7 +72,7 @@ class ScheduleRepoImpl extends ScheduleRepo {
   }
 
   List<ScheduleItem> _mapSchedule(QuerySnapshot scheduleQuerySnapshot, Map<String, Feature> venues, Locale locale) {
-    return scheduleQuerySnapshot.documents.map((scheduleDocument) {
+    return scheduleQuerySnapshot.docs.map((scheduleDocument) {
       TranslatableDocument translatableDocument = TranslatableDocument(scheduleDocument, locale);
       String venueId = translatableDocument['venue_id'];
       String venueName, venueColor;

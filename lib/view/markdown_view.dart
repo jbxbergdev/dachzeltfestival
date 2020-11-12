@@ -19,7 +19,7 @@ class MarkdownView extends StatelessWidget {
           if (asyncSnapshot.hasData) {
             return Markdown(
               data: asyncSnapshot.data,
-              onTapLink: (url) => launch(url),
+              onTapLink: (text, href, title) => launch(href),
             );
           }
           return Container();

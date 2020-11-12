@@ -16,7 +16,7 @@ abstract class ConfigRepo {
 
 class ConfigRepoImpl extends ConfigRepo {
 
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final Authenticator _authenticator;
   final LocaleState _localeState;
 
@@ -25,7 +25,7 @@ class ConfigRepoImpl extends ConfigRepo {
   @override
   Stream<AppConfig> get appConfig {
     Stream<AppConfig> appConfigFromFirestore = Rx.combineLatest3(
-        _firestore.collection("configuration").document("app_config").snapshots(),
+        _firestore.collection("configuration").doc("app_config").snapshots(),
         PackageInfo.fromPlatform().asStream(),
         _localeState.locale,
         _mapConfig

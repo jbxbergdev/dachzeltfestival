@@ -35,7 +35,7 @@ class AppModule {
 
   @provide
   @singleton
-  MapDataRepo mapDataRepo(Firestore firestore, FirebaseStorage firebaseStorage, Authenticator authenticator, LocaleState localeState)  =>
+  MapDataRepo mapDataRepo(FirebaseFirestore firestore, FirebaseStorage firebaseStorage, Authenticator authenticator, LocaleState localeState)  =>
       MapDataRepoImpl(firestore, firebaseStorage, authenticator, localeState);
 
   @provide
@@ -43,14 +43,14 @@ class AppModule {
 
   @provide
   @singleton
-  ScheduleRepo scheduleRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState, MapDataRepo mapDataRepo) => ScheduleRepoImpl(firestore, authenticator, localeState, mapDataRepo);
+  ScheduleRepo scheduleRepo(FirebaseFirestore firestore, Authenticator authenticator, LocaleState localeState, MapDataRepo mapDataRepo) => ScheduleRepoImpl(firestore, authenticator, localeState, mapDataRepo);
 
   @provide
   ScheduleViewModel scheduleViewModel(ScheduleRepo scheduleRepo, PlaceSelectionInteractor placeSelectionInteractor) => ScheduleViewModel(scheduleRepo, placeSelectionInteractor);
 
   @provide
   @singleton
-  ConfigRepo configRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState) => ConfigRepoImpl(firestore, authenticator, localeState);
+  ConfigRepo configRepo(FirebaseFirestore firestore, Authenticator authenticator, LocaleState localeState) => ConfigRepoImpl(firestore, authenticator, localeState);
 
   @provide
   MainViewModel mainViewModel(ConfigRepo configRepo, PermissionRepo permissionRepo, NotificationRepo notificationRepo, PlaceSelectionInteractor placeSelectionInteractor) =>
@@ -58,7 +58,7 @@ class AppModule {
 
   @provide
   @singleton
-  CharityRepo charityRepo(Firestore firestore, Authenticator authenticator, LocaleState localeState) => CharityRepoImpl(firestore, authenticator, localeState);
+  CharityRepo charityRepo(FirebaseFirestore firestore, Authenticator authenticator, LocaleState localeState) => CharityRepoImpl(firestore, authenticator, localeState);
 
   @provide
   CharityViewModel charityViewModel(CharityRepo charityRepo) => CharityViewModel(charityRepo);
@@ -79,7 +79,7 @@ class AppModule {
 
   @provide
   @singleton
-  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, Firestore firestore, Authenticator authenticator, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
+  NotificationRepo notificationRepo(FirebaseMessaging firebaseMessaging, FirebaseFirestore firestore, Authenticator authenticator, FirebaseMessageParser firebaseMessageParser, LocaleState localeState) =>
       NotificationRepoImpl(firebaseMessaging, firestore, authenticator, firebaseMessageParser, localeState);
 
   @provide
@@ -87,14 +87,14 @@ class AppModule {
 
   @provide
   @singleton
-  EventInfoRepo eventInfoRepo(Authenticator authenticator, LocaleState localeState, Firestore firestore) => EventInfoRepoImpl(authenticator, firestore, localeState);
+  EventInfoRepo eventInfoRepo(Authenticator authenticator, LocaleState localeState, FirebaseFirestore firestore) => EventInfoRepoImpl(authenticator, firestore, localeState);
 
   @provide
   EventInfoViewModel eventInfoViewModel(EventInfoRepo eventInfoRepo) => EventInfoViewModel(eventInfoRepo);
 
   @provide
   @singleton
-  FeedRepo feedRepo(Authenticator authenticator, Firestore firestore) => FeedRepoImpl(firestore, authenticator);
+  FeedRepo feedRepo(Authenticator authenticator, FirebaseFirestore firestore) => FeedRepoImpl(firestore, authenticator);
 
   @provide
   FeedViewModel feedViewModel(FeedRepo feedRepo) => FeedViewModel(feedRepo);
@@ -117,7 +117,7 @@ class AppModule {
   }
 
   @provide
-  Firestore firestore() => Firestore.instance;
+  FirebaseFirestore firestore() => FirebaseFirestore.instance;
 
   @provide
   FirebaseStorage firebaseStorage() => FirebaseStorage.instance;

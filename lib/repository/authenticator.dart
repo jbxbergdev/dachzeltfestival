@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class Authenticator {
@@ -13,9 +14,8 @@ class AuthenticatorImpl extends Authenticator {
   BehaviorSubject<bool> _authenticationState = BehaviorSubject.seeded(false);
 
   AuthenticatorImpl(this._firebaseAuth) {
-    _firebaseAuth.currentUser().asStream()
-        .flatMap((user) => user != null ? Stream.value(user) : _firebaseAuth.signInAnonymously().asStream().map((authResult) => authResult.user))
-        .flatMap((user) => user != null ? _firebaseAuth.onAuthStateChanged.map((user) => user != null) : Stream.value(false))
+    _firebaseAuth.signInAnonymously().asStream()
+        .flatMap((userCredential) => userCredential?.user != null ? _firebaseAuth.authStateChanges().map((user) => user != null) : Stream.value(false))
         .listen((authenticated) => _authenticationState.value = authenticated);
   }
 

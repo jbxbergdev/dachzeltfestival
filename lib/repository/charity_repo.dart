@@ -13,7 +13,7 @@ abstract class CharityRepo {
 
 class CharityRepoImpl extends CharityRepo {
   
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final Authenticator _authenticator;
   final LocaleState _localeState;
 
@@ -24,7 +24,7 @@ class CharityRepoImpl extends CharityRepo {
   @override
   Stream<CharityConfig> get charityConfig {
     Stream<CharityConfig> charityConfigFromFirestore = Rx.combineLatest2(
-      _firestore.collection("configuration").document("charity_config").snapshots(),
+      _firestore.collection("configuration").doc("charity_config").snapshots(),
       _localeState.locale,
       _mapToCharityConfig
     );

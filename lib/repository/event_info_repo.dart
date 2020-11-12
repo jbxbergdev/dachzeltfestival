@@ -14,14 +14,14 @@ class EventInfoRepoImpl extends EventInfoRepo {
 
   final Authenticator _authenticator;
   final LocaleState _localeState;
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
 
   EventInfoRepoImpl(this._authenticator, this._firestore, this._localeState);
 
   @override
   Stream<String> get eventInfoMarkup {
     Stream<String> markdownFromFirestore = Rx.combineLatest2(
-        _firestore.collection('configuration').document('event_info_config').snapshots(),
+        _firestore.collection('configuration').doc('event_info_config').snapshots(),
         _localeState.locale,
         _mapMarkdown
     );

@@ -95,7 +95,7 @@ class More extends StatelessWidget {
                         ),
                         body: builder(),
                       )
-                  )),
+                  ),),
             ),
           ),
         ),

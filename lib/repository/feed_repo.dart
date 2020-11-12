@@ -7,16 +7,16 @@ abstract class FeedRepo {
 }
 
 class FeedRepoImpl extends FeedRepo {
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final Authenticator _authenticator;
 
   FeedRepoImpl(this._firestore, this._authenticator);
 
   @override
   Stream<String> get feedHtml {
-    Stream<String> htmlFromFirestore = _firestore.collection('configuration').document('feed_config')
+    Stream<String> htmlFromFirestore = _firestore.collection('configuration').doc('feed_config')
         .snapshots()
-        .map((documentSnapshot) => documentSnapshot.data['html'] as String)
+        .map((documentSnapshot) => documentSnapshot.data()['html'] as String)
         .where((html) => html != null);
     return _authenticator.authenticated.where((authenticated) => authenticated)
         .flatMap((_) => htmlFromFirestore);

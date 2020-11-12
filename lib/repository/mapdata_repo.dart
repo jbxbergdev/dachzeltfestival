@@ -30,7 +30,7 @@ class MapDataRepoImpl extends MapDataRepo {
   static const String _PREFERENCE_KEY_MAP_VERSION = "map_version";
   static const String _MAP_FILE_NAME = "map.geojson";
 
-  final Firestore _firestore;
+  final FirebaseFirestore _firestore;
   final FirebaseStorage _firebaseStorage;
   final Authenticator _authenticator;
   final LocaleState _localeState;
@@ -64,7 +64,7 @@ class MapDataRepoImpl extends MapDataRepo {
     if (_mapConfig == null) {
       // _mapConfig has multiple subscribers, so we use a BehaviorSubject to reduce Firestore reads
       _mapConfig = BehaviorSubject();
-      Stream<MapConfig> mapConfigFromFirestore = _firestore.collection(_FIRESTORE_COLLECTION_CONFIG).document(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots()
+      Stream<MapConfig> mapConfigFromFirestore = _firestore.collection(_FIRESTORE_COLLECTION_CONFIG).doc(_FIRESTORE_DOCUMENT_MAP_CONFIG).snapshots()
           // parse map configuration
           .map((snapshot) {
             GeoPoint initialCenter = snapshot["initial_center"];
@@ -96,11 +96,10 @@ class MapDataRepoImpl extends MapDataRepo {
         // filter for emissions where remote and local map versions are different
         .where((mapConfigPersistedVersion) => mapConfigPersistedVersion.item1.mapVersion != mapConfigPersistedVersion.item2)
         // get remote map StorageReference
-        .flatMap((mapConfigPersistedVersion) => _firebaseStorage.getReferenceFromUrl(mapConfigPersistedVersion.item1.mapUrl).asStream()
-          .map((storageReference) => Tuple2(storageReference, mapConfigPersistedVersion.item1.mapVersion)))
+        .map((mapConfigPersistedVersion) => Tuple2(_firebaseStorage.refFromURL(mapConfigPersistedVersion.item1.mapUrl),  mapConfigPersistedVersion.item1.mapVersion))
         // download map and then persist new map version
         .flatMap((storageReferenceRemoteVersion) {
-          return _localMapFile().then((file) => storageReferenceRemoteVersion.item1.writeToFile(file).future)
+          return _localMapFile().then((file) => storageReferenceRemoteVersion.item1.writeToFile(file))
             .then((_) => _persistMapVersion(storageReferenceRemoteVersion.item2)).asStream();
         });
     // read local map immediately and when a new map version was downloaded
