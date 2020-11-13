@@ -4,12 +4,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class EventInfoRepo {
   Stream<String> eventInfoMarkup;
 }
 
+@Singleton(as: EventInfoRepo)
 class EventInfoRepoImpl extends EventInfoRepo {
 
   final Authenticator _authenticator;

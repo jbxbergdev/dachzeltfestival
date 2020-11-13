@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:flutter/services.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class TextRepo {
@@ -9,6 +10,7 @@ abstract class TextRepo {
   Stream<String> feedbackMarkdown();
 }
 
+@Singleton(as: TextRepo)
 class TextRepoImpl extends TextRepo {
 
   static const String legal = 'assets/text/legalmarkdown';

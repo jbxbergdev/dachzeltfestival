@@ -1,49 +1,34 @@
-import 'package:dachzeltfestival/util/custom_markers_icons.dart';
-import 'package:dachzeltfestival/view/builders.dart';
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/view/main_viewmodel.dart';
+import 'package:dachzeltfestival/view/more/more.dart';
 import 'package:dachzeltfestival/view/notification/notification_dialog.dart';
+import 'package:dachzeltfestival/view/notification/notification_list.dart';
+import 'package:dachzeltfestival/view/schedule/schedule.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:inject/inject.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 
-typedef Provider<T> = T Function();
-
-@provide
-class MainWidgetBuilder {
-
-  final MainLevelBuilders _builders;
-  final Provider<MainViewModel> _vmProvider;
-
-  MainWidgetBuilder(this._builders, this._vmProvider);
-
-  MainWidget build() => MainWidget(_builders, _vmProvider);
-}
+import 'info/event_info.dart';
+import 'map/eventmap.dart';
 
 class MainWidget extends StatefulWidget {
 
-  final MainLevelBuilders _builders;
-  final Provider<MainViewModel> _vmProvider;
-
-  MainWidget(this._builders, this._vmProvider);
-
   @override
-  _MainWidgetState createState() => _MainWidgetState(_builders, _vmProvider());
+  _MainWidgetState createState() => _MainWidgetState(inject<MainViewModel>());
 }
 
 class _MainWidgetState extends State<MainWidget> {
 
-  final MainLevelBuilders _builders;
   final MainViewModel _mainViewModel;
   final PageStorageBucket pageStorageBucket = PageStorageBucket();
   int _selectedIndex = 0;
   static const TextStyle optionStyle = TextStyle(
       fontSize: 30, fontWeight: FontWeight.bold);
 
-  _MainWidgetState(this._builders, this._mainViewModel);
+  _MainWidgetState(this._mainViewModel);
 
   List<Widget> _pages;
 
@@ -55,11 +40,11 @@ class _MainWidgetState extends State<MainWidget> {
     initializeDateFormatting();
     _initNotificationHandling(context);
     _pages = <Widget>[
-      _builders.notificationListBuilder.build(PageStorageKey('NotificationList')),
-      _builders.eventMapBuilder.build(PageStorageKey('Map')),
-      _builders.scheduleBuilder.build(PageStorageKey('Schedule')),
-//      _builders.feedBuilder.build(PageStorageKey('Feed')),
-      _builders.infoBuilder.build((PageStorageKey('Info'))),
+      NotificationList(PageStorageKey('NotificationList')),
+      EventMap(PageStorageKey('Map')),
+      Schedule(PageStorageKey('Schedule')),
+//      Feed(PageStorageKey('Feed')),
+      More(PageStorageKey('Info')),
     ];
     _compositeSubscription.add(_mainViewModel.placeSelectionInteractor.selectedPlaceId
         .where((selectedPlaceId) => selectedPlaceId != null)

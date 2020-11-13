@@ -1,31 +1,18 @@
-import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/configuration/charity_config.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:inject/inject.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-typedef Provider<T> = T Function();
-
-@provide
-class CharityBuilder {
-  final Provider<CharityViewModel> _vmProvider;
-
-  CharityBuilder(this._vmProvider);
-
-  Charity build(Key key) => Charity(_vmProvider());
-}
 
 class Charity extends StatelessWidget {
 
-  final CharityViewModel _charityViewModel;
-
-  Charity(this._charityViewModel);
+  Charity(Key key): super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final charityViewModel = inject<CharityViewModel>();
     return StreamBuilder<CharityConfig>(
-      stream: _charityViewModel.charityConfig,
+      stream: charityViewModel.charityConfig,
       builder: (buildContext, snapshot) {
         if (snapshot.hasData) {
           return SingleChildScrollView(

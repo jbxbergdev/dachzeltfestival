@@ -9,6 +9,7 @@ import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
@@ -23,6 +24,7 @@ abstract class MapDataRepo {
   Stream<MapConfig> mapConfig();
 }
 
+@Singleton(as: MapDataRepo)
 class MapDataRepoImpl extends MapDataRepo {
 
   static const String _FIRESTORE_COLLECTION_CONFIG = "configuration";

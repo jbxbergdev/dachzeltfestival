@@ -7,10 +7,10 @@ import 'package:dachzeltfestival/repository/config_repo.dart';
 import 'package:dachzeltfestival/repository/notification_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
-@provide
+@injectable
 class MainViewModel {
   final ConfigRepo _configRepo;
   final PermissionRepo _permissionRepo;

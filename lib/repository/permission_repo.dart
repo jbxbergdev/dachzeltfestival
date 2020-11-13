@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -6,6 +7,7 @@ abstract class PermissionRepo {
   Stream<bool> locationPermissionState;
 }
 
+@Singleton(as: PermissionRepo)
 class PermissionRepoImpl extends PermissionRepo {
 
   final PermissionHandler _permissionHandler = PermissionHandler();

@@ -1,38 +1,17 @@
 import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/exhibitor/exhibitors.dart';
-import 'package:dachzeltfestival/view/feedback/feedback.dart';
 import 'package:dachzeltfestival/view/info/event_info.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
+import 'package:dachzeltfestival/view/feedback/feedback.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 
 import '../routes.dart';
 
-@provide
-class MoreBuilder {
-
-  final CharityBuilder _charityBuilder;
-  final LegalBuilder _legalBuilder;
-  final FeedbackBuilder _feedbackBuilder;
-  final EventInfoBuilder _eventInfoBuilder;
-  final ExhibitorsBuilder _exhibitorsBuilder;
-
-  MoreBuilder(this._charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder, this._exhibitorsBuilder);
-
-  More build(Key key) => More(key, _charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder, this._exhibitorsBuilder);
-}
-
 class More extends StatelessWidget {
 
-  final CharityBuilder _charityBuilder;
-  final LegalBuilder _legalBuilder;
-  final FeedbackBuilder _feedbackBuilder;
-  final EventInfoBuilder _eventInfoBuilder;
-  final ExhibitorsBuilder _exhibitorsBuilder;
-
-  More(Key key, this._charityBuilder, this._legalBuilder, this._feedbackBuilder, this._eventInfoBuilder, this._exhibitorsBuilder): super(key: key);
+  More(Key key): super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -51,20 +30,20 @@ class More extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(top: 4.0),
                 child: _buildListItem(context, Icons.info_outline, AppString.eventInfo,
-                      () => _eventInfoBuilder.build(PageStorageKey('EventInfo'))),
+                      () => EventInfo(PageStorageKey('EventInfo'))),
               );
             case 1:
               return _buildListItem(context, Icons.group, AppString.vendors,
-                      () => _exhibitorsBuilder.build(PageStorageKey('Exhibitors')));
+                      () => Exhibitors(PageStorageKey('Exhibitors')));
             case 2:
               return _buildListItem(context, Icons.favorite_border, AppString.navItemDonate,
-                      () => _charityBuilder.build(PageStorageKey('Charity')));
+                      () => Charity(PageStorageKey('Charity')));
             case 3:
               return _buildListItem(context, Icons.send, AppString.feedback,
-                      () => _feedbackBuilder.build(PageStorageKey('Feedback')));
+                      () => FeedbackWidget(PageStorageKey('Feedback')));
             case 4:
               return _buildListItem(context, Icons.subject, AppString.legal,
-                      () => _legalBuilder.build(PageStorageKey('Legal')));
+                      () => Legal(PageStorageKey('Legal')));
             case 5:
               return Container();
             default:

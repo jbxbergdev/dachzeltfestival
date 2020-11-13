@@ -1,4 +1,6 @@
 
+import 'package:injectable/injectable.dart';
+
 abstract class FirebaseMessageParser {
   String parseDocumentId(Map<String, dynamic> message);
 }

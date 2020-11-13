@@ -1,35 +1,23 @@
 
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/view/notification/notification_list_viewmodel.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/model/notification/notification.dart' as notification;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:intl/intl.dart';
 
-typedef Provider<T> = T Function();
-
-@provide
-class NotificationListBuilder {
-   final Provider<NotificationListViewModel> _vmProvider;
-
-   NotificationListBuilder(this._vmProvider);
-
-   NotificationList build(Key key) => NotificationList(key, _vmProvider());
-}
-
 class NotificationList extends StatelessWidget {
 
-  final NotificationListViewModel _viewModel;
-
-  NotificationList(Key key, this._viewModel): super(key: key);
+  NotificationList(Key key): super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = inject<NotificationListViewModel>();
     return StreamBuilder<List<notification.Notification>>(
-        stream: _viewModel.notifications().sortPersistentFirst(),
+        stream: viewModel.notifications().sortPersistentFirst(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             ThemeData theme = Theme.of(context);

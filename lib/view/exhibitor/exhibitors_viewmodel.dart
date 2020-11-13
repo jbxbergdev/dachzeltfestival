@@ -2,9 +2,9 @@
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
 import 'package:dachzeltfestival/model/geojson/place_category.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class ExhibitorsViewModel {
 
   final MapDataRepo _mapDataRepo;

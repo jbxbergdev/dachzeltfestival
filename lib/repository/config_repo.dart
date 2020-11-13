@@ -5,6 +5,7 @@ import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/configuration/app_config.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
+import 'package:injectable/injectable.dart';
 import 'package:package_info/package_info.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -14,6 +15,7 @@ abstract class ConfigRepo {
   Sink<Locale> localeSink;
 }
 
+@Singleton(as: ConfigRepo)
 class ConfigRepoImpl extends ConfigRepo {
 
   final FirebaseFirestore _firestore;

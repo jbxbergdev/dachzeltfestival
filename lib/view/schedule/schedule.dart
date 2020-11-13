@@ -1,9 +1,9 @@
 import 'package:bubble_tab_indicator/bubble_tab_indicator.dart';
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/schedule/schedule_item_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:inject/inject.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 import 'schedule_viewmodel.dart';
@@ -12,48 +12,37 @@ import 'package:intl/intl.dart';
 import 'package:flutter_sticky_header/flutter_sticky_header.dart';
 import 'dart:collection';
 
-typedef Provider<T> = T Function();
-
-@provide
-class ScheduleBuilder {
-
-  final Provider<ScheduleViewModel> _vmProvider;
-
-  ScheduleBuilder(this._vmProvider);
-
-  Schedule build(Key key) => Schedule(key, _vmProvider());
-}
-
 class Schedule extends StatefulWidget {
 
-  final ScheduleViewModel _scheduleViewModel;
-
-  Schedule(Key key, this._scheduleViewModel) : super(key: key);
+  Schedule(Key key) : super(key: key);
 
   @override
-  _ScheduleState createState() => _ScheduleState();
+  _ScheduleState createState() => _ScheduleState(inject<ScheduleViewModel>());
 
 }
 
 class _ScheduleState extends State<Schedule> {
 
+  final ScheduleViewModel _viewModel;
   final BehaviorSubject<DateTime> _currentTime = BehaviorSubject();
   final CompositeSubscription _compositeSubscription = CompositeSubscription();
   BehaviorSubject<int> _selectedPageIndex = BehaviorSubject.seeded(0);
   List<Widget> _tabList;
   bool _firstLayout = true;
 
+  _ScheduleState(this._viewModel);
+
   @override
   void initState() {
     super.initState();
     _compositeSubscription.add(
-        widget._scheduleViewModel.currentTimeMinuteInterval().listen((time) => _currentTime.add(time)));
+        _viewModel.currentTimeMinuteInterval().listen((time) => _currentTime.add(time)));
   }
 
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Map<DateTime, Map<DateTime, _ItemsWithEndTime>>>(
-      stream: widget._scheduleViewModel.observeSchedule().asyncMap(_buildScheduleMaps),
+      stream: _viewModel.observeSchedule().asyncMap(_buildScheduleMaps),
       builder: (BuildContext context, AsyncSnapshot<Map<DateTime, Map<DateTime, _ItemsWithEndTime>>> asyncSnapshot) {
         if (asyncSnapshot.hasData && asyncSnapshot.data.isNotEmpty) {
           return _buildTabLayout(asyncSnapshot.data, context);
@@ -271,7 +260,7 @@ class _ScheduleState extends State<Schedule> {
                             child: Material(
                               color: Colors.transparent,
                               child: InkWell(
-                                onTap: () => showScheduleItemDialog(context, scheduleItem, widget._scheduleViewModel.placeSelectionInteractor),
+                                onTap: () => showScheduleItemDialog(context, scheduleItem, _viewModel.placeSelectionInteractor),
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: Column(

@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:assorted_layout_widgets/assorted_layout_widgets.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/icon_map.dart';
@@ -16,33 +17,18 @@ import 'package:tuple/tuple.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'eventmap_viewmodel.dart';
 import 'geojson_gmaps_converter.dart';
-import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart' as geojson;
 import 'package:rxdart/rxdart.dart';
 import 'map_settings.dart';
 import 'package:dachzeltfestival/model/geojson/place_category.dart';
 
-typedef Provider<T> = T Function();
-
-@provide
-class EventMapBuilder {
-  final Provider<EventMapViewModel> _vmProvider;
-  final FeatureConverter _featureConverter;
-  EventMapBuilder(this._vmProvider, this._featureConverter);
-
-  EventMap build(Key key) => EventMap(key, _vmProvider, _featureConverter);
-}
-
 class EventMap extends StatefulWidget {
 
-  final Provider<EventMapViewModel> _vmProvider;
-  final FeatureConverter _featureConverter;
-
-  EventMap(Key key, this._vmProvider, this._featureConverter): super(key: key);
+  EventMap(Key key): super(key: key);
 
   @override
   State<StatefulWidget> createState() {
-    return _EventMapState(_vmProvider(), _featureConverter);
+    return _EventMapState(inject<EventMapViewModel>(), inject<FeatureConverter>());
   }
 }
 

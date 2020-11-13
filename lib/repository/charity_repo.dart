@@ -5,12 +5,14 @@ import 'package:dachzeltfestival/i18n/locale_state.dart';
 import 'package:dachzeltfestival/model/configuration/charity_config.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class CharityRepo {
   Stream<CharityConfig> charityConfig;
 }
 
+@Singleton(as: CharityRepo)
 class CharityRepoImpl extends CharityRepo {
   
   final FirebaseFirestore _firestore;

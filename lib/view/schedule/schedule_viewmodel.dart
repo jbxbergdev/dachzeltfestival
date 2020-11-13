@@ -1,10 +1,9 @@
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
-import 'package:inject/inject.dart';
 import 'package:dachzeltfestival/repository/schedule_repo.dart';
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class ScheduleViewModel {
   final ScheduleRepo _scheduleRepo;
   final PlaceSelectionInteractor _placeSelectionInteractor;

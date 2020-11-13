@@ -5,11 +5,11 @@ import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/point_category_icons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart' as googlemaps;
 import 'package:dachzeltfestival/model/geojson/feature.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:tuple/tuple.dart';
 
-@provide
+@injectable
 class FeatureConverter {
 
   static const double SELECTED_MARKER_Z_INDEX = 100;

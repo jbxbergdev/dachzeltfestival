@@ -1,10 +1,10 @@
 import 'package:dachzeltfestival/model/configuration/charity_config.dart';
 import 'package:dachzeltfestival/repository/charity_repo.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
-@provide
+@injectable
 class CharityViewModel {
 
   final CharityRepo _charityRepo;

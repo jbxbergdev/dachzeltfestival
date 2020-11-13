@@ -3,10 +3,9 @@ import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
 import 'package:dachzeltfestival/repository/permission_repo.dart';
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
-import 'package:inject/inject.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class EventMapViewModel {
 
   final MapDataRepo _mapDataRepo;

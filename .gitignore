@@ -80,3 +80,8 @@
 **/google-services.json
 **/Secrets.plist
 **/secrets.properties
+/.flutter-plugins-dependencies
+/gradle.properties
+/android/settings_aar.gradle
+/lib/di/injector.config.dart
+/ios/Flutter/flutter_export_environment.sh

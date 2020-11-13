@@ -8,10 +8,9 @@ import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
-@provide
 @singleton
 class PointCategoryIcons {
 

@@ -8,6 +8,7 @@ import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/mapdata_repo.dart';
 import 'package:dachzeltfestival/repository/translatable_document.dart';
 import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 
@@ -16,6 +17,7 @@ abstract class ScheduleRepo {
   Stream<List<ScheduleItem>> observeSchedule();
 }
 
+@Singleton(as: ScheduleRepo)
 class ScheduleRepoImpl extends ScheduleRepo {
 
   static const String _FIRESTORE_COLLECTION_SCHEDULE = "schedule";

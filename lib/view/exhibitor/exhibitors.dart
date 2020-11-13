@@ -1,41 +1,27 @@
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/geojson/feature.dart';
 import 'package:dachzeltfestival/model/geojson/place_category.dart';
 import 'package:dachzeltfestival/view/exhibitor/exhibitors_viewmodel.dart';
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:inject/inject.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-typedef Provider<T> = T Function();
-
-@provide
-class ExhibitorsBuilder {
-  final Provider<ExhibitorsViewModel> _vmProvider;
-  final PlaceSelectionInteractor _placeSelectionInteractor;
-
-  ExhibitorsBuilder(this._vmProvider, this._placeSelectionInteractor);
-
-  Exhibitors build(Key key) => Exhibitors(_vmProvider(), _placeSelectionInteractor);
-}
 
 class Exhibitors extends StatelessWidget {
 
-  final ExhibitorsViewModel _viewModel;
-  final PlaceSelectionInteractor _placeSelectionInteractor;
-
   static const String _adDisclaimerUrl = 'https://dachzeltnomaden.com/werbepaket/';
 
-  Exhibitors(this._viewModel, this._placeSelectionInteractor);
+  Exhibitors(Key key): super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final viewmodel = inject<ExhibitorsViewModel>();
     return StreamBuilder<List<Feature>>(
-      stream: _viewModel.exhibitors(),
+      stream: viewmodel.exhibitors(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           return Container(
@@ -52,7 +38,7 @@ class Exhibitors extends StatelessWidget {
                     elevation: 2.0,
                     child: Material(
                       child: InkWell(
-                        onTap: () => _placeSelectionInteractor.selectedPlaceId.add(item.properties.placeId),
+                        onTap: () => inject<PlaceSelectionInteractor>().selectedPlaceId.add(item.properties.placeId),
                         child: item.properties.mappedCategory == PlaceCategory.PREMIUM_EXHIBITOR ? _premiumExhibitor(item, context) : _exhibitor(item),
                       ),
                     ),

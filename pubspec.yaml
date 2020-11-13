@@ -51,21 +51,14 @@ dependencies:
   cached_network_image: ^2.3.3
   assorted_layout_widgets: ^3.0.0
   webview_flutter: ^1.0.7
-
-  inject:
-    git:
-      url: git@github.com:jbxbergdev/inject.dart.git
-      path: package/inject
+  injectable: ^1.0.5
+  get_it: ^5.0.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^1.7.2
-  inject_generator:
-    git:
-      url: git@github.com:jbxbergdev/inject.dart.git
-      path: package/inject_generator
-
+  build_runner: ^1.10.4
+  injectable_generator: ^1.0.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

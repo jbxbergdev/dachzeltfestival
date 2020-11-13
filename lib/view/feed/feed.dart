@@ -1,32 +1,21 @@
 
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/view/feed/feed_viewmodel.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
-import 'package:inject/inject.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-typedef Provider<T> = T Function();
-
-@provide
-class FeedBuilder {
-  final Provider<FeedViewModel> _vmProvider;
-
-  FeedBuilder(this._vmProvider);
-
-  Feed build(Key key) => Feed(_vmProvider(), key);
-}
-
 class Feed extends StatelessWidget {
-  final FeedViewModel _viewModel;
 
-  Feed(this._viewModel, Key key) : super(key: key);
+  Feed(Key key) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    final viewModel = inject<FeedViewModel>();
     return StreamBuilder<String>(
-      stream: _viewModel.feedHtml,
+      stream: viewModel.feedHtml,
       builder: (context, snapshot) {
         if (!snapshot.hasData) {
           return Container();

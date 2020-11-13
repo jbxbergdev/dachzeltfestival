@@ -1,9 +1,8 @@
 
 import 'package:dachzeltfestival/repository/legal_repo.dart';
-import 'package:inject/inject.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class FeedbackViewModel {
 
   final TextRepo _textRepo;

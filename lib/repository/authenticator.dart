@@ -1,11 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
 abstract class Authenticator {
   Stream<bool> authenticated;
 }
 
+@Singleton(as: Authenticator)
 class AuthenticatorImpl extends Authenticator {
 
   final FirebaseAuth _firebaseAuth;

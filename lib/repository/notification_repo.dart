@@ -6,6 +6,7 @@ import 'package:dachzeltfestival/i18n/translations.dart';
 import 'package:dachzeltfestival/repository/authenticator.dart';
 import 'package:dachzeltfestival/repository/firebase_message_parser.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:dachzeltfestival/model/notification/notification.dart' as notification;
 
@@ -16,6 +17,7 @@ abstract class NotificationRepo {
   Stream<List<notification.Notification>> allNotifications();
 }
 
+@Singleton(as: NotificationRepo)
 class NotificationRepoImpl extends NotificationRepo {
 
   final FirebaseMessaging _firebaseMessaging;

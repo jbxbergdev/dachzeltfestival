@@ -1,8 +1,8 @@
 
 import 'package:dachzeltfestival/repository/feed_repo.dart';
-import 'package:inject/inject.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class FeedViewModel {
 
   final FeedRepo _feedRepo;

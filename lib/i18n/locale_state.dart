@@ -1,7 +1,9 @@
 import 'dart:ui';
 
+import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
 
+@singleton
 class LocaleState {
   // ignore: close_sinks
   final BehaviorSubject<Locale> _localeSubject = BehaviorSubject.seeded(null);

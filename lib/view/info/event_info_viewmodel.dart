@@ -1,8 +1,7 @@
 import 'package:dachzeltfestival/repository/event_info_repo.dart';
-import 'package:inject/inject.dart';
-import 'package:rxdart/rxdart.dart';
+import 'package:injectable/injectable.dart';
 
-@provide
+@injectable
 class EventInfoViewModel {
   final EventInfoRepo _eventInfoRepo;
 
