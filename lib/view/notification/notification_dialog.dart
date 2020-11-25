@@ -33,11 +33,11 @@ void showNotificationDialog(notification.Notification notification, BuildContext
           ),
           notification.url != null ?
           FlatButton(
-            color: colorScheme.primary,
+            color: Theme.of(context).colorScheme.primary,
             child: Text(
               context.translations[AppString.notificationDialogOpenLink],
               style: TextStyle(
-                color: colorScheme.background,
+                color: Theme.of(context).colorScheme.background,
               ),
             ),
             onPressed: () {

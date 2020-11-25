@@ -33,6 +33,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appTheme = inject<AppTheme>();
     return MaterialApp(
       onGenerateTitle: (context) => context.translations[AppString.appName],
       navigatorObservers: <NavigatorObserver>[
@@ -46,7 +47,8 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
         DefaultCupertinoLocalizations.delegate,
       ],
-      theme: appTheme,
+      theme: appTheme.light,
+      darkTheme: appTheme.dark,
     );
   }
 }

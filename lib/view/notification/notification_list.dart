@@ -22,7 +22,6 @@ class NotificationList extends StatelessWidget {
           if (snapshot.hasData) {
             ThemeData theme = Theme.of(context);
             return Container(
-              color: Colors.grey[100],
               child: ListView.builder(
                 itemCount: snapshot.data.length,
                 itemBuilder: (context, index) {
@@ -36,7 +35,7 @@ class NotificationList extends StatelessWidget {
                       child: ClipRRect(
                         borderRadius: BorderRadius.all(Radius.circular(4.0)),
                         child: Container(
-                          color: item.persistent ? theme.colorScheme.primary.withOpacity(0.15) : theme.colorScheme.background,
+                          color: item.persistent ? theme.colorScheme.primary.withOpacity(0.15) : theme.cardColor,
                           child: Padding(
                             padding: const EdgeInsets.only(top: 4.0),
                             child: Column(
@@ -52,9 +51,9 @@ class NotificationList extends StatelessWidget {
                                           alignment: Alignment.centerLeft,
                                           child: Text(
                                             _formatTimestamp(item.timestamp, context),
-                                            style: TextStyle(
+                                            style: /*TextStyle(
                                               color: Colors.grey[600],
-                                            ),
+                                            )*/ theme.textTheme.caption,
                                           ),
                                         ),
                                       ),

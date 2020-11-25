@@ -15,8 +15,9 @@ import 'package:rxdart/rxdart.dart';
 class PointCategoryIcons {
 
   final BehaviorSubject<Map<PlaceCategory, SelectionBitmapDescriptors>> _bitmapSubject = BehaviorSubject.seeded(null);
+  final AppTheme _appTheme;
 
-  PointCategoryIcons() {
+  PointCategoryIcons(this._appTheme) {
     _createBitmapMapping().then((mapping) => _bitmapSubject.value = mapping);
   }
 
@@ -29,8 +30,8 @@ class PointCategoryIcons {
 
     Map<PlaceCategory, SelectionBitmapDescriptors> bitmapMap = HashMap();
     for (MapEntry<PlaceCategory, IconInfo> entry in iconDataMap.entries) {
-      final unselected = await unselectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.primary, Colors.white);
-      final selected = await selectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, appTheme.colorScheme.secondary, Colors.white);
+      final unselected = await unselectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, _appTheme.current.colorScheme.primary, Colors.white);
+      final selected = await selectedGenerator._createBitmapFromIconData(entry.value.icon, entry.value.color, _appTheme.current.colorScheme.secondary, Colors.white);
       bitmapMap[entry.key] = SelectionBitmapDescriptors(selected, unselected);
     }
     return bitmapMap;

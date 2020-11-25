@@ -71,13 +71,10 @@ class _MainWidgetState extends State<MainWidget> {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                            text: "#dzf",
-                            style: TextStyle(
-                                color: Colors.black
-                            )
+                            text: "#dzn",
                         ),
                         TextSpan(
-                            text: "21",
+                            text: "app",
                             style: TextStyle(
                                 color: Theme
                                     .of(context)
