@@ -40,8 +40,6 @@ class PointCategoryIcons {
 
 class _BitmapGenerator {
 
-  final BehaviorSubject<Map<PlaceCategory, BitmapDescriptor>> _bitmapSubject = BehaviorSubject.seeded(null);
-
   final double _rectSize;
   double _circleStrokeWidth;
   double _circleOffset;

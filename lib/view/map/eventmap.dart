@@ -117,9 +117,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             onPressed: _startNavigationApp,
             child: Icon(
               Icons.directions_car,
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).colorScheme.background,
             ),
-            backgroundColor: Colors.grey[100],
+            backgroundColor: Theme.of(context).primaryColor,
           ),
         ),
         SizedBox.expand(

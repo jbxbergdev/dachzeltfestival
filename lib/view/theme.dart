@@ -13,10 +13,10 @@ class AppTheme with WidgetsBindingObserver {
 
   final ColorScheme _lightColors = ColorScheme(
       brightness: Brightness.light, 
-      primary: Color(0xFF61CE70),
-      primaryVariant: Color(0xFF3D8720),
-      secondary: Color(0xFFF9847A),
-      secondaryVariant: Color(0xFFC2544E),
+      primary: Color(0xFF76ABFC),
+      primaryVariant: Color(0xFF3D7CC9),
+      secondary: Color(0xFFFFA16A),
+      secondaryVariant: Color(0xFF944511),
       surface: Colors.white,
       background: Colors.white,
       error: Colors.red,
@@ -28,10 +28,10 @@ class AppTheme with WidgetsBindingObserver {
   
   final ColorScheme _darkColors = ColorScheme(
       brightness: Brightness.dark,
-      primary: Color(0xFF61CE70),
-      primaryVariant: Color(0xFF3D8720),
-      secondary: Color(0xFFF9847A),
-      secondaryVariant: Color(0xFFC2544E),
+      primary: Color(0xFF76ABFC),
+      primaryVariant: Color(0xFF3D7CC9),
+      secondary: Color(0xFFFFA16A),
+      secondaryVariant: Color(0xFF944511),
       surface: Colors.black,
       background: Colors.grey[850],
       error: Colors.red,
@@ -65,7 +65,7 @@ class AppTheme with WidgetsBindingObserver {
       case Brightness.light:
         return light;
     }
-    throw Exception();
+    throw Exception("Unsupported Brightness value: $_platformBrightness");
   }
 
   @override
