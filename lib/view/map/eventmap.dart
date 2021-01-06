@@ -8,6 +8,7 @@ import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/configuration/map_config.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/map/icon_map.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter/foundation.dart';
@@ -61,10 +62,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-
     _layoutDone.add(false);
     _mapInitialized.add(false);
-
     _listenToZoomRequests();
   }
 
@@ -80,6 +79,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _widgetHeightSubject.add(context.size.height);
     });
     _widgetHeightSubject.add(null);
+
+    final appTheme = inject<AppTheme>();
 
     return Stack(
       children: <Widget>[
@@ -117,9 +118,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             onPressed: _startNavigationApp,
             child: Icon(
               Icons.directions_car,
-              color: Theme.of(context).colorScheme.background,
+              color: appTheme.current.colorScheme.background,
             ),
-            backgroundColor: Theme.of(context).primaryColor,
+            backgroundColor: appTheme.current.primaryColor,
           ),
         ),
         SizedBox.expand(

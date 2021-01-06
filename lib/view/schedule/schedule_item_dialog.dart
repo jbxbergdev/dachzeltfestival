@@ -1,6 +1,8 @@
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/schedule/schedule_item.dart';
 import 'package:dachzeltfestival/util/utils.dart';
 import 'package:dachzeltfestival/view/place_selection_interactor.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -12,6 +14,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
       barrierDismissible: true,
       builder: (buildContext)
   {
+    final appTheme = inject<AppTheme>();
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(4.0))),
       child: Column(
@@ -74,7 +77,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
                       child: Icon(
                         Icons.place,
                         size: 16.0,
-                        color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.black,
+                        color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : appTheme.current.colorScheme.onBackground,
                       ),
                     ),
                     Container(
@@ -84,7 +87,7 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
                           style: TextStyle(
                               fontSize: 16.0,
                               fontWeight: FontWeight.w300,
-                              color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : Colors.black,
+                              color: scheduleItem.color != null ? hexToColor(scheduleItem.color) : appTheme.current.colorScheme.onBackground,
                           ),
                         ),
                       ),
