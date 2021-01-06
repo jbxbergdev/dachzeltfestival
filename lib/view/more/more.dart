@@ -1,8 +1,10 @@
+import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/view/charity/charity.dart';
 import 'package:dachzeltfestival/view/exhibitor/exhibitors.dart';
 import 'package:dachzeltfestival/view/info/event_info.dart';
 import 'package:dachzeltfestival/view/legal/legal.dart';
 import 'package:dachzeltfestival/view/feedback/feedback.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
@@ -55,8 +57,9 @@ class More extends StatelessWidget {
   }
 
   Widget _buildListItem(BuildContext context, IconData icon, AppString title, Widget builder()) {
+    final appTheme = inject<AppTheme>();
     return Container(
-      color: Theme.of(context).colorScheme.background,
+      color: appTheme.current.colorScheme.background,
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -68,11 +71,20 @@ class More extends StatelessWidget {
               title: Text(context.translations[title]),
               onTap: () => Navigator.of(context).push(
                   SlideInRoute(
-                      page: Scaffold(
-                        appBar: AppBar(
-                          title: Text(context.translations[title]),
+                      page: Material(
+                        child: Scaffold(
+                          appBar: AppBar(
+                            brightness: appTheme.platformBrightness,
+                            iconTheme: appTheme.current.iconTheme,
+                            title: Text(
+                              context.translations[title],
+                              style: TextStyle(
+                                color: appTheme.current.colorScheme.onBackground
+                              ),
+                            ),
+                          ),
+                          body: builder(),
                         ),
-                        body: builder(),
                       )
                   ),),
             ),

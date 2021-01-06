@@ -68,6 +68,8 @@ class AppTheme with WidgetsBindingObserver {
     throw Exception("Unsupported Brightness value: $_platformBrightness");
   }
 
+  Brightness get platformBrightness => _platformBrightness;
+
   @override
   void didChangePlatformBrightness() {
     _platformBrightness = WidgetsBinding.instance.window.platformBrightness;

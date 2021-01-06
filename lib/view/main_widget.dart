@@ -10,8 +10,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'theme.dart';
 
-import 'info/event_info.dart';
 import 'map/eventmap.dart';
 
 class MainWidget extends StatefulWidget {
@@ -54,12 +54,14 @@ class _MainWidgetState extends State<MainWidget> {
   @override
   Widget build(BuildContext context) {
     _mainViewModel.localeSink.add(Localizations.localeOf(context));
+    final appTheme = inject<AppTheme>();
     return StreamBuilder<AppConfig>(
         stream: _mainViewModel.appConfig,
         builder: (context, snapshot) {
           bool versionSupported = snapshot.data?.versionSupported != false;
           return  Scaffold(
               appBar: AppBar(
+                brightness: appTheme.platformBrightness,
                 title: RichText(
                   text: TextSpan(
                       style: GoogleFonts.adventPro(
@@ -73,15 +75,14 @@ class _MainWidgetState extends State<MainWidget> {
                         TextSpan(
                           text: "#dzn",
                           style: TextStyle(
-                            color: Theme.of(context)
+                            color: appTheme.current
                                 .colorScheme.onBackground
                           )
                         ),
                         TextSpan(
                             text: "app",
                             style: TextStyle(
-                                color: Theme
-                                    .of(context)
+                                color: appTheme.current
                                     .primaryColor
                             )
                         )
@@ -93,7 +94,8 @@ class _MainWidgetState extends State<MainWidget> {
                   child: Padding(
                     padding: const EdgeInsets.only(
                         left: 16.0, top: 8.0, bottom: 8.0),
-                    child: Image.asset('assets/images/ic_logo.png'),
+                    child: Image.asset(appTheme.current.brightness == Brightness.dark
+                        ? 'assets/images/ic_logo_dark.png' : 'assets/images/ic_logo_light.png'),
                   ),
                 ),
               ),

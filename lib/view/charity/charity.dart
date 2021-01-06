@@ -1,6 +1,7 @@
 import 'package:dachzeltfestival/di/injector.dart';
 import 'package:dachzeltfestival/model/configuration/charity_config.dart';
 import 'package:dachzeltfestival/view/charity/charity_viewmodel.dart';
+import 'package:dachzeltfestival/view/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -10,6 +11,7 @@ class Charity extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appTheme = inject<AppTheme>();
     final charityViewModel = inject<CharityViewModel>();
     return StreamBuilder<CharityConfig>(
       stream: charityViewModel.charityConfig,
@@ -62,7 +64,7 @@ class Charity extends StatelessWidget {
                           snapshot.data.explanationText,
                           style: TextStyle (
                             fontSize: 16,
-                            color: Colors.grey[800]
+                            color: appTheme.current.colorScheme.onBackground
                           ),
                         ),
                       ),
