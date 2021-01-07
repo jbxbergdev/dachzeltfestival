@@ -48,6 +48,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   BehaviorSubject<bool> _layoutDone = BehaviorSubject.seeded(false);
   BehaviorSubject<int> _detailLevel = BehaviorSubject.seeded(null);
   CompositeSubscription _zoomCompositeSubscription = CompositeSubscription();
+  AppTheme _appTheme = inject<AppTheme>();
 
   static const double _headerHeightPx = 80.0;
   static const double _teaserHeightPx = 56.0;
@@ -79,8 +80,6 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       _widgetHeightSubject.add(context.size.height);
     });
     _widgetHeightSubject.add(null);
-
-    final appTheme = inject<AppTheme>();
 
     return Stack(
       children: <Widget>[
@@ -118,9 +117,9 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
             onPressed: _startNavigationApp,
             child: Icon(
               Icons.directions_car,
-              color: appTheme.current.colorScheme.background,
+              color: _appTheme.current.colorScheme.background,
             ),
-            backgroundColor: appTheme.current.primaryColor,
+            backgroundColor: _appTheme.current.primaryColor,
           ),
         ),
         SizedBox.expand(
@@ -142,7 +141,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   return ClipRRect(
                     borderRadius: BorderRadius.only(topLeft: Radius.circular(16.0), topRight: Radius.circular(16.0)),
                     child: Container(
-                      decoration: BoxDecoration(color: Colors.white),
+                      decoration: BoxDecoration(color: _appTheme.current.colorScheme.background),
                       child: ListView(
                         key: listKey,
                         controller: scrollController,
@@ -200,7 +199,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
       child: Container(
         height: _headerHeightPx,
         decoration: BoxDecoration(
-          color: (feature.properties.fill != null ? hexToColor(feature.properties.fill) : Theme.of(context).colorScheme.primary).withOpacity(0.2),
+          color: feature.properties.fill != null ? hexToColor(feature.properties.fill) : _appTheme.current.colorScheme.primary.withOpacity(0.5),
         ),
         child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -216,6 +215,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                       child: AutoSizeText(
                         feature.properties?.name ?? "",
                         style: TextStyle(
+                            color: Colors.black,
                             fontSize: 40,
                             fontWeight: FontWeight.w300
                         ),
