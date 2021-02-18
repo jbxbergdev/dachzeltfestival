@@ -361,6 +361,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.0"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.11"
   flutter_sticky_header:
     dependency: "direct main"
     description:
@@ -402,12 +409,17 @@ packages:
   google_maps_flutter:
     dependency: "direct main"
     description:
-      path: "packages/google_maps_flutter"
-      ref: "feature/empty_map_workaround"
-      resolved-ref: "4d05f6ae02c74ae5e38d06187b8924ebb2a0cb09"
-      url: "git@github.com:jbxbergdev/plugins.git"
-    source: git
-    version: "0.5.21+15"
+      name: google_maps_flutter
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.0"
+  google_maps_flutter_platform_interface:
+    dependency: transitive
+    description:
+      name: google_maps_flutter_platform_interface
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.2.0"
   graphs:
     dependency: transitive
     description:

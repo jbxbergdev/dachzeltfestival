@@ -33,7 +33,7 @@ class EventMap extends StatefulWidget {
   }
 }
 
-class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin {
+class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
 
   GoogleMapController _googleMapController;
   final EventMapViewModel _eventMapViewModel;
@@ -63,9 +63,18 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _layoutDone.add(false);
     _mapInitialized.add(false);
     _listenToZoomRequests();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      _googleMapController.setMapStyle("[]");
+    }
   }
 
   @override
@@ -200,6 +209,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
         height: _headerHeightPx,
         decoration: BoxDecoration(
           color: feature.properties.fill != null ? hexToColor(feature.properties.fill) : _appTheme.current.colorScheme.primary.withOpacity(0.5),
+
         ),
         child: Padding(
             padding: const EdgeInsets.symmetric(
@@ -438,6 +448,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _compositeSubscription.clear();
     super.dispose();
   }

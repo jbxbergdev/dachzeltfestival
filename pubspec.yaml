@@ -21,11 +21,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   rxdart: ^0.24.1
-  google_maps_flutter:
-    git:
-      url: git@github.com:jbxbergdev/plugins.git
-      path: packages/google_maps_flutter
-      ref: feature/empty_map_workaround
+  google_maps_flutter: ^1.2.0
   shared_preferences: 0.5.12+4
   firebase_core: ^0.5.2
   cloud_firestore: ^0.14.3
