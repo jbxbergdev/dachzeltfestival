@@ -83,6 +83,11 @@ class NotificationRepoImpl extends NotificationRepo {
 
 extension _NotificationParser on DocumentSnapshot {
   notification.Notification get asNotification =>
-      notification.Notification(data()['title'], data()['message'], data()['url'], (data()['timestamp'] as Timestamp).toDate(), data()['persistent'] ?? false);
+      notification.Notification( title: data()['title'],
+          message: data()['message'],
+          url: data()['url'],
+          linkText: data()['link_text'],
+          timestamp: (data()['timestamp'] as Timestamp).toDate(),
+          persistent: data()['persistent'] ?? false);
 }
 

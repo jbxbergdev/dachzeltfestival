@@ -35,7 +35,7 @@ void showNotificationDialog(notification.Notification notification, BuildContext
           FlatButton(
             color: Theme.of(context).colorScheme.primary,
             child: Text(
-              context.translations[AppString.notificationDialogOpenLink],
+              notification.linkText?.isNotEmpty == true ? notification.linkText.toUpperCase() : context.translations[AppString.dialogOpenLink],
               style: TextStyle(
                 color: Theme.of(context).colorScheme.background,
               ),

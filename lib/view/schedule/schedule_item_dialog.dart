@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:dachzeltfestival/i18n/translations.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, PlaceSelectionInteractor placeSelectionInteractor) {
   showDialog(
@@ -116,7 +117,19 @@ void showScheduleItemDialog(BuildContext context, ScheduleItem scheduleItem, Pla
               FlatButton(
                 onPressed: () => Navigator.of(context).pop(),
                 child: Text(context.translations[AppString.dismiss]),
-              )
+              ),
+              scheduleItem.url != null ? FlatButton(
+                color: Theme.of(context).colorScheme.primary,
+                child: Text(
+                  scheduleItem.linkText?.isNotEmpty == true ? scheduleItem.linkText.toUpperCase() : context.translations[AppString.dialogOpenLink],
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.background,
+                  ),
+                ),
+                onPressed: () {
+                  launch(scheduleItem.url);
+                },
+              ) : Container(),
             ],
           )
         ],

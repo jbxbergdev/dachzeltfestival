@@ -7,6 +7,8 @@ class ScheduleItem {
   final String venue;
   final String placeId;
   final String color;
+  final String url;
+  final String linkText;
 
-  ScheduleItem(this.start, this.finish, this.title, this.abstract, this.speaker, this.venue, this.placeId, this.color);
+  ScheduleItem({this.start, this.finish, this.title, this.abstract, this.speaker, this.venue, this.placeId, this.color, this.url, this.linkText});
 }

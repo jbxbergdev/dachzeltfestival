@@ -86,7 +86,9 @@ class NotificationList extends StatelessWidget {
                                item.url != null ? ButtonBar(
                                   children: <Widget>[
                                     FlatButton(
-                                      child: Text(context.translations[AppString.notificationDialogOpenLink]),
+                                      child: Text(
+                                          item.linkText?.isNotEmpty == true ? item.linkText.toUpperCase() : context.translations[AppString.dialogOpenLink]
+                                      ),
                                       onPressed: () => launch(item.url),
                                       textColor: item.persistent ? theme.colorScheme.primary : theme.colorScheme.primary,
                                   )],

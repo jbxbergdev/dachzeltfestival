@@ -9,7 +9,7 @@ enum AppString {
   navItemMore,
   scheduleUntil,
   dismiss,
-  notificationDialogOpenLink,
+  dialogOpenLink,
   notificationListTitle,
   eventInfo,
   legal,
@@ -61,7 +61,7 @@ class Translations {
       de: "SCHLIESSEN",
       en: "DISMISS"
     },
-    AppString.notificationDialogOpenLink: {
+    AppString.dialogOpenLink: {
       de: "LINK ÖFFNEN",
       en: "OPEN LINK"
     },

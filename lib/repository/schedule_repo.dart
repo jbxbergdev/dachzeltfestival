@@ -55,14 +55,16 @@ class ScheduleRepoImpl extends ScheduleRepo {
         venueColor = feature.properties.fill;
       }
       return ScheduleItem(
-        (translatableDocument['start'] as Timestamp).toDate(),
-        (translatableDocument['finish'] as Timestamp).toDate(),
-        translatableDocument['title'],
-        translatableDocument['abstract'],
-        translatableDocument['speaker'],
-        venueName,
-        venueId,
-        venueColor,
+        start: (translatableDocument['start'] as Timestamp).toDate(),
+        finish: (translatableDocument['finish'] as Timestamp).toDate(),
+        title: translatableDocument['title'],
+        abstract: translatableDocument['abstract'],
+        speaker: translatableDocument['speaker'],
+        venue: venueName,
+        placeId: venueId,
+        color: venueColor,
+        url: translatableDocument['url'],
+        linkText: translatableDocument['link_text'],
       );
     }).toList()..sort((item1, item2) => item1.start.compareTo(item2.start));
   }
