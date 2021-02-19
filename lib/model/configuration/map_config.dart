@@ -6,6 +6,7 @@ class MapConfig {
   final Coordinates navDestination;
   final int mapVersion;
   final String mapUrl;
+  final bool isSingleLocationEvent;
 
-  MapConfig({this.initalMapCenter, this.initialZoomLevel, this.navDestination, this.mapVersion, this.mapUrl});
+  MapConfig({this.initalMapCenter, this.initialZoomLevel, this.navDestination, this.mapVersion, this.mapUrl, this.isSingleLocationEvent});
 }

@@ -107,6 +107,7 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                   initialCameraPosition: _cameraPosition,
                   myLocationButtonEnabled: false,
                   myLocationEnabled: mapData.locationPermissionGranted,
+                  zoomControlsEnabled: false,
                   tiltGesturesEnabled: false,
                   rotateGesturesEnabled: false,
                   mapType: MapType.hybrid,
@@ -119,17 +120,22 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
               }
               return Container();
             }),
-        Positioned(
-          bottom: 16,
-          right: 16,
-          child: FloatingActionButton(
-            onPressed: _startNavigationApp,
-            child: Icon(
-              Icons.directions_car,
-              color: _appTheme.current.colorScheme.background,
-            ),
-            backgroundColor: _appTheme.current.primaryColor,
-          ),
+        StreamBuilder<_GoogleMapData>(
+          stream: _mapData(),
+          builder: (context, snapshot) {
+            return snapshot.data?.mapConfig?.isSingleLocationEvent == true ? Positioned(
+              bottom: 16,
+              right: 16,
+              child: FloatingActionButton(
+                onPressed: _navigateToSingleVenue,
+                child: Icon(
+                  Icons.directions_car,
+                  color: _appTheme.current.colorScheme.background,
+                ),
+                backgroundColor: _appTheme.current.primaryColor,
+              ),
+            ) : Container();
+          }
         ),
         SizedBox.expand(
           child: StreamBuilder<Tuple2<geojson.Feature, double>>(
@@ -234,7 +240,8 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
                       ),
                     ),
                   ),
-                )
+                ),
+                _featureNavigationWidget(feature),
               ],
             )
         ),
@@ -339,6 +346,23 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     );
   }
 
+  Widget _featureNavigationWidget(geojson.Feature feature) =>
+      feature.properties?.navigationDest != null ?
+      Padding(
+        padding: EdgeInsets.only(left: 4.0, bottom: 4.0),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _startNavigationApp(feature.properties.navigationDest),
+            child: Icon(
+              Icons.directions_outlined,
+              size: 32.0,
+              color: Colors.black.withOpacity(0.25),
+            ),
+          ),
+        ),
+      ) : Container();
+
   void _onMapItemTapped(geojson.Feature feature) {
     _selectedPlaceSubject.first.then((selectedFeature) => _selectedPlaceSubject.add(selectedFeature == null ? feature : null));
   }
@@ -358,15 +382,19 @@ class _EventMapState extends State<EventMap> with SingleTickerProviderStateMixin
     _selectedPlaceSubject.add(null);
   }
 
-  void _startNavigationApp() async {
+  void _navigateToSingleVenue() async {
     MapConfig mapConfig = (await _mapData().first).mapConfig;
     geojson.Coordinates navDestination = mapConfig?.navDestination;
     if (navDestination != null) {
-      if (Platform.isAndroid) {
-        launch("https://www.google.com/maps/dir/?api=1&destination=${navDestination.lat},${navDestination.lng}");
-      } else if (Platform.isIOS) {
-        launch("http://maps.apple.com/?daddr=${navDestination.lat},${navDestination.lng}");
-      }
+      _startNavigationApp(navDestination);
+    }
+  }
+  
+  void _startNavigationApp(geojson.Coordinates navDestination) {
+    if (Platform.isAndroid) {
+      launch("https://www.google.com/maps/dir/?api=1&destination=${navDestination.lat},${navDestination.lng}");
+    } else if (Platform.isIOS) {
+      launch("http://maps.apple.com/?daddr=${navDestination.lat},${navDestination.lng}");
     }
   }
 

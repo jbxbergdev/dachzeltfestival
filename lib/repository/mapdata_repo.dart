@@ -74,12 +74,14 @@ class MapDataRepoImpl extends MapDataRepo {
             String mapUrl = snapshot["map_url"];
             int mapVersion = snapshot["map_version"];
             GeoPoint navDestination = snapshot["nav_destination"];
+            bool isSingleLocationEvent = snapshot['is_single_location_event'];
             return MapConfig(
               initalMapCenter: Coordinates(lng: initialCenter.longitude, lat: initialCenter.latitude),
               initialZoomLevel: initialZoom,
               navDestination: Coordinates(lng: navDestination.longitude, lat: navDestination.latitude),
               mapVersion: mapVersion,
               mapUrl: mapUrl,
+              isSingleLocationEvent: isSingleLocationEvent,
             );
           });
       Stream<MapConfig> sourceObservable = _authenticator.authenticated.flatMap(

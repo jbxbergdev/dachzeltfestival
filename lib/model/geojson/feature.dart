@@ -91,7 +91,8 @@ class Properties {
   String imageUrl;
   String logoUrl;
   int detailLevel;
-  Properties({this.name, this.description, this.stroke, this.fill, this.placeId, this.placeCategory, this.detailLevel, this.url, this.imageUrl, this.logoUrl});
+  Coordinates navigationDest;
+  Properties({this.name, this.description, this.stroke, this.fill, this.placeId, this.placeCategory, this.detailLevel, this.url, this.imageUrl, this.logoUrl, this.navigationDest});
   factory Properties.fromJson(Map<String, dynamic> json, String languageCode) {
     return Properties(
       name: json.translated('name', languageCode),
@@ -104,6 +105,7 @@ class Properties {
       url: json['url'],
       imageUrl: json['image_url'],
       logoUrl: json['logo_url'],
+      navigationDest: Coordinates.fromJson(json['navigation_dest'])
     );
   }
 }
