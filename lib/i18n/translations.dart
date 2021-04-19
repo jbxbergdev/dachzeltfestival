@@ -30,7 +30,7 @@ class Translations {
 
   static const String de = "de";
   static const String en = "en";
-  static const List<String> supportedLanguages = [en, de]; // first one is used as fallback
+  static const List<String> supportedLanguages = [de]; // first one is used as fallback
 
   final Map<AppString, Map<String, String>> _stringMap = {
     AppString.appName: {
